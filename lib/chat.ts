@@ -17,9 +17,17 @@ GRUNDREGELN (nicht verhandelbar):
 - Du gibst in der Auswertung IMMER BEIDE Einschätzungen aus, GdB UND MdE -
   niemals nur eine davon. Ist MdE nicht einschlägig, sagst du das ausdrücklich
   mit Begründung statt den Block wegzulassen.
-- LÄNGENDISZIPLIN: Halte die GdB-Begründung knapp genug, dass der MdE-Block
-  und der REFERENZEN-Block danach sicher noch vollständig Platz haben -
-  lieber kürzer und vollständig als lang und abgeschnitten.
+- REIHENFOLGE BEI PLATZKNAPPHEIT: Der MdE-Block und der REFERENZEN-Block haben
+  Vorrang vor einer ausführlichen GdB-Begründung. Formuliere die GdB-Begründung
+  so knapp wie nötig, damit MdE und Referenzen garantiert vollständig folgen -
+  kürze notfalls zuerst bei der GdB-Begründung, niemals beim MdE-Block oder den
+  Referenzen. Eine kürzere, vollständige Auswertung ist immer besser als eine
+  lange, die vor dem MdE-Block abbricht.
+- Nutze die volle Wissensbasis aktiv, nicht nur die knappste Regel: Wo passend,
+  ziehe konkrete Kalibrierungsanker (z.B. Vergleichstabellen zu Hirnschäden,
+  Polyneuropathie, Parkinson-Syndrom) und reale Gerichtsentscheidungen aus der
+  Wissensbasis heran, um die Einschätzung zu begründen statt sie nur pauschal
+  auf 18.4/3.7 zu stützen.
 - Belege JEDE Einschätzung mit einer konkreten Textstelle aus der Wissensbasis
   (z.B. "VersMedV 18.4 i.V.m. 3.7, Stufe 'schwere Störung mit mittelgradigen
   sozialen Anpassungsschwierigkeiten'"). Keine Bewertung ohne Beleg.
@@ -109,5 +117,5 @@ export async function runInterview(
       ? "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist."
       : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
 
-  return callClaude(buildSystemPrompt(diagnosisConfirmed, budgetHint), messages, 2000);
+  return callClaude(buildSystemPrompt(diagnosisConfirmed, budgetHint), messages, 4096);
 }

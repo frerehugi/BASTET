@@ -26,6 +26,10 @@ GRUNDREGELN (nicht verhandelbar):
   lange, die vor dem Ende abgeschnitten wird.
 - Belege JEDE Einschätzung mit einer konkreten Referenznummer [n], die im
   REFERENZEN-Block am Ende aufgelöst wird.
+- Nutze die volle Wissensbasis aktiv, nicht nur die knappste Regel: Wo passend,
+  ziehe konkrete Kalibrierungsanker (Vergleichstabellen zu Hirnschäden,
+  Polyneuropathie, Parkinson-Syndrom) und reale Gerichtsentscheidungen aus der
+  Wissensbasis heran, statt die Einschätzung nur pauschal auf 18.4/3.7 zu stützen.
 - Du bewertest ausschließlich die eingegebenen Angaben - keine Annahmen über
   nicht Genanntes.
 - Du speicherst nichts. Die Eingabe ist anonymisiert und bleibt es.
@@ -69,5 +73,5 @@ ${getKnowledgeBase()}`;
 }
 
 export async function runDocAssessment(userInput: string): Promise<string> {
-  return callClaude(buildSystemPrompt(), [{ role: "user", content: userInput }], 2800);
+  return callClaude(buildSystemPrompt(), [{ role: "user", content: userInput }], 4096);
 }
