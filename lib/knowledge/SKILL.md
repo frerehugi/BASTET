@@ -1,0 +1,42 @@
+---
+name: de-begutachtung
+description: "Deutsches sozialmedizinisches Begutachtungswesen - GdB, GdS, MdE (gesetzliche Unfallversicherung SGB VII), Heilungsbewährung, Formulargutachten der Berufsgenossenschaften. Deckt Pneumologie/Thoraxchirurgie (VersMedV Kap. 8: Lunge, Bronchialkarzinom, COPD), Neurologie/Psychiatrie/Innere (Kap. 3: Nervensystem/Psyche, Depression, PTBS; Kap. 9: Herz-Kreislauf) sowie ein Kapitel zu Post-/Long-COVID und ME/CFS (Kanadische Konsenskriterien, PEM, Bell-Score, BK 3101, Scheibenbogen-Kapitel aus 'Die Ärztliche Begutachtung') ab. Immer nutzen bei GdB-, GdS- oder MdE-Fragen, Schwerbehindertenrecht, Verletztenrente, Berufskrankheiten, Fatigue/Erschöpfung - auch ohne explizite Nennung von 'GdB' oder 'MdE'."
+---
+
+# Deutsches Begutachtungswesen: GdB / GdS / MdE
+
+Persönliche Wissensbasis zu sozialmedizinischen Begutachtungen in Deutschland, angelegt für Florians Arbeit in der Thoraxchirurgie (Lungenzentrum). Fasst die relevanten Rechtsgrundlagen und Bewertungstabellen zusammen und verweist auf die Primärquellen.
+
+## Die drei Systeme unterscheiden — zuerst klären, welches gemeint ist
+
+Das ist der häufigste Fehler in der Praxis: die Begriffe werden vermischt, obwohl unterschiedliche Gesetze und unterschiedliche Bewertungsmaßstäbe gelten.
+
+| | **GdB** | **GdS** | **MdE** |
+|---|---|---|---|
+| Rechtsgebiet | Schwerbehindertenrecht (SGB IX, Teil 3) | Soziales Entschädigungsrecht (SGB XIV) | Gesetzliche Unfallversicherung (SGB VII) |
+| Frage | Wie stark ist die Teilhabe am Leben in der Gesellschaft beeinträchtigt? | Wie stark wirkt sich eine anerkannte Schädigung aus? | Wie stark ist die Erwerbsfähigkeit auf dem allgemeinen Arbeitsmarkt gemindert? |
+| Rechtsgrundlage/Tabelle | VersMedV (Anlage "Versorgungsmedizinische Grundsätze") | VersMedV, gleiche Tabelle wie GdB | MdE-Erfahrungswerte, insb. Schönberger/Mehrtens/Valentin "Arbeitsunfall und Berufskrankheit" (Standardwerk, nicht amtlich, urheberrechtlich geschützt) |
+| Bezug zum Beruf | Grundsätzlich unabhängig vom Beruf | Grundsätzlich unabhängig vom Beruf | Bezug zum allgemeinen Arbeitsmarkt, nicht zum konkreten Beruf |
+| Feststellung durch | Versorgungsamt/Amt für Soziales | Versorgungsamt | Unfallversicherungsträger (BG/Unfallkasse) im Rentenbescheid |
+| Auslöser | Krankheit/Behinderung allgemein | Schädigungsereignis (z. B. Wehrdienst, Impfschaden, Gewalttat) | Arbeitsunfall, Wegeunfall, Berufskrankheit |
+
+Wichtig: GdB/GdS und MdE für dieselbe Gesundheitsstörung fallen oft **unterschiedlich** aus (siehe `references/gdb-mde-systematik.md`), weil unterschiedliche Bewertungsmaßstäbe gelten — das ist medizinisch nicht immer stringent begründbar, aber geltendes Recht (ständige BSG-Rechtsprechung).
+
+## Reference-Dateien — wann welche laden
+
+- **`references/versmedv-gdb-gds.md`** — Allgemeine Grundsätze der VersMedV (Gesamt-GdB-Bildung, Heilungsbewährung) sowie Kapitel 8 "Brustkorb, tiefere Atemwege und Lungen" im Detail (Rippen-/Sternumfrakturen, chronische Bronchitis/COPD, Lungenfunktionseinschränkung nach Schweregrad, Bronchialkarzinom/Pneumonektomie, Lungentransplantation, Asthma, Schlafapnoe). Laden bei allen GdB/GdS-Fragen, besonders zu Lunge/Thorax.
+- **`references/unfallversicherung-mde.md`** — SGB VII-Grundlagen (Rentenanspruch ab 20 % MdE, Stützrententatbestand, wesentliche Änderung), Aufbau der Formulargutachten der BGen/Unfallkassen, Abgrenzung Arbeitsunfähigkeit/Erwerbsminderung/MdE. Laden bei Fragen zur Unfallversicherung, Verletztenrente, Berufskrankheiten.
+- **`references/gdb-mde-systematik.md`** — Warum GdB/GdS und MdE bei identischem Schaden unterschiedlich ausfallen (mit Beispielen), Diskussion um Angleichung, Hinweis auf Schönberger/Mehrtens/Valentin als Standardwerk für MdE.
+- **`references/nervensystem-psyche-herz-gdb.md`** — VersMedV Kapitel 3 (Nervensystem und Psyche, insb. 3.7 "Neurosen, Persönlichkeitsstörungen, Folgen psychischer Traumen" mit voller GdB-Tabelle für Depression/Angst/PTBS/Zwang) sowie Kapitel 9 (Herz und Kreislauf, Leistungseinbuße-basierte Bewertung, NYHA). Laden bei psychiatrischen und internistisch-kardialen Begutachtungsfragen.
+- **`references/neurologie-vergleichsfaelle.md`** — VersMedV 3.1 (Hirnschäden) im Detail: kognitive Leistungsstörungen/Aphasie, zerebrale Lähmungen/Hemiplegie, Parkinson-Syndrom-Tabelle, Epilepsie nach Hirnschaden, Einordnung von Demenz (keine eigene Ziffer, Analogie über 3.1). Dazu reale Gerichtsentscheidungen (LSG BW L 10 SB 75/19, SG Aurich S 4 SB 154/21, BSG B 9 SB 3/20 R) als Kalibrierungsanker für die Gesamt-GdB-Bildung bei mehreren gleichzeitigen Funktionsstörungen. Laden für präzisere, vergleichsgestützte GdB/MdE-Einschätzungen, insbesondere bei neurologischen Symptomen im Rahmen von Post-COVID/ME-CFS.
+- **`references/schmerz-neuro-kardio-erweiterung.md`** — periphere Parästhesien/Dysästhesien (Polyneuropathie-Analogie, Kapitel 3.11, mit realem Gerichtsfall), chronische Schmerzen (interdisziplinäre Bewertung, Fibromyalgie als Referenzfall, Bezug zu 18.4), kardiologische Symptome bei Post-COVID (Hypertonie/Tachykardie nach Leistungsprinzip, POTS-Diagnosekriterien und Zusammenhang mit ME/CFS-Orthostase). Laden bei Symptomschilderungen zu Kribbeln/Taubheit, chronischen Schmerzen oder Herzrasen/Schwindel beim Aufstehen.
+- **`references/schlaf-schwindel-kognitiv-faelle.md`** — gezielt recherchierte Gerichtsfälle zu Schlafstörungen (Schlafapnoe-Kalibrierung, GdB 50 nur Ausnahmefall), Schwindel/Tinnitus ohne organisches Korrelat (je Einzel-GdB ≤10), Parästhesien unterhalb der Erheblichkeitsschwelle, Sprach-/Wortfindungsstörungen und Kurzzeitgedächtnisverlust (Einzel-GdB 40 bei kognitiver Beeinträchtigung). Dazu verfahrensrechtliche Grundregeln (Dokumentation vor Gefühl, nur Gesamt-GdB anfechtbar, Vermeidungsstrategien nicht berücksichtigt). Laden bei diesen sieben Symptomen speziell oder wenn die Auswertungsqualität/Stilprinzipien verbessert werden sollen.
+- **`references/ccc-fragenkatalog-kalibrierung.md`** — strukturiert die Kanadischen Konsenskriterien in einzeln abfragbare Punkte (PEM, Fatigue, Schlaf, Schmerzen, kognitiv, autonom/POTS, psychische Komorbidität, Medikation) und ordnet jedem Punkt eine GdB-Kalibrierungsreferenz aus einem verwandten Fachgebiet zu (Neurologie, Kardiologie, Psychiatrie, Neuropsychologie, Schmerztherapie). Grundlage für den strukturierten Fragenkatalog in BASTET · Doc. Laden bei der Konzeption oder Verfeinerung von Anamnese-/Befund-Erhebungen.
+- **`references/postcovid-mecfs.md`** — Dediziertes Kapitel zu Post-/Long-COVID und ME/CFS: Diagnosekriterien (Kanadische Konsenskriterien/CCC, PEM als Leitsymptom, AWMF-S1-Leitlinie), Schweregrad-Instrumente (Bell-Score, FUNCAP55), GdB-Einordnung nach VersMedV 18.4 (analoge Beurteilung, i. d. R. über 3.7), MdE/BK-3101-Praxis der gesetzlichen Unfallversicherung inkl. dokumentierter Fallwerte. Basiert u. a. auf dem Kapitel von Scheibenbogen et al. in "Die Ärztliche Begutachtung". Laden bei jeder Frage zu Post-COVID, Long-COVID, ME/CFS, Fatigue oder PEM.
+- **`references/quellen.md`** — Primärquellen (amtlich, frei zugänglich) mit Stand und Links, damit bei Zweifeln direkt nachgeschlagen werden kann.
+
+## Wichtiger Hinweis zu den Werten in diesen Dateien
+
+- Die **VersMedV-Anlage ist eine Rechtsverordnung des Bundes** und als amtliches Werk nicht urheberrechtlich geschützt (§ 5 UrhG) — die dort enthaltenen GdB/GdS-Werte in `versmedv-gdb-gds.md` können daher relativ konkret wiedergegeben werden, sind aber inhaltlich zu prüfen, da Novellierungen vorkommen (zuletzt Teil A grundlegend zum 3. Oktober 2025 geändert).
+- Private Tabellenwerke zur MdE (allen voran Schönberger/Mehrtens/Valentin) sind urheberrechtlich geschützt — hier werden nur Rechtsgrundsätze und öffentlich referierte Einzelwerte aus Gerichtsentscheidungen wiedergegeben, keine vollständigen Tabellen.
+- Diese Dateien ersetzen keine Rechtsberatung und kein aktuelles Gutachten; bei konkreten Fällen und vor Entscheidungen immer die aktuelle Fassung der Primärquelle (`references/quellen.md`) prüfen bzw. bei Unsicherheit websuchen, da sich Werte durch Novellierung ändern können.

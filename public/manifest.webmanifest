@@ -1,0 +1,13 @@
+{
+  "name": "BASTET",
+  "short_name": "BASTET",
+  "description": "Orientierende, KI-gestützte Vorbegutachtung für Post-COVID / ME-CFS (GdB, MdE).",
+  "icons": [
+    { "src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "theme_color": "#1F3D2E",
+  "background_color": "#1F3D2E",
+  "display": "standalone",
+  "start_url": "/"
+}
