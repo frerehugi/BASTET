@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { splitReferences } from "@/lib/format";
 
 const ABOUT_TEXT = `BASTET ist ein Orientierungs- und Hilfsangebot, keine verbindliche Begutachtung, keine medizinische Diagnose und keine Rechtsberatung. Es ersetzt weder eine ärztliche Untersuchung noch anwaltliche Beratung und bindet keine Behörde, kein Gericht und keinen Versicherungsträger.
 
@@ -136,20 +137,6 @@ function initialCccState(): Record<string, string> {
     if (g.freeKey) state[g.freeKey] = "";
   });
   return state;
-}
-
-function splitReferences(content: string): { body: string; refs: string[] | null } {
-  const marker = "REFERENZEN:";
-  const idx = content.indexOf(marker);
-  if (idx === -1) return { body: content, refs: null };
-  const body = content.slice(0, idx).trim();
-  const refsBlock = content.slice(idx + marker.length).trim();
-  const refs = refsBlock
-    .split("\n")
-    .map((l) => l.trim())
-    .filter((l) => /^\[\d+\]/.test(l));
-  if (refs.length === 0) return { body: content, refs: null };
-  return { body, refs };
 }
 
 export default function DocApp() {

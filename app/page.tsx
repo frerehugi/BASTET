@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { splitReferences } from "@/lib/format";
 
 const STORAGE_NOTICE =
   "Dieser Chat wird nicht gespeichert. Mit Schließen dieses Fensters sind alle Ihre Angaben unwiderruflich weg — planen Sie die gut 15 Minuten möglichst am Stück ein. Es wird nichts aufgezeichnet oder ausgewertet, auch nicht anonymisiert.";
@@ -27,20 +28,6 @@ interface Message {
   content: string;
 }
 type Phase = "gate" | "warned" | "chat" | "ended";
-
-function splitReferences(content: string): { body: string; refs: string[] | null } {
-  const marker = "REFERENZEN:";
-  const idx = content.indexOf(marker);
-  if (idx === -1) return { body: content, refs: null };
-  const body = content.slice(0, idx).trim();
-  const refsBlock = content.slice(idx + marker.length).trim();
-  const refs = refsBlock
-    .split("\n")
-    .map((l) => l.trim())
-    .filter((l) => /^\[\d+\]/.test(l));
-  if (refs.length === 0) return { body: content, refs: null };
-  return { body, refs };
-}
 
 function useAutoScroll(dep: number) {
   const ref = useRef<HTMLDivElement>(null);

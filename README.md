@@ -2,23 +2,27 @@
 
 KI-gestütztes Orientierungswerkzeug für Post-COVID-/ME-CFS-Betroffene im deutschen Sozialrecht. Zwei Arme (Betroffene und Ärzt:innen), eine gemeinsame Wissensbasis. © Schmitz & Hugenberg, Osnabrück — siehe [`NOTICE.md`](./NOTICE.md) für den vollständigen rechtlichen Rahmen (Haftungsausschluss, Urheberrecht, Open-Source-Einordnung).
 
-**Live:** [bastet-covid.org](https://bastet-covid.org) (Betroffenen-Arm) · `/doc` (Ärzte-Arm)
+**Live:** [bastet-covid.org](https://bastet-covid.org) (Betroffenen-Arm) · `/doc` (Ärzte-Arm) · Telegram-Bot (Betroffenen-Arm)
 
 ## Die App
 
-Next.js-App (App Router, TypeScript), auf Vercel deployt. Beide Arme rufen serverseitige API-Routen auf — der Anthropic-API-Key bleibt auf dem Server, nie im Client. Die Wissensbasis wird vollständig aus dem `de-begutachtung`-Claude-Skill gezogen, nicht mehr aus den handkuratierten Kurzfassungen der ursprünglichen Prototypen.
+Next.js-App (App Router, TypeScript), auf Vercel deployt. Alle drei Kanäle rufen dieselbe serverseitige Interviewlogik auf — der Anthropic-API-Key bleibt auf dem Server, nie im Client. Die Wissensbasis wird vollständig aus dem `de-begutachtung`-Claude-Skill gezogen, nicht mehr aus den handkuratierten Kurzfassungen der ursprünglichen Prototypen.
 
 ```
 app/
-├── page.tsx              # Betroffenen-Arm (Chat-Interview)
+├── page.tsx              # Betroffenen-Arm, Web-UI (Chat-Interview)
 ├── doc/page.tsx           # Ärzte-Arm (strukturiertes CCC-Formular)
 ├── layout.tsx             # gemeinsames Layout inkl. BASTET-Kopfzeile
 └── api/
-    ├── chat/route.ts      # POST — Betroffenen-Arm-Logik
-    └── doc/route.ts       # POST — Ärzte-Arm-Logik
+    ├── chat/route.ts      # POST — Betroffenen-Arm-Logik (Web)
+    ├── doc/route.ts       # POST — Ärzte-Arm-Logik
+    └── telegram/route.ts  # POST — Telegram-Webhook, ruft dieselbe runInterview()-Logik wie chat/route.ts auf
 lib/
 ├── anthropic.ts           # Claude-API-Client (serverseitig)
 ├── chat.ts / doc.ts       # System-Prompts + Interviewlogik je Arm
+├── format.ts               # REFERENZEN-Block-Parsing, STATS-Trailer-Stripping — von Web und Telegram geteilt
+├── telegram.ts             # Telegram sendMessage-Helper (chunkt Nachrichten >3800 Zeichen)
+├── telegramSession.ts      # Upstash-Redis-Session pro chat_id, TTL 60 Min. Inaktivität
 ├── knowledgeBase.ts        # lädt lib/knowledge/*.md zur Laufzeit
 └── knowledge/*.md          # 1:1 aus skill/de-begutachtung.skill entpackt
 ```
@@ -29,9 +33,20 @@ npm install
 ANTHROPIC_API_KEY=sk-ant-... npm run dev
 ```
 
-**Auf Vercel:** `ANTHROPIC_API_KEY` muss unter Project Settings → Environment Variables gesetzt sein, sonst antworten `/api/chat` und `/api/doc` mit einem Konfigurationsfehler.
+**Auf Vercel — Environment Variables:**
+- `ANTHROPIC_API_KEY` — sonst antworten `/api/chat` und `/api/doc` mit einem Konfigurationsfehler.
+- `TELEGRAM_BOT_TOKEN` — Bot-Token von @BotFather.
+- `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` — über Vercel Storage → Marketplace → Upstash (Redis) provisionieren und mit dem Projekt verbinden; Vercel KV (das native Produkt) wurde Ende 2024 eingestellt.
 
-Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phasen 3–7): ERC-8004-Registrierung, x402-Premium-Endpoint, Telegram-Bot, anonyme GdB/MdE-Statistik, Celo-Builders-Submission.
+**Telegram-Webhook setzen**, sobald der Code deployt und die drei Variablen oben gesetzt sind:
+```bash
+curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://bastet-covid.org/api/telegram"
+```
+`<TELEGRAM_BOT_TOKEN>` durch den echten Token ersetzen — nie im Klartext committen oder in einen Chat einfügen.
+
+Datenschutz-Hinweis: Der Telegram-Arm ist kein reines No-Storage mehr wie der Web-Arm — der Gesprächsverlauf wird pro `chat_id` in Upstash Redis zwischengespeichert, mit TTL 60 Minuten Inaktivität. Der Bot weist beim Start explizit darauf hin (siehe `GATE_PROMPT` in `app/api/telegram/route.ts`).
+
+Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phasen 3, 4, 6, 7): ERC-8004-Registrierung, x402-Premium-Endpoint, anonyme GdB/MdE-Statistik, Celo-Builders-Submission.
 
 ## Ordnerübersicht
 
