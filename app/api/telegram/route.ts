@@ -12,6 +12,7 @@ import { sendTelegramMessage } from "@/lib/telegram";
 import { getSession, saveSession, type TelegramSession } from "@/lib/telegramSession";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 interface TelegramUpdate {
   message?: {

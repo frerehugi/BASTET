@@ -124,5 +124,5 @@ ${knowledgeBase}`;
 
 export async function runDocAssessment(userInput: string): Promise<string> {
   const knowledgeBase = await getKnowledgeBase();
-  return callClaude(buildSystemPrompt(knowledgeBase), [{ role: "user", content: userInput }], 8192);
+  return callClaude(buildSystemPrompt(knowledgeBase), [{ role: "user", content: userInput }], 16000);
 }

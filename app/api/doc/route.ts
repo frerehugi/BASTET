@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { runDocAssessment } from "@/lib/doc";
 
 export const runtime = "nodejs";
+export const maxDuration = 60;
 
 interface DocRequestBody {
   userInput: string;
