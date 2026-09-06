@@ -372,10 +372,10 @@ export default function App() {
                   }
                 }}
                 placeholder="Ihre Antwort — Stichworte reichen"
-                rows={2}
+                rows={4}
               />
               <button
-                style={styles.primaryButton}
+                style={styles.sendButton}
                 onClick={handleSend}
                 disabled={loading || !input.trim()}
               >
@@ -608,18 +608,30 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.55,
     whiteSpace: "pre-wrap",
   },
-  inputRow: { display: "flex", gap: 10, marginTop: 12, alignItems: "flex-end" },
+  inputRow: { display: "flex", flexDirection: "column", gap: 10, marginTop: 12 },
   textarea: {
-    flex: 1,
-    resize: "none",
+    width: "100%",
+    resize: "vertical",
+    minHeight: 120,
     background: "rgba(255,255,255,.05)",
     border: "1px solid var(--border)",
-    borderRadius: 14,
-    padding: "10px 14px",
+    borderRadius: 16,
+    padding: "14px 16px",
     fontSize: 16,
     fontFamily: "inherit",
     lineHeight: 1.5,
     color: "var(--text)",
+  },
+  sendButton: {
+    alignSelf: "flex-end",
+    background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
+    color: "var(--dark2)",
+    border: "none",
+    borderRadius: 999,
+    padding: "13px 32px",
+    fontSize: 15.5,
+    fontWeight: 700,
+    cursor: "pointer",
   },
   footerRow: { marginTop: 14, display: "flex", flexDirection: "column", gap: 8 },
   linkButton: {
