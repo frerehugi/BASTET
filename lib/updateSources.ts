@@ -17,7 +17,12 @@ export interface UpdateSource {
 
 async function fetchText(url: string): Promise<string> {
   const response = await fetch(url, {
-    headers: { "user-agent": "Mozilla/5.0 (compatible; BastetUpdateCheck/1.0)" },
+    headers: {
+      "user-agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "accept-language": "de-DE,de;q=0.9",
+    },
   });
   if (!response.ok) {
     throw new Error(`Fetch fehlgeschlagen (${response.status}): ${url}`);
@@ -95,14 +100,18 @@ function parseFirstRssItem(xml: string): RssItem | null {
 }
 
 /**
- * RSS-basierter Check für die Bundessozialgericht-Entscheidungen. Feed
- * verifiziert (05.09.2026) unter rechtsprechung-im-internet.de, geordnet
- * nach Eintragsdatum. fingerprint = guid/link der neuesten Entscheidung.
+ * RSS-basierter Check für die Bundessozialgericht-Entscheidungen. Der Feed
+ * auf rechtsprechung-im-internet.de (juris.de-Infrastruktur) verlangt eine
+ * TLS-Renegotiation mitten im Handshake, die Node/undici (Vercel-Laufzeit)
+ * mit einem generischen "fetch failed" ablehnt, obwohl klassisches curl damit
+ * klarkommt — deshalb bewusst der eigene bsg.bund.de-Feed statt des Mirrors,
+ * verifiziert per direktem Fetch (06.09.2026). fingerprint = guid/link der
+ * neuesten Entscheidung.
  */
 const bsgSource: UpdateSource = {
   id: "bsg",
   label: "Bundessozialgericht (BSG) — neue Entscheidungen",
-  url: "https://www.rechtsprechung-im-internet.de/jportal/docs/feed/bsjrs-bsg.xml",
+  url: "https://www.bsg.bund.de/DE/Service/RSS-Feed/_functions/rssnewsfeed-entscheidungen.xml",
   async check(previousFingerprint) {
     const xml = await fetchText(this.url);
     const item = parseFirstRssItem(xml);
@@ -136,5 +145,13 @@ export const UPDATE_SOURCES: UpdateSource[] = [
     "AWMF-Register — Leitlinie Long/Post-COVID (020-027)",
     "https://register.awmf.org/de/leitlinien/detail/020-027"
   ),
+  // rehadat-literatur.de läuft hinter Myra Cloud (WAF/DDoS-Schutz), das
+  // Vercels Rechenzentrums-IPs beim ersten Cron-Lauf mit 503 blockiert hat,
+  // obwohl ein normaler Fetch von außerhalb 200 liefert — vermutlich
+  // IP-Reputation, nicht die Header. Realistischer Browser-User-Agent
+  // (siehe fetchText) verbessert die Chance, garantiert aber nichts; bei
+  // dauerhaftem 503 ist diese Quelle ohne Änderung am WAF nicht zuverlässig
+  // automatisierbar - fehlschlagende Läufe brechen die Pipeline nicht ab,
+  // sie werden nur nicht geprüft.
   makeHashSource("rehadat", "REHADAT — Literatur/VersMedV-Umfeld", "https://www.rehadat-literatur.de/"),
 ];
