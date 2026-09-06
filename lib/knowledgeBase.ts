@@ -23,6 +23,9 @@ const FILES = [
   "schmerz-neuro-kardio-erweiterung.md",
   "schlaf-schwindel-kognitiv-faelle.md",
   "unfallversicherung-mde.md",
+  "bg-pflichten-mitwirkung.md",
+  "bg-kontaktdaten.md",
+  "standardbrief-bgw.md",
   "quellen.md",
 ];
 

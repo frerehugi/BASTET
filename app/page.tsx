@@ -9,6 +9,14 @@ import {
   CRISIS_NOTE,
   PATIENT_ABOUT_TEXT as ABOUT_TEXT,
 } from "@/lib/content";
+import {
+  isMdeEinschlaegig,
+  mentionsNonHealthSector,
+  composeBgwLetter,
+  LETTER_SEND_HINT,
+  OTHER_SECTOR_NOTICE,
+  type LetterFields,
+} from "@/lib/bgwLetter";
 
 const STORAGE_NOTICE =
   "Dieser Chat wird nicht gespeichert. Mit Schließen dieses Fensters sind alle Ihre Angaben unwiderruflich weg — planen Sie die gut 15 Minuten möglichst am Stück ein. Es wird nichts aufgezeichnet oder ausgewertet, auch nicht anonymisiert.";
@@ -41,6 +49,30 @@ export default function App() {
   const [copiedIndex, setCopiedIndex] = useState<number | "all" | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [letterOpen, setLetterOpen] = useState<Record<number, boolean>>({});
+  const [letterFields, setLetterFields] = useState<Record<number, LetterFields>>({});
+  const [generatedLetter, setGeneratedLetter] = useState<Record<number, string>>({});
+  const [letterCopiedIndex, setLetterCopiedIndex] = useState<number | null>(null);
+
+  function getLetterFields(i: number): LetterFields {
+    return letterFields[i] ?? { name: "", address: "", date: new Date().toLocaleDateString("de-DE") };
+  }
+  function updateLetterField(i: number, patch: Partial<LetterFields>) {
+    setLetterFields((prev) => ({ ...prev, [i]: { ...getLetterFields(i), ...patch } }));
+  }
+  function handleGenerateLetter(i: number, assessmentBody: string) {
+    const fields = getLetterFields(i);
+    setGeneratedLetter((prev) => ({ ...prev, [i]: composeBgwLetter(fields, assessmentBody) }));
+  }
+  async function copyLetter(i: number, text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setLetterCopiedIndex(i);
+      setTimeout(() => setLetterCopiedIndex(null), 2000);
+    } catch {
+      // wie copyText oben - stiller Fehlschlag, Button bleibt nutzbar
+    }
+  }
 
   async function copyText(text: string, markKey: number | "all") {
     try {
@@ -235,6 +267,74 @@ export default function App() {
                         )}
                       </div>
                     )}
+                    {refs &&
+                      isMdeEinschlaegig(body) &&
+                      (mentionsNonHealthSector(fullTranscriptText()) ? (
+                        <p style={styles.letterOtherSectorNotice}>{OTHER_SECTOR_NOTICE}</p>
+                      ) : (
+                        <div style={styles.letterArea}>
+                          {!letterOpen[i] && (
+                            <button
+                              style={styles.refsButton}
+                              onClick={() => setLetterOpen((o) => ({ ...o, [i]: true }))}
+                            >
+                              Brief an die Berufsgenossenschaft erstellen
+                            </button>
+                          )}
+                          {letterOpen[i] && (
+                            <div style={styles.letterForm}>
+                              <label style={styles.letterLabel}>
+                                Name
+                                <input
+                                  style={styles.letterInput}
+                                  value={getLetterFields(i).name}
+                                  onChange={(e) => updateLetterField(i, { name: e.target.value })}
+                                  placeholder="Vor- und Nachname"
+                                />
+                              </label>
+                              <label style={styles.letterLabel}>
+                                Adresse
+                                <textarea
+                                  style={styles.letterTextarea}
+                                  rows={2}
+                                  value={getLetterFields(i).address}
+                                  onChange={(e) => updateLetterField(i, { address: e.target.value })}
+                                  placeholder={"Straße Hausnr.\nPLZ Ort"}
+                                />
+                              </label>
+                              <label style={styles.letterLabel}>
+                                Datum
+                                <input
+                                  style={styles.letterInput}
+                                  value={getLetterFields(i).date}
+                                  onChange={(e) => updateLetterField(i, { date: e.target.value })}
+                                  placeholder="TT.MM.JJJJ"
+                                />
+                              </label>
+                              <p style={styles.letterPrivacyNote}>
+                                Diese Angaben bleiben ausschließlich in Ihrem Browser — sie werden nie
+                                an den Server gesendet oder gespeichert.
+                              </p>
+                              <button
+                                style={styles.primaryButton}
+                                onClick={() => handleGenerateLetter(i, body)}
+                                disabled={!getLetterFields(i).name.trim() || !getLetterFields(i).address.trim()}
+                              >
+                                Brief erstellen
+                              </button>
+                            </div>
+                          )}
+                          {generatedLetter[i] && (
+                            <>
+                              <pre style={styles.letterBox}>{generatedLetter[i]}</pre>
+                              <button style={styles.refsButton} onClick={() => copyLetter(i, generatedLetter[i])}>
+                                {letterCopiedIndex === i ? "Kopiert ✓" : "Brief kopieren"}
+                              </button>
+                              <p style={styles.letterHint}>{LETTER_SEND_HINT}</p>
+                            </>
+                          )}
+                        </div>
+                      ))}
                   </div>
                 );
               })}
@@ -418,6 +518,72 @@ const styles: Record<string, React.CSSProperties> = {
   },
   refsList: { marginTop: 8, paddingLeft: 18, fontSize: 14, lineHeight: 1.55, color: "#4A4F4B" },
   refsListItem: { marginBottom: 4 },
+  letterArea: { marginTop: 10 },
+  letterOtherSectorNotice: {
+    marginTop: 10,
+    fontSize: 13,
+    lineHeight: 1.55,
+    color: "#8A5A20",
+    background: "#FBF3E7",
+    border: "1px solid #E9D3B0",
+    borderRadius: 8,
+    padding: "8px 10px",
+  },
+  letterForm: {
+    marginTop: 8,
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    background: "#FFFFFF",
+    border: "1px solid #DCE0DB",
+    borderRadius: 8,
+    padding: 12,
+  },
+  letterLabel: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    fontSize: 12.5,
+    fontWeight: 600,
+    color: "#2B2E2C",
+  },
+  letterInput: {
+    border: "1px solid #DCE0DB",
+    borderRadius: 6,
+    padding: "8px 10px",
+    fontSize: 14,
+    fontFamily: "inherit",
+    fontWeight: 400,
+  },
+  letterTextarea: {
+    border: "1px solid #DCE0DB",
+    borderRadius: 6,
+    padding: "8px 10px",
+    fontSize: 14,
+    fontFamily: "inherit",
+    fontWeight: 400,
+    resize: "vertical",
+  },
+  letterPrivacyNote: { fontSize: 11.5, color: "#6E736F", margin: 0, lineHeight: 1.5 },
+  letterBox: {
+    marginTop: 10,
+    background: "#FFFFFF",
+    border: "1px solid #DCE0DB",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 13.5,
+    lineHeight: 1.55,
+    whiteSpace: "pre-wrap",
+    fontFamily: "inherit",
+    color: "#2B2E2C",
+  },
+  letterHint: {
+    marginTop: 8,
+    fontSize: 12,
+    color: "#6E736F",
+    lineHeight: 1.55,
+    whiteSpace: "pre-wrap",
+  },
   inputRow: { display: "flex", gap: 10, marginTop: 12, alignItems: "flex-end" },
   textarea: {
     flex: 1,
