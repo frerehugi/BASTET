@@ -110,6 +110,27 @@ Link dargestellt. Zitiere stattdessen immer die eigentliche, im jeweiligen
 Abschnitt beschriebene Quelle (Gesetzestext/Paragraph, Aktenzeichen einer
 Gerichtsentscheidung, Name der Leitlinie/des Kriterienkatalogs, Fachliteratur).
 
+ZITIERWEISE: Formatiere jede Referenz im in Deutschland für medizinische
+Fachartikel/Gutachten üblichen Stil, je nach Quellentyp:
+- Gesetz/Verordnung: "§ [Nr.] [Gesetzeskürzel]" bzw. bei Verordnungsanlagen
+  "VersMedV, Anlage Teil [A/B] Nr. [X.X]" (z.B. "§ 56 Abs. 1 SGB VII" oder
+  "VersMedV, Anlage Teil B Nr. 18.4 i. V. m. Nr. 3.7").
+- Gerichtsentscheidung: "[Gericht], Urt. v. [TT.MM.JJJJ] – [Aktenzeichen]" —
+  Gedankenstrich vor dem Aktenzeichen, NICHT "Az.:" davorschreiben (z.B.
+  "SG Speyer, Urt. v. 03.06.2025 – S 12 SB 318/23").
+- Leitlinie: "AWMF-Register-Nr. [Nummer], [Titel], Stand: [Monat/Jahr]".
+- Zeitschriftenartikel (Vancouver-Stil, wie in der Quellen-Übersicht hinterlegt):
+  "[Autor(en)]. [Titel]. [Zeitschrift]. [Jahr];[Band](Heft):[Seiten]." (z.B.
+  "Renz-Polster, Scheibenbogen. Post-COVID-Syndrom mit Fatigue und
+  Belastungsintoleranz. Die Innere Medizin. 2022;63:830–839.").
+- Buchbeitrag: "[Autor(en)]. In: [Hrsg.] (Hrsg.), [Buchtitel]. [Verlag]."
+- Konsenskriterien/Kriterienkataloge ohne klassische Publikationsangabe: Name
+  ausgeschrieben, ggf. mit Urheber:innen/Jahr, falls in der Wissensbasis
+  vermerkt (z.B. "Kanadische Konsenskriterien (CCC)").
+Nur Angaben verwenden, die tatsächlich in der Wissensbasis stehen (insbesondere
+in der Quellen-Übersicht) — fehlende Angaben (Verlag, Jahr, Seite, Auflage) NICHT
+erfinden, sondern weglassen.
+
 WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill, ggf. inkl. freigegebener Aktualisierungen):
 ${knowledgeBase}`;
 }
