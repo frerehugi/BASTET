@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { getApprovedAddendumText } from "./reviewQueue";
 
 /**
  * Volltext-Wissensbasis, 1:1 aus dem `de-begutachtung`-Claude-Skill (skill/de-begutachtung.skill)
@@ -25,13 +26,33 @@ const FILES = [
   "quellen.md",
 ];
 
-let cached: string | null = null;
+let staticCached: string | null = null;
 
-export function getKnowledgeBase(): string {
-  if (cached) return cached;
-  cached = FILES.map((file) => {
+function getStaticKnowledgeBase(): string {
+  if (staticCached) return staticCached;
+  staticCached = FILES.map((file) => {
     const content = fs.readFileSync(path.join(KNOWLEDGE_DIR, file), "utf-8");
     return `### Quelle: ${file}\n\n${content.trim()}`;
   }).join("\n\n---\n\n");
-  return cached;
+  return staticCached;
+}
+
+/**
+ * Statischer Teil (Git-Dateien, dauerhaft gecacht) plus dynamischer Teil
+ * (per Update-Pipeline + menschlicher Freigabe in Upstash abgelegte
+ * Aktualisierungen, siehe lib/reviewQueue.ts und build/claude-code-buildplan.md
+ * Phase 4). Ohne freigegebene Aktualisierungen identisch zum rein statischen
+ * Stand — ein Ausfall des Redis-Abrufs darf die Kernfunktion nie blockieren,
+ * daher best-effort mit stillem Fallback auf den statischen Teil.
+ */
+export async function getKnowledgeBase(): Promise<string> {
+  const staticPart = getStaticKnowledgeBase();
+  let addendum = "";
+  try {
+    addendum = await getApprovedAddendumText();
+  } catch (error) {
+    console.error("Konnte Wissensbasis-Aktualisierungen nicht laden, nutze nur den statischen Stand:", error);
+  }
+  if (!addendum) return staticPart;
+  return `${staticPart}\n\n---\n\n### Aktualisierungen (nach menschlicher Freigabe, siehe Update-Pipeline)\n\n${addendum}`;
 }

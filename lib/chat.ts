@@ -1,7 +1,7 @@
 import { callClaude, type ChatMessage } from "./anthropic";
 import { getKnowledgeBase } from "./knowledgeBase";
 
-function buildSystemPrompt(diagnosisConfirmed: boolean, turnBudgetHint: string): string {
+function buildSystemPrompt(diagnosisConfirmed: boolean, turnBudgetHint: string, knowledgeBase: string): string {
   return `Du bist ein Informationsassistent für eine KI-gestützte Vorbegutachtung
 bei Post-COVID/ME-CFS im deutschen Sozialrecht (GdB nach VersMedV, ggf. MdE nach
 SGB VII bei klar genanntem Berufsbezug). Du sprichst Deutsch, direkt und warm,
@@ -103,8 +103,8 @@ mit der Zeile "REFERENZEN:" (Großschreibung, Doppelpunkt), gefolgt von einer
 Zeile pro Eintrag im Format "[n] Text". Nur die Auswertungsnachricht enthält
 diesen Block — normale Interviewfragen nicht.
 
-WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):
-${getKnowledgeBase()}`;
+WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill, ggf. inkl. freigegebener Aktualisierungen):
+${knowledgeBase}`;
 }
 
 export async function runInterview(
@@ -117,5 +117,6 @@ export async function runInterview(
       ? "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist."
       : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
 
-  return callClaude(buildSystemPrompt(diagnosisConfirmed, budgetHint), messages, 4096);
+  const knowledgeBase = await getKnowledgeBase();
+  return callClaude(buildSystemPrompt(diagnosisConfirmed, budgetHint, knowledgeBase), messages, 4096);
 }

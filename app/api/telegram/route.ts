@@ -1,3 +1,4 @@
+import { handleAdminCommand } from "@/lib/adminCommands";
 import { runInterview } from "@/lib/chat";
 import {
   PATIENT_TITLE,
@@ -77,6 +78,21 @@ export async function POST(request: Request): Promise<Response> {
   // Web-Pendant ist der immer sichtbare "Über BASTET / Rechtliches"-Toggle.
   if (/^\/about\b/i.test(text)) {
     await notifyBestEffort(chatId, PATIENT_ABOUT_TEXT);
+    return ok();
+  }
+
+  // Für jeden nutzbar: liefert die eigene chat_id, z.B. um sie als
+  // TELEGRAM_ADMIN_CHAT_ID zu hinterlegen.
+  if (/^\/whoami\b/i.test(text)) {
+    await notifyBestEffort(chatId, `Ihre Telegram chat_id: ${chatId}`);
+    return ok();
+  }
+
+  // Freigabe-Workflow der Wissensbasis-Update-Pipeline (Phase 4) — nur für
+  // TELEGRAM_ADMIN_CHAT_ID, läuft komplett außerhalb der Patient:innen-
+  // Interviewlogik. Bei Treffer nicht in den normalen Gate/Interview-Flow
+  // weiterfallen.
+  if (await handleAdminCommand(chatId, text)) {
     return ok();
   }
 

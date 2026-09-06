@@ -1,7 +1,7 @@
 import { callClaude } from "./anthropic";
 import { getKnowledgeBase } from "./knowledgeBase";
 
-function buildSystemPrompt(): string {
+function buildSystemPrompt(knowledgeBase: string): string {
   return `Du bist eine fachliche Orientierungshilfe für Ärzt:innen zur GdB/MdE-
 Einschätzung bei Post-COVID/ME-CFS im deutschen Sozialrecht. Zielgruppe sind
 Fachkolleg:innen, keine Patient:innen - du sprichst kollegial, präzise, ohne
@@ -68,10 +68,11 @@ REFERENZEN:
 [1] konkrete Textstelle/Quelle
 [2] ...
 
-WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):
-${getKnowledgeBase()}`;
+WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill, ggf. inkl. freigegebener Aktualisierungen):
+${knowledgeBase}`;
 }
 
 export async function runDocAssessment(userInput: string): Promise<string> {
-  return callClaude(buildSystemPrompt(), [{ role: "user", content: userInput }], 4096);
+  const knowledgeBase = await getKnowledgeBase();
+  return callClaude(buildSystemPrompt(knowledgeBase), [{ role: "user", content: userInput }], 4096);
 }

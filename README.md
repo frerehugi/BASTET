@@ -10,6 +10,7 @@ Next.js-App (App Router, TypeScript), auf Vercel deployt. Alle drei Kanäle rufe
 
 ```
 middleware.ts             # doc.bastet-covid.org -> intern /doc, Hauptdomain unverändert
+vercel.json                # Cron-Schedule für die Update-Pipeline (wöchentlich, Montag 06:00 UTC)
 app/
 ├── page.tsx              # Betroffenen-Arm, Web-UI (Chat-Interview)
 ├── doc/page.tsx           # Ärzte-Arm (strukturiertes CCC-Formular)
@@ -17,7 +18,8 @@ app/
 └── api/
     ├── chat/route.ts      # POST — Betroffenen-Arm-Logik (Web)
     ├── doc/route.ts       # POST — Ärzte-Arm-Logik
-    └── telegram/route.ts  # POST — Telegram-Webhook, ruft dieselbe runInterview()-Logik wie chat/route.ts auf
+    ├── telegram/route.ts  # POST — Telegram-Webhook, ruft dieselbe runInterview()-Logik wie chat/route.ts auf
+    └── cron/check-updates/route.ts  # GET, per CRON_SECRET geschützt — wöchentlicher Quellen-Check (Phase 4)
 lib/
 ├── anthropic.ts           # Claude-API-Client (serverseitig)
 ├── chat.ts / doc.ts       # System-Prompts + Interviewlogik je Arm
@@ -25,7 +27,11 @@ lib/
 ├── format.ts               # REFERENZEN-Block-Parsing, STATS-Trailer-Stripping — von Web und Telegram geteilt
 ├── telegram.ts             # Telegram sendMessage-Helper (chunkt Nachrichten >3800 Zeichen)
 ├── telegramSession.ts      # Upstash-Redis-Session pro chat_id, TTL 60 Min. Inaktivität
-├── knowledgeBase.ts        # lädt lib/knowledge/*.md zur Laufzeit
+├── adminCommands.ts        # Telegram-Freigabe-Workflow (/pending, freigeben/ablehnen), nur TELEGRAM_ADMIN_CHAT_ID
+├── updateSources.ts        # Quellen-Definitionen + Change-Detection (RSS für BSG, Hash-Fallback sonst)
+├── updateSummary.ts        # LLM-Zusammenfassung eines erkannten Funds
+├── reviewQueue.ts          # Upstash-backed Pending-Queue, Log, freigegebene Aktualisierungen
+├── knowledgeBase.ts        # lädt lib/knowledge/*.md + freigegebene Aktualisierungen (lib/reviewQueue.ts) zur Laufzeit
 └── knowledge/*.md          # 1:1 aus skill/de-begutachtung.skill entpackt
 ```
 
@@ -50,7 +56,24 @@ curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://ww
 
 Datenschutz-Hinweis: Der Telegram-Arm ist kein reines No-Storage mehr wie der Web-Arm — der Gesprächsverlauf wird pro `chat_id` in Upstash Redis zwischengespeichert, mit TTL 60 Minuten Inaktivität. Der Bot weist beim Start explizit darauf hin (siehe `GATE_PROMPT` in `app/api/telegram/route.ts`).
 
-Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phasen 3, 4, 6, 7): ERC-8004-Registrierung, x402-Premium-Endpoint, anonyme GdB/MdE-Statistik, Celo-Builders-Submission.
+### Update-Pipeline (Phase 4) — Wissensbasis mit Human-Review
+
+Ein wöchentlicher Vercel Cron (`vercel.json`, Montag 06:00 UTC) prüft fünf Quellen (BSG, sozialgerichtsbarkeit.de, DGUV, AWMF-Register, REHADAT) auf Änderungen. Für BSG per RSS-Feed (verifiziert), für die anderen vier per Content-Hash der jeweiligen Seite — bewusst kein Autopublish: ein Fund landet nur in einer Review-Queue (Upstash) und wird per Telegram an `TELEGRAM_ADMIN_CHAT_ID` gemeldet. Erst nach expliziter Freigabe im Chat wird er Teil der Wissensbasis.
+
+**Zusätzliche Environment Variables dafür:**
+- `CRON_SECRET` — beliebiger langer Zufallsstring, schützt `/api/cron/check-updates` vor fremdem Aufruf (Vercel sendet ihn automatisch als `Authorization: Bearer <CRON_SECRET>` bei geplanten Cron-Aufrufen).
+- `TELEGRAM_ADMIN_CHAT_ID` — deine eigene Telegram-chat_id. Ermitteln: dem Bot `/whoami` schreiben.
+
+**Freigabe-Workflow im Telegram-Chat** (nur von der Admin-chat_id aus nutzbar):
+- `/pending` — offene Funde auflisten
+- `freigeben <id>` (oder nur `freigeben`, falls genau ein Fund offen ist) — übernimmt die Zusammenfassung in die Wissensbasis (sofort wirksam für alle drei Arme, kein Redeploy nötig)
+- `ablehnen <id> [Grund]` — verwirft den Fund, bleibt mit Datum und Begründung im Log (`lib/reviewQueue.ts`, nichts wird stillschweigend gelöscht)
+
+**Wie freigegebene Updates aktuell gespeichert werden**: als Liste in Upstash Redis (`lib/reviewQueue.ts`), von `getKnowledgeBase()` bei jeder Anfrage angehängt — bewusst kein Schreibzugriff aufs Git-Repo, um keinen GitHub-Token mit Schreibrechten als Secret zu benötigen. Das ist eine bewusste Zwischenlösung für die Testphase; ein späterer Wechsel zu echten Commits in `lib/knowledge/*.md` (und damit einem "richtigen" Deploy pro Freigabe) ist vorgesehen, aber noch nicht umgesetzt.
+
+**Bekannte Einschränkung**: Die Quellen-URLs für DGUV, AWMF und REHADAT wurden nur auf Erreichbarkeit (HTTP 200) geprüft, nicht auf die exakt richtige Unterseite — ihre RSS-Verfügbarkeit bzw. Datumsfeld-Struktur ließ sich nicht automatisiert verifizieren (SPA-Rendering bzw. keine robots-freundliche Struktur). Ein Hash-Treffer erkennt zuverlässig *irgendeine* Änderung der Seite, auch rein kosmetische — das ist die in der Planung benannte Einschränkung dieses Fallback-Verfahrens. Nach dem ersten echten Fund prüfen, ob die URLs noch die richtigen sind.
+
+Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phasen 3, 6): ERC-8004-Registrierung, x402-Premium-Endpoint, Celo-Builders-Submission.
 
 ## Ordnerübersicht
 
