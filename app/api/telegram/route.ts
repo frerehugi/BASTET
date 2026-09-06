@@ -12,7 +12,7 @@ import { sendTelegramMessage } from "@/lib/telegram";
 import { getSession, saveSession, type TelegramSession } from "@/lib/telegramSession";
 
 export const runtime = "nodejs";
-export const maxDuration = 90;
+export const maxDuration = 150;
 
 interface TelegramUpdate {
   message?: {

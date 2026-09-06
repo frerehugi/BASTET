@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { runDocAssessment } from "@/lib/doc";
 
 export const runtime = "nodejs";
-export const maxDuration = 90;
+export const maxDuration = 150;
 
 interface DocRequestBody {
   userInput: string;
