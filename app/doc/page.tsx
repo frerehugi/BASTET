@@ -39,7 +39,13 @@ interface CccField {
   key: string;
   label: string;
   options: string[];
+  multi?: boolean;
 }
+
+// Trennzeichen für mehrfach ausgewählte Chip-Optionen im ccc-State (siehe
+// `multi`-Felder unten) - bewusst kein Komma, da Optionstexte selbst Kommata
+// enthalten könnten.
+const MULTI_SEPARATOR = " + ";
 interface CccGroup {
   key: string;
   title: string;
@@ -72,7 +78,7 @@ const CCC_GROUPS: CccGroup[] = [
     key: "schlaf",
     title: "Schlaf",
     fields: [
-      { key: "schlaf_art", label: "Art der Störung", options: ["nicht erholsam", "Ein-/Durchschlafstörung", "Tag-Nacht-Umkehr", "unauffällig"] },
+      { key: "schlaf_art", label: "Art der Störung", options: ["nicht erholsam", "Ein-/Durchschlafstörung", "Tag-Nacht-Umkehr", "unauffällig"], multi: true },
       { key: "schlaf_tag", label: "Auswirkung tagsüber", options: ["keine relevante", "spürbar", "erheblich"] },
     ],
   },
@@ -80,7 +86,7 @@ const CCC_GROUPS: CccGroup[] = [
     key: "schmerz",
     title: "Schmerzen",
     fields: [
-      { key: "schmerz_lok", label: "Lokalisation", options: ["Muskeln", "Gelenke (o. Schwellung)", "Kopf (neuer Typ)", "diffus", "keine"] },
+      { key: "schmerz_lok", label: "Lokalisation", options: ["Muskeln", "Gelenke (o. Schwellung)", "Kopf (neuer Typ)", "diffus", "keine"], multi: true },
       { key: "schmerz_therapie", label: "Therapieansprechen", options: ["gut", "teilweise", "therapieresistent", "keine Therapie"] },
     ],
   },
@@ -149,6 +155,20 @@ export default function DocApp() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+
+  function isChipSelected(field: CccField, opt: string): boolean {
+    const current = ccc[field.key] || "";
+    return field.multi ? current.split(MULTI_SEPARATOR).includes(opt) : current === opt;
+  }
+
+  function toggleChip(field: CccField, opt: string) {
+    setCcc((c) => {
+      if (!field.multi) return { ...c, [field.key]: opt };
+      const current = (c[field.key] || "").split(MULTI_SEPARATOR).filter(Boolean);
+      const next = current.includes(opt) ? current.filter((v) => v !== opt) : [...current, opt];
+      return { ...c, [field.key]: next.join(MULTI_SEPARATOR) };
+    });
+  }
 
   const canSubmit = values.anamnese.trim().length > 0 && ccc.dauer !== "";
 
@@ -296,8 +316,8 @@ ${cccLines}`;
                       <button
                         key={opt}
                         type="button"
-                        style={ccc[f.key] === opt ? styles.chipActive : styles.chip}
-                        onClick={() => setCcc((c) => ({ ...c, [f.key]: opt }))}
+                        style={isChipSelected(f, opt) ? styles.chipActive : styles.chip}
+                        onClick={() => toggleChip(f, opt)}
                       >
                         {opt}
                       </button>
