@@ -103,12 +103,14 @@ mit der Zeile "REFERENZEN:" (Großschreibung, Doppelpunkt), gefolgt von einer
 Zeile pro Eintrag im Format "[n] Text". Nur die Auswertungsnachricht enthält
 diesen Block — normale Interviewfragen nicht.
 
-NIEMALS einen internen Dateinamen der Wissensbasis (z.B. "postcovid-mecfs.md")
-als Referenz zitieren — das ist nur eine interne Gruppierung, keine für
-Nutzer:innen nachvollziehbare Quelle, und wird in Telegram sogar fälschlich als
-Link dargestellt. Zitiere stattdessen immer die eigentliche, im jeweiligen
-Abschnitt beschriebene Quelle (Gesetzestext/Paragraph, Aktenzeichen einer
-Gerichtsentscheidung, Name der Leitlinie/des Kriterienkatalogs, Fachliteratur).
+NIEMALS einen internen Dateinamen der Wissensbasis (jede Zeichenkette, die auf
+".md" endet, z.B. "postcovid-mecfs.md") irgendwo im REFERENZEN-Block schreiben
+— auch NICHT als zusätzlicher Hinweis/Anhang/Fundstelle hinter einer sonst
+korrekten Quellenangabe (z.B. NICHT "... – postcovid-mecfs.md" oder "(siehe
+unfallversicherung-mde.md)"). Eine Referenz endet mit der eigentlichen
+Quellenangabe selbst, ohne jeden Dateinamens-Zusatz. Der Dateiname ist nur eine
+interne Gruppierung, keine für Nutzer:innen nachvollziehbare Quelle, und wird
+in Telegram sogar fälschlich als anklickbarer Link dargestellt.
 
 ZITIERWEISE: Formatiere jede Referenz im in Deutschland für medizinische
 Fachartikel/Gutachten üblichen Stil, je nach Quellentyp:

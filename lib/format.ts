@@ -3,6 +3,30 @@ export interface ParsedAssessment {
   refs: string[] | null;
 }
 
+const MD_FILENAME_PATTERN = /[a-z0-9][a-z0-9-]*\.md\b/gi;
+
+/**
+ * Zweite, deterministische Verteidigungslinie gegen ein wiederholt
+ * beobachtetes Modellverhalten: trotz explizitem Verbot im System-Prompt
+ * (lib/chat.ts/lib/doc.ts, Abschnitt "NIEMALS einen internen Dateinamen...")
+ * taucht gelegentlich doch ein interner Wissensbasis-Dateiname in einer
+ * Referenz auf (z.B. "... – postcovid-mecfs.md"), den Telegram sogar als
+ * klickbaren, aber toten Link darstellt. Prompt-Befolgung allein war nicht
+ * zuverlässig genug, siehe build/testfaelle.md.
+ */
+export function stripKnowledgeFilenames(text: string): string {
+  return text
+    .replace(/\s*\([^()]*\.md\)/gi, "") // "(siehe X.md)", "(vgl. X.md)" - ganze Klammer
+    // Verbindungswort/Gedankenstrich + Dateiname + optionales Komma, z.B.
+    // " – X.md", " i.V.m. X.md,", " vgl. X.md" - als ganzer Ausdruck entfernen,
+    // statt nur den Dateinamen und ein grammatisch verwaistes Anhängsel übrigzulassen.
+    .replace(/\s*(?:[-–—]\s*|i\.\s?V\.\s?m\.\s*|vgl\.\s*|siehe\s*|s\.\s*)?[a-z0-9][a-z0-9-]*\.md\b,?/gi, "")
+    .replace(MD_FILENAME_PATTERN, "") // letzter Auffangpass für alles übrig Gebliebene
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\s+([.,;:])/g, "$1")
+    .trim();
+}
+
 /**
  * Trennt den REFERENZEN-Block (siehe AUSWERTUNGS-FORMAT in lib/chat.ts / lib/doc.ts)
  * vom übrigen Antworttext ab. Gemeinsam genutzt von Web-Arm (app/page.tsx,
@@ -18,7 +42,8 @@ export function splitReferences(content: string): ParsedAssessment {
   const refs = refsBlock
     .split("\n")
     .map((l) => l.trim())
-    .filter((l) => /^\[\d+\]/.test(l));
+    .filter((l) => /^\[\d+\]/.test(l))
+    .map(stripKnowledgeFilenames);
   if (refs.length === 0) return { body: content, refs: null };
   return { body, refs };
 }
