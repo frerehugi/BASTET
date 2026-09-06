@@ -15,6 +15,7 @@ interface AnthropicContentBlock {
 interface AnthropicResponse {
   content?: AnthropicContentBlock[];
   error?: { message?: string; type?: string };
+  stop_reason?: string;
 }
 
 export async function callClaude(
@@ -58,6 +59,17 @@ export async function callClaude(
 
   if (!text) {
     throw new Error("Antwort war leer (evtl. nur Tool-Aufruf ohne Text).");
+  }
+
+  // Eine bei max_tokens abgeschnittene Auswertung (mitten im Satz, evtl. vor
+  // dem REFERENZEN-Block) sieht auf den ersten Blick vollständig aus, ist es
+  // aber nicht - das darf nie stillschweigend als Erfolg durchgehen. Lieber
+  // laut scheitern (Retry-Mechanismus in allen drei Armen fängt das ab) als
+  // eine unvollständige medizinisch-rechtliche Einschätzung ausliefern.
+  if (data.stop_reason === "max_tokens") {
+    throw new Error(
+      `Antwort wurde bei ${maxTokens} Tokens abgeschnitten (stop_reason: max_tokens) statt vollständig zu enden.`
+    );
   }
 
   return text;
