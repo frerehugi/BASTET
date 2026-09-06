@@ -3,7 +3,7 @@ import { runInterview } from "@/lib/chat";
 import type { ChatMessage } from "@/lib/anthropic";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 90;
 
 interface ChatRequestBody {
   messages: ChatMessage[];
