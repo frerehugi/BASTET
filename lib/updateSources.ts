@@ -32,15 +32,17 @@ const REQUEST_HEADERS = {
  * Renegotiation dagegen (OpenSSL-Bindings direkter statt über undici) — daher
  * hier bewusst https.get() statt fetch(), mit manueller Redirect-Behandlung.
  */
-function fetchViaNodeHttps(url: string, redirectsLeft = 5): Promise<string> {
+const CONNECT_TIMEOUT_MS = 6_000;
+
+function fetchOnce(url: string, redirectsLeft = 5): Promise<string> {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, { headers: REQUEST_HEADERS }, (res) => {
+    const req = https.get(url, { headers: REQUEST_HEADERS, timeout: CONNECT_TIMEOUT_MS }, (res) => {
       const status = res.statusCode ?? 0;
 
       if (status >= 300 && status < 400 && res.headers.location && redirectsLeft > 0) {
         res.resume();
         const nextUrl = new URL(res.headers.location, url).toString();
-        fetchViaNodeHttps(nextUrl, redirectsLeft - 1).then(resolve, reject);
+        fetchOnce(nextUrl, redirectsLeft - 1).then(resolve, reject);
         return;
       }
 
@@ -58,12 +60,44 @@ function fetchViaNodeHttps(url: string, redirectsLeft = 5): Promise<string> {
       res.on("end", () => resolve(data));
       res.on("error", reject);
     });
+    // "timeout" allein bricht die Verbindung nicht ab, nur ein eigener
+    // Handler tut das (Node-Eigenheit) — sonst hängt der Request bis zum
+    // OS-Timeout (oft >60s) und sprengt das maxDuration-Budget des Cron-Handlers.
+    req.on("timeout", () => req.destroy(new Error(`Zeitüberschreitung nach ${CONNECT_TIMEOUT_MS}ms: ${url}`)));
     req.on("error", reject);
   });
 }
 
+/**
+ * Node/undicis globales fetch() lehnt eine vom Server verlangte
+ * TLS-Renegotiation mitten im Handshake ab ("fetch failed", kein
+ * HTTP-Status) — betrifft mehrere deutsche Justiz-/Behörden-Apache-Server
+ * (verifiziert bei bsg.bund.de-Mirror UND gesetze-im-internet.de, 06.09.2026),
+ * die curl klaglos verarbeitet. Node's klassisches https-Modul unterstützt
+ * Renegotiation dagegen (OpenSSL-Bindings direkter statt über undici) — daher
+ * hier bewusst https.get() statt fetch(). Zusätzlich bis zu zwei Wiederholungen
+ * mit kurzer Pause, um eine einzelne transiente Netzwerkstörung (z.B. ein
+ * ETIMEDOUT-Ausreißer) von einer dauerhaften Blockade zu unterscheiden, statt
+ * die Quelle nach dem ersten Fehlschlag als kaputt zu behandeln.
+ */
 async function fetchText(url: string): Promise<string> {
-  return fetchViaNodeHttps(url);
+  // Bewusst nur 2 Versuche mit kurzem Timeout: fünf Quellen laufen sequenziell
+  // im selben Cron-Aufruf (siehe app/api/cron/check-updates, maxDuration 60s)
+  // - zu großzügige Retries auf einer Quelle dürfen nicht dazu führen, dass
+  // spätere Quellen im selben Lauf gar nicht mehr geprüft werden.
+  const attempts = 2;
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      return await fetchOnce(url);
+    } catch (error) {
+      lastError = error;
+      if (attempt < attempts) {
+        await new Promise((r) => setTimeout(r, 1000));
+      }
+    }
+  }
+  throw lastError;
 }
 
 function sha256(text: string): string {
