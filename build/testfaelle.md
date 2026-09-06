@@ -66,3 +66,25 @@ Referenzen: [1] CCC/PEM (postcovid-mecfs.md) [2] §2 Abs.1 SGB IX + VersMedV
 - Ändert sich die GdB-Spanne (50–60) durch die aktualisierten Dateien, insbesondere durch genauere Kalibrierung zur kardiovaskulären/autonomen Komponente?
 - Bleibt die Argumentationslinie "Medikation maskiert Schwere, nicht Grund für niedrigere Einstufung" erhalten — das ist ein inhaltlich wichtiger, nicht offensichtlicher Punkt?
 - Bleiben GdB **und** MdE **und** Referenzen-Block vollständig, auch mit dem größeren Wissensbasis-Umfang nach Phase 3?
+
+**Nachlauf-Ergebnis (06.09.2026, nach Phase 3+4, per `/api/chat` direkt getestet):**
+
+```
+GdB: 50–60 (identisch zur Baseline)
+MdE: einschlägig mit offenem Kausalitätspunkt, 20–30% falls anerkannt (identisch)
+Referenzen: 12 statt 9 — neu u.a. [5] LSG Baden-Württemberg, Az. L 6 SB 1119/24
+  ("Long-Covid-Syndrom, kein gesonderter Teil-GdB") und [6] VersMedV 3.1.1
+  Hirnschäden-Globalfunktion als Kalibrierungsanker für die PEM/Fatigue-Schwere
+```
+
+Fazit: Kernzahlen (GdB- und MdE-Spanne) blieben stabil, die Begründung wurde durch
+die Phase-3-Dateien sichtbar reichhaltiger (mehr Kalibrierungsanker, ein weiterer
+Gerichtsfall) — genau das gewünschte Ergebnis: Anreicherung statt Verwässerung.
+
+**Dabei gefundener und behobener Bug**: Der erste Testlauf nach Phase 3 brach
+mitten im REFERENZEN-Block ab (`max_tokens` 4096 reichte nicht mehr, weil die
+Antworten durch die größere Wissensbasis länger wurden). Behoben durch Anhebung
+auf 8192 (Commit `6494e40`) plus eine harte Absicherung: `lib/anthropic.ts` wirft
+jetzt einen Fehler statt eine bei `stop_reason: max_tokens` abgeschnittene Antwort
+stillschweigend als Erfolg zurückzugeben (Commit `5dcef0e`) — eine unvollständige
+GdB/MdE-Einschätzung darf nie unbemerkt ausgeliefert werden.
