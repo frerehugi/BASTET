@@ -215,12 +215,22 @@ export const UPDATE_SOURCES: UpdateSource[] = [
     "AWMF-Register — Leitlinie Long/Post-COVID (020-027)",
     "https://register.awmf.org/de/leitlinien/detail/020-027"
   ),
-  // Ersetzt rehadat-literatur.de (Myra-Cloud-WAF blockierte Vercels
-  // Rechenzentrums-IPs mit dauerhaftem 503, obwohl von außerhalb erreichbar —
-  // vermutlich IP-Reputation, kein Header-Problem). gesetze-im-internet.de ist
-  // die offizielle Gesetzestext-Quelle des BMJ selbst (verifiziert erreichbar,
-  // 06.09.2026) — für VersMedV-Novellierungen ohnehin die autoritativere
-  // Quelle als eine Literaturdatenbank, die nur darauf verweist.
+  // BEKANNTE, AKZEPTIERTE LÜCKE (Entscheidung 06.09.2026, siehe README):
+  // Ersetzt ursprünglich rehadat-literatur.de (Myra-Cloud-WAF blockierte
+  // Vercels Rechenzentrums-IPs mit dauerhaftem 503). gesetze-im-internet.de
+  // (offizielle VersMedV-Volltextquelle des BMJ, inhaltlich die autoritativere
+  // Wahl ohnehin) ist zwar per Browser/curl und sogar per Node-https-Modul
+  // TLS-seitig erreichbar (siehe fetchViaNodeHttps-Kommentar), scheitert von
+  // Vercels Laufzeit aus aber reproduzierbar (auch nach Retry) an einem reinen
+  // TCP-Verbindungstimeout — vermutlich dasselbe Cloud-IP-Blocking-Muster wie
+  // bei REHADAT, nur als Timeout statt WAF-503. Nach zwei erfolglosen
+  // Quellenwechseln bewusst nicht weiter gejagt: VersMedV-Novellierungen sind
+  // laut Wissensbasis ohnehin selten (zuletzt Teil A grundlegend zum
+  // 03.10.2025 geändert) — dieser Check schlägt seitdem planmäßig jede Woche
+  // fehl, ohne die anderen vier Quellen zu beeinträchtigen (siehe
+  // app/api/cron/check-updates: jede Quelle ist einzeln try/catch-isoliert).
+  // Novellierungen müssen bis auf Weiteres anderweitig (z.B. Fachpresse)
+  // mitverfolgt werden.
   makeHashSource(
     "versmedv-text",
     "gesetze-im-internet.de — VersMedV (Volltext, BMJ)",
