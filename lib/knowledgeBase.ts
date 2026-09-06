@@ -15,6 +15,7 @@ const FILES = [
   "gdb-mde-systematik.md",
   "versmedv-gdb-gds.md",
   "postcovid-mecfs.md",
+  "scheibenbogen-aerztliche-begutachtung.md",
   "postcovid-symptomliste.md",
   "symptomliste-gdb-mde-abgleich.md",
   "ccc-fragenkatalog-kalibrierung.md",
