@@ -1,4 +1,5 @@
 import { createHash } from "crypto";
+import https from "https";
 
 export interface SourceCheckResult {
   changed: boolean;
@@ -15,19 +16,54 @@ export interface UpdateSource {
   check(previousFingerprint: string | null): Promise<SourceCheckResult>;
 }
 
-async function fetchText(url: string): Promise<string> {
-  const response = await fetch(url, {
-    headers: {
-      "user-agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
-      accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "accept-language": "de-DE,de;q=0.9",
-    },
+const REQUEST_HEADERS = {
+  "user-agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+  accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "accept-language": "de-DE,de;q=0.9",
+};
+
+/**
+ * Node/undicis globales fetch() lehnt eine vom Server verlangte
+ * TLS-Renegotiation mitten im Handshake ab ("fetch failed", kein
+ * HTTP-Status) — betrifft mehrere deutsche Justiz-/Behörden-Apache-Server
+ * (verifiziert bei bsg.bund.de-Mirror UND gesetze-im-internet.de, 06.09.2026),
+ * die curl klaglos verarbeitet. Node's klassisches https-Modul unterstützt
+ * Renegotiation dagegen (OpenSSL-Bindings direkter statt über undici) — daher
+ * hier bewusst https.get() statt fetch(), mit manueller Redirect-Behandlung.
+ */
+function fetchViaNodeHttps(url: string, redirectsLeft = 5): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const req = https.get(url, { headers: REQUEST_HEADERS }, (res) => {
+      const status = res.statusCode ?? 0;
+
+      if (status >= 300 && status < 400 && res.headers.location && redirectsLeft > 0) {
+        res.resume();
+        const nextUrl = new URL(res.headers.location, url).toString();
+        fetchViaNodeHttps(nextUrl, redirectsLeft - 1).then(resolve, reject);
+        return;
+      }
+
+      if (status < 200 || status >= 300) {
+        res.resume();
+        reject(new Error(`Fetch fehlgeschlagen (${status}): ${url}`));
+        return;
+      }
+
+      let data = "";
+      res.setEncoding("utf-8");
+      res.on("data", (chunk: string) => {
+        data += chunk;
+      });
+      res.on("end", () => resolve(data));
+      res.on("error", reject);
+    });
+    req.on("error", reject);
   });
-  if (!response.ok) {
-    throw new Error(`Fetch fehlgeschlagen (${response.status}): ${url}`);
-  }
-  return response.text();
+}
+
+async function fetchText(url: string): Promise<string> {
+  return fetchViaNodeHttps(url);
 }
 
 function sha256(text: string): string {
