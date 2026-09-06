@@ -252,7 +252,8 @@ ${cccLines}`;
 
         <div style={styles.anonNotice}>
           Bitte keine Namen, Fallnummern oder seltene Zusatzmerkmale eingeben, die eine Zuordnung zu einer Person
-          erlauben könnten. Es wird nichts gespeichert.
+          erlauben könnten. Ihre Eingabe wird zur Erstellung der Einschätzung an unseren KI-Anbieter (Anthropic)
+          zur Verarbeitung übermittelt; auf unseren eigenen Servern speichern wir sie nicht darüber hinaus.
         </div>
 
         <div style={styles.form}>

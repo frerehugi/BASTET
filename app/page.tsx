@@ -20,7 +20,7 @@ import {
 } from "@/lib/bgwLetter";
 
 const STORAGE_NOTICE =
-  "Dieser Chat wird nicht gespeichert. Mit Schließen dieses Fensters sind alle Ihre Angaben unwiderruflich weg — planen Sie die gut 15 Minuten möglichst am Stück ein. Es wird nichts aufgezeichnet oder ausgewertet, auch nicht anonymisiert.";
+  "Ihre Angaben werden zur Erstellung der Einschätzung an unseren KI-Anbieter (Anthropic) zur Verarbeitung übermittelt. Auf unseren eigenen Servern speichern wir sie nicht darüber hinaus — mit Schließen dieses Fensters sind Ihre Angaben bei uns unwiderruflich weg, planen Sie die gut 15 Minuten möglichst am Stück ein.";
 
 type Role = "user" | "assistant";
 interface Message {

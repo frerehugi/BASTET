@@ -33,7 +33,7 @@ ${CRISIS_NOTE}`;
 
 const GATE_PROMPT = `${WELCOME_HEADER}
 
-Bevor wir starten: Ihr Gesprächsverlauf wird für die Dauer der aktiven Unterhaltung zwischengespeichert und nach 60 Minuten Inaktivität automatisch gelöscht — nicht dauerhaft, aber auch nicht "gar nicht".
+Bevor wir starten: Ihre Angaben werden zur Erstellung der Einschätzung an unseren KI-Anbieter (Anthropic) zur Verarbeitung übermittelt. Zusätzlich bleibt Ihr Gesprächsverlauf hier bei uns für die Dauer der aktiven Unterhaltung zwischengespeichert und wird nach 60 Minuten Inaktivität automatisch gelöscht — nicht dauerhaft, aber auch nicht "gar nicht".
 
 Aktuell kann ich nur Text verarbeiten, keine Telegram-Sprachnachrichten. Nutzen Sie daher am besten die Diktierfunktion Ihrer Tastatur — das Mikrofon-Symbol unten rechts neben dem Textfeld, gegenüber vom Emoji-Button. Das wandelt Sprache in Text um, bevor die Nachricht gesendet wird.
 
