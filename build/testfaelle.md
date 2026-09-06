@@ -27,6 +27,42 @@ Jeder Fall ist bewusst als Rohtext notiert, so wie ihn eine betroffene Person im
 - Zieht die Auswertung passende Kalibrierungsanker heran (z. B. Schwindel/Kopfschmerz-Fälle aus `schlaf-schwindel-kognitiv-faelle.md`, BK-3101-Kausalitätsstufen aus `unfallversicherung-mde.md`) statt nur pauschal auf 18.4/3.7 zu verweisen?
 - Bleibt die Antwort vollständig (GdB **und** MdE **und** Referenzen-Block), auch bei ausführlicher Begründung — siehe Commit `b151fb0` (Token-Budget-Fix vom 05.09.2026).
 
-## Weitere Fälle
+## Fall: Physiotherapeutin, BG-anerkannte Infektion + Blutdruckproblematik
 
-- Physiotherapeut:in-Fall — aus einer früheren Konversation erwähnt (`build/claude-code-buildplan.md`), Wortlaut hier noch nicht dokumentiert. Bei Gelegenheit nachtragen.
+Bisher nur als Verweis in `build/claude-code-buildplan.md` dokumentiert ("siehe den Physiotherapeut:in-Fall"), Wortlaut/Eingaben nicht überliefert — nur folgende Baseline-Auswertung (vor Phase 3, Wissensbasis-Sync) liegt vor, erhalten am 06.09.2026 als Vergleichsgrundlage. Eingaben, die zu dieser Auswertung geführt haben (rekonstruiert aus dem Text): COVID-19-Infektion 2022, BG-anerkannt, Tätigkeit als Physiotherapeutin in Geriatrie/Intensiv; seit über 3 Jahren durchgehend PEM (Verschlechterung 1–2 Tage nach Belastung, Erholung über Wochen, nie vollständig erholt); Erschöpfung im Schnitt 7/10, Schübe 9–10/10; Brain Fog; medikamentös mehrfach behandlungsbedürftige Blutdruckproblematik; aktuell 80% Erwerbstätigkeit (angepasst); BK-3101-Anerkennung des heutigen Post-COVID-Zustands (nicht nur der Akutinfektion) noch offen.
+
+**Baseline-Auswertung (vor Phase 3):**
+
+```
+GdB: 50–60
+  Basis: VersMedV 18.4 analog 3.7 [3], gestützt durch SG Speyer 2025 (GdB 50
+  bei organisch bedingter Fatigue/Brain Fog/Schwindel) [5]. Mehrfach
+  behandlungsbedürftige Blutdruckproblematik als eigenständige, nicht nur
+  leichte autonome/kardiovaskuläre Komponente gewertet (Kapitel 9,
+  Leistungslogik) [6][8]. Medikation, die den aktuellen Befund kontrolliert,
+  wurde ausdrücklich NICHT gegen eine höhere Einstufung gewertet, sondern als
+  Hinweis auf die unbehandelte Schwere [8]. Gesamt-GdB-Prinzip nach SG Aurich
+  (unabhängige Beeinträchtigungen verstärken sich stärker als überlappende)
+  spricht für die obere Spanne [4].
+
+MdE: einschlägig, mit offenem Punkt
+  BG-Anerkennung der Akutinfektion liegt vor [7]; ob der HEUTIGE Post-COVID-
+  Zustand als BK-3101-Unfallfolge (haftungsausfüllende Kausalität) anerkannt
+  ist, bleibt offen [9]. Geschätzte Spanne falls anerkannt: 20–30%, orientiert
+  an einem dokumentierten Fall mit MdE 30% (Fatigue + leichte kognitive
+  Störung + reaktive psychische Komponente) [9]. Nächster Schritt: BK-3101-
+  Anerkennungsstatus bei der BG klären, Dokumentation empfohlen (AU-Zeiten
+  seit 2022, Reha-Bericht, Medikamentenplan, Symptomtagebuch).
+
+Referenzen: [1] CCC/PEM (postcovid-mecfs.md) [2] §2 Abs.1 SGB IX + VersMedV
+  Teil A 1.3 (Dauer) [3] VersMedV 18.4 i.V.m. 3.7 [4] SG Aurich S 4 SB 154/21
+  [5] SG Speyer, Urteil v. 03.06.2025, Az. S 12 SB 318/23 [6] VersMedV Kap. 9
+  (Herz/Kreislauf) [7] Eigenangabe: BG-Anerkennung [8] CCC-Fragenkatalog,
+  Abschnitt Medikation [9] SGB VII §56, BK-3101 + dokumentierter MdE-30-Fall
+```
+
+**Worauf beim Vergleich nach Phase 3 achten:**
+- Wird SG Speyer (2025) weiterhin korrekt als Post-COVID-spezifischer Vergleichsfall herangezogen (kommt aus `symptomliste-gdb-mde-abgleich.md`, die neu synchronisierte Datei)?
+- Ändert sich die GdB-Spanne (50–60) durch die aktualisierten Dateien, insbesondere durch genauere Kalibrierung zur kardiovaskulären/autonomen Komponente?
+- Bleibt die Argumentationslinie "Medikation maskiert Schwere, nicht Grund für niedrigere Einstufung" erhalten — das ist ein inhaltlich wichtiger, nicht offensichtlicher Punkt?
+- Bleiben GdB **und** MdE **und** Referenzen-Block vollständig, auch mit dem größeren Wissensbasis-Umfang nach Phase 3?
