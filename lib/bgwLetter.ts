@@ -66,13 +66,71 @@ export function mentionsNonHealthSector(transcriptText: string): boolean {
   return NON_HEALTH_SECTOR_SIGNALS.some((signal) => lower.includes(signal));
 }
 
+// Verneinungswörter, die VOR einem Symptom stehen können ("Kein PEM.",
+// "Keine Fatigue berichtet."), und Verneinungsmuster, die dem Symptom folgen
+// können ("PEM wird verneint.", "Fatigue liegt nicht vor."). Ohne diese
+// Prüfung wurde reines Keyword-Matching fälschlich fündig, selbst wenn die
+// Auswertung ein Symptom ausdrücklich ausschließt (siehe externes Review,
+// 06.09.2026: "Kein PEM. Keine Fatigue. Keine kognitive Störung." führte zu
+// allen drei Symptomen im Brief).
+const NEGATION_BEFORE = ["kein", "keine", "keinen", "keinem", "keiner", "keines", "ohne", "nicht"];
+const NEGATION_AFTER =
+  /^\s*(wird\s+)?(verneint|ausgeschlossen|nicht\s+vorhanden|nicht\s+vorliegend|liegt\s+nicht\s+vor|nicht\s+nachweisbar|nicht\s+erkennbar|nicht\s+angegeben|nicht\s+berichtet)\b/i;
+
+// Kontrastwörter innerhalb desselben Satzes ("Keine Fatigue, ABER deutliche
+// Konzentrationsstörung") heben eine vorher gefundene Verneinung wieder auf -
+// ohne diesen Reset würde "Keine Fatigue im engeren Sinne, aber deutliche
+// Konzentrationsstörung" fälschlich auch die Konzentrationsstörung als
+// verneint behandeln, nur weil "keine" irgendwo früher im selben Satz steht.
+const CONTRAST_WORDS = ["aber", "jedoch", "allerdings", "sondern", "wohingegen", "dennoch"];
+
+function trimAfterLastContrast(text: string): string {
+  let cutAt = -1;
+  for (const word of CONTRAST_WORDS) {
+    const pattern = new RegExp(`\\b${word}\\b`, "gi");
+    let match: RegExpExecArray | null;
+    while ((match = pattern.exec(text))) {
+      const end = match.index + match[0].length;
+      if (end > cutAt) cutAt = end;
+    }
+  }
+  return cutAt === -1 ? text : text.slice(cutAt);
+}
+
+/**
+ * Prüft, ob eine an Position `matchIndex` beginnende Symptom-Erwähnung durch
+ * ein Verneinungswort im selben Satz negiert wird - vor der Erwähnung
+ * (Blick zurück bis zur letzten Satzgrenze, dann zurückgesetzt durch ein
+ * eventuelles Kontrastwort wie "aber") oder direkt danach (Blick nach vorn
+ * auf ein typisches Verneinungsmuster).
+ */
+function isNegatedMention(text: string, matchIndex: number, matchLength: number): boolean {
+  const windowStart = Math.max(0, matchIndex - 80);
+  let before = text.slice(windowStart, matchIndex);
+  const lastBoundary = Math.max(
+    before.lastIndexOf(". "),
+    before.lastIndexOf("! "),
+    before.lastIndexOf("? "),
+    before.lastIndexOf("\n"),
+    before.lastIndexOf(": ")
+  );
+  if (lastBoundary !== -1) before = before.slice(lastBoundary + 1);
+  before = trimAfterLastContrast(before);
+  const beforeNegated = NEGATION_BEFORE.some((neg) => new RegExp(`\\b${neg}\\b`, "i").test(before));
+  if (beforeNegated) return true;
+
+  const after = text.slice(matchIndex + matchLength, matchIndex + matchLength + 40);
+  return NEGATION_AFTER.test(after);
+}
+
 export function extractSymptomKeywords(assessmentBody: string, max = 3): string[] {
   const found: string[] = [];
   for (const keyword of SYMPTOM_KEYWORDS) {
     if (found.length >= max) break;
     const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const pattern = new RegExp(`\\b${escaped}`, "i");
-    if (pattern.test(assessmentBody)) {
+    const match = pattern.exec(assessmentBody);
+    if (match && !isNegatedMention(assessmentBody, match.index, match[0].length)) {
       found.push(keyword);
     }
   }
@@ -127,7 +185,7 @@ Betreff: Post-COVID-Syndrom nach beruflich bedingter COVID-19-Infektion — Bitt
 
 Sehr geehrte Damen und Herren,
 
-wie Ihnen bekannt ist, habe ich im Rahmen meiner beruflichen Tätigkeit einen COVID-19-Infekt erlitten. Zudem leide ich unter anhaltenden Symptomen (u. a. ${symptomText}), die ein Post-COVID-Syndrom und damit eine Anerkennung als Berufskrankheit Nr. 3101 möglich erscheinen lassen.
+nach meinem eigenen Kenntnisstand habe ich mich im Rahmen meiner beruflichen Tätigkeit mit COVID-19 infiziert. Seitdem leide ich unter anhaltenden Symptomen (u. a. ${symptomText}), die ein Post-COVID-Syndrom und damit eine Anerkennung als Berufskrankheit Nr. 3101 möglich erscheinen lassen.
 
 Ich möchte Sie deshalb bitten, alle weiteren diagnostischen und formellen Schritte einzuleiten und zu koordinieren — insbesondere die Prüfung, ob die geschilderten Beschwerden als Folge der anerkannten beruflichen Infektion einzuordnen sind, sowie die Veranlassung einer entsprechenden fachärztlichen Begutachtung.
 
