@@ -118,5 +118,5 @@ export async function runInterview(
       : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
 
   const knowledgeBase = await getKnowledgeBase();
-  return callClaude(buildSystemPrompt(diagnosisConfirmed, budgetHint, knowledgeBase), messages, 4096);
+  return callClaude(buildSystemPrompt(diagnosisConfirmed, budgetHint, knowledgeBase), messages, 8192);
 }
