@@ -2,25 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { splitReferences } from "@/lib/format";
+import {
+  PATIENT_TITLE,
+  PATIENT_SUBTITLE,
+  DIAGNOSIS_WARNING,
+  CRISIS_NOTE,
+  PATIENT_ABOUT_TEXT as ABOUT_TEXT,
+} from "@/lib/content";
 
 const STORAGE_NOTICE =
   "Dieser Chat wird nicht gespeichert. Mit Schließen dieses Fensters sind alle Ihre Angaben unwiderruflich weg — planen Sie die gut 15 Minuten möglichst am Stück ein. Es wird nichts aufgezeichnet oder ausgewertet, auch nicht anonymisiert.";
-
-const DIAGNOSIS_WARNING =
-  "Dies ist keine medizinische Beratung und kann keine Diagnose stellen oder ersetzen. Ohne gesicherte Diagnose ist eine ärztliche Untersuchung erforderlich.";
-
-const CRISIS_NOTE =
-  "Falls Sie sich gerade in einer Krise befinden oder daran denken, sich etwas anzutun: Die Telefonseelsorge erreichen Sie kostenlos und anonym unter 0800 111 0 111 oder 0800 111 0 222, rund um die Uhr.";
-
-const ABOUT_TEXT = `BASTET ist ein Orientierungs- und Hilfsangebot, keine verbindliche Begutachtung, keine medizinische Diagnose und keine Rechtsberatung. Es ersetzt weder eine ärztliche Untersuchung noch anwaltliche Beratung und bindet keine Behörde, kein Gericht und keinen Versicherungsträger.
-
-BASTET basiert auf großen Sprachmodellen (LLMs) und einer kuratierten Wissensbasis. Diese Technologie befindet sich in aktiver Forschung und Entwicklung, ist experimentell, und fehlerhafte oder unvollständige Ausgaben sind nicht auszuschließen. Für Vollständigkeit, Richtigkeit und Aktualität der Inhalte wird keine Gewähr übernommen. Alle Ausgaben dienen ausschließlich der Orientierung — Nutzer:innen bleiben selbst dafür verantwortlich, Angaben durch qualifizierte Fachpersonen prüfen zu lassen, bevor daraus Entscheidungen abgeleitet werden.
-
-Soweit gesetzlich zulässig, ist eine Haftung für Schäden aus der Nutzung von BASTET ausgeschlossen; dies gilt nicht bei Verletzung von Leben, Körper oder Gesundheit sowie nicht bei Vorsatz oder grober Fahrlässigkeit.
-
-© Schmitz & Hugenberg, Osnabrück. Alle Rechte vorbehalten — an Name, Marke, Quellcode und den redaktionell erstellten Inhalten (u. a. die kuratierte Wissensbasis). Das Repository ist öffentlich einsehbar, insbesondere für die Teilnahme an Hackathons; öffentliche Einsehbarkeit bedeutet nicht automatisch eine Open-Source-Lizenzierung. "Open Source" bezieht sich auf die zugrunde liegenden Quellen und Daten (u. a. VersMedV als amtliches Werk gemäß § 5 UrhG, Kanadische Konsenskriterien, veröffentlichte Sozialgerichtsentscheidungen) — deren Auswahl und Verknüpfung innerhalb von BASTET ist eine eigenständige redaktionelle Leistung.
-
-BASTET ist ein Forschungsprojekt im Aufbau — Funktionsumfang und Wissensbasis entwickeln sich fortlaufend weiter.`;
 
 type Role = "user" | "assistant";
 interface Message {
@@ -142,11 +133,8 @@ export default function App() {
     <div style={styles.centerWrap}>
       <div style={styles.container}>
         <header style={styles.header}>
-          <h1 style={styles.title}>Vorbegutachtung Post-COVID / ME-CFS</h1>
-          <p style={styles.subtitle}>
-            Eine orientierende, KI-gestützte Ersteinschätzung — kein Ersatz für
-            ärztliche oder rechtliche Beratung.
-          </p>
+          <h1 style={styles.title}>{PATIENT_TITLE}</h1>
+          <p style={styles.subtitle}>{PATIENT_SUBTITLE}</p>
           <button style={styles.aboutLink} onClick={() => setAboutOpen((o) => !o)}>
             {aboutOpen ? "Über BASTET ausblenden" : "ℹ️ Über BASTET / Rechtliches"}
           </button>

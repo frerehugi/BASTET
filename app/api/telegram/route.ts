@@ -1,4 +1,11 @@
 import { runInterview } from "@/lib/chat";
+import {
+  PATIENT_TITLE,
+  PATIENT_SUBTITLE,
+  DIAGNOSIS_WARNING as WEB_DIAGNOSIS_WARNING,
+  CRISIS_NOTE,
+  PATIENT_ABOUT_TEXT,
+} from "@/lib/content";
 import { splitReferences, stripStatsBlock } from "@/lib/format";
 import { sendTelegramMessage } from "@/lib/telegram";
 import { getSession, saveSession, type TelegramSession } from "@/lib/telegramSession";
@@ -12,12 +19,23 @@ interface TelegramUpdate {
   };
 }
 
-const GATE_PROMPT = `Bevor wir starten: Ihr Gesprächsverlauf wird für die Dauer der aktiven Unterhaltung zwischengespeichert und nach 60 Minuten Inaktivität automatisch gelöscht — nicht dauerhaft, aber auch nicht "gar nicht".
+// Gleiche Begrüßung/Einweisung wie der Web-Arm (Titel, Untertitel), plus die
+// Telegram-spezifische Speicher-Transparenz (siehe README) und ein Verweis auf
+// /about statt des Web-Toggles "Über BASTET / Rechtliches".
+const WELCOME_HEADER = `${PATIENT_TITLE}
+${PATIENT_SUBTITLE}
+
+Rechtliche Hinweise und mehr über BASTET jederzeit per /about.
+
+${CRISIS_NOTE}`;
+
+const GATE_PROMPT = `${WELCOME_HEADER}
+
+Bevor wir starten: Ihr Gesprächsverlauf wird für die Dauer der aktiven Unterhaltung zwischengespeichert und nach 60 Minuten Inaktivität automatisch gelöscht — nicht dauerhaft, aber auch nicht "gar nicht".
 
 Ist bei Ihnen ein Post-COVID-Syndrom bzw. ME/CFS bereits ärztlich diagnostiziert bzw. gesichert? (ja / nein / unklar)`;
 
-const DIAGNOSIS_WARNING =
-  "Dies ist keine medizinische Beratung und kann keine Diagnose stellen oder ersetzen. Ohne gesicherte Diagnose ist eine ärztliche Untersuchung erforderlich. Die folgende Einschätzung ist deshalb rein orientierend und noch unsicherer als sonst.";
+const DIAGNOSIS_WARNING = `${WEB_DIAGNOSIS_WARNING} Die folgende Einschätzung ist deshalb rein orientierend und noch unsicherer als sonst.`;
 
 const OPENING_QUESTION =
   "Danke. Erzählen Sie mir in eigenen Worten, was seit wann bei Ihnen los ist — Stichworte reichen völlig, Sie müssen keine ganzen Sätze schreiben.";
@@ -50,6 +68,13 @@ export async function POST(request: Request): Promise<Response> {
   const text = update.message?.text?.trim();
 
   if (!chatId || !text) {
+    return ok();
+  }
+
+  // /about funktioniert jederzeit, unabhängig von der Interview-Phase — das
+  // Web-Pendant ist der immer sichtbare "Über BASTET / Rechtliches"-Toggle.
+  if (/^\/about\b/i.test(text)) {
+    await notifyBestEffort(chatId, PATIENT_ABOUT_TEXT);
     return ok();
   }
 

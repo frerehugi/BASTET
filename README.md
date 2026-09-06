@@ -2,13 +2,14 @@
 
 KI-gestütztes Orientierungswerkzeug für Post-COVID-/ME-CFS-Betroffene im deutschen Sozialrecht. Zwei Arme (Betroffene und Ärzt:innen), eine gemeinsame Wissensbasis. © Schmitz & Hugenberg, Osnabrück — siehe [`NOTICE.md`](./NOTICE.md) für den vollständigen rechtlichen Rahmen (Haftungsausschluss, Urheberrecht, Open-Source-Einordnung).
 
-**Live:** [bastet-covid.org](https://bastet-covid.org) (Betroffenen-Arm) · `/doc` (Ärzte-Arm) · Telegram-Bot (Betroffenen-Arm)
+**Live:** [bastet-covid.org](https://bastet-covid.org) (Betroffenen-Arm) · [doc.bastet-covid.org](https://doc.bastet-covid.org) bzw. `/doc` (Ärzte-Arm) · Telegram-Bot [@Bastetcovidbot](https://t.me/Bastetcovidbot) (Betroffenen-Arm)
 
 ## Die App
 
 Next.js-App (App Router, TypeScript), auf Vercel deployt. Alle drei Kanäle rufen dieselbe serverseitige Interviewlogik auf — der Anthropic-API-Key bleibt auf dem Server, nie im Client. Die Wissensbasis wird vollständig aus dem `de-begutachtung`-Claude-Skill gezogen, nicht mehr aus den handkuratierten Kurzfassungen der ursprünglichen Prototypen.
 
 ```
+middleware.ts             # doc.bastet-covid.org -> intern /doc, Hauptdomain unverändert
 app/
 ├── page.tsx              # Betroffenen-Arm, Web-UI (Chat-Interview)
 ├── doc/page.tsx           # Ärzte-Arm (strukturiertes CCC-Formular)
@@ -20,6 +21,7 @@ app/
 lib/
 ├── anthropic.ts           # Claude-API-Client (serverseitig)
 ├── chat.ts / doc.ts       # System-Prompts + Interviewlogik je Arm
+├── content.ts              # Titel/Untertitel/Über-BASTET/Krisenhinweis — von Web und Telegram geteilt
 ├── format.ts               # REFERENZEN-Block-Parsing, STATS-Trailer-Stripping — von Web und Telegram geteilt
 ├── telegram.ts             # Telegram sendMessage-Helper (chunkt Nachrichten >3800 Zeichen)
 ├── telegramSession.ts      # Upstash-Redis-Session pro chat_id, TTL 60 Min. Inaktivität
@@ -36,11 +38,13 @@ ANTHROPIC_API_KEY=sk-ant-... npm run dev
 **Auf Vercel — Environment Variables:**
 - `ANTHROPIC_API_KEY` — sonst antworten `/api/chat` und `/api/doc` mit einem Konfigurationsfehler.
 - `TELEGRAM_BOT_TOKEN` — Bot-Token von @BotFather.
-- `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` — über Vercel Storage → Marketplace → Upstash (Redis) provisionieren und mit dem Projekt verbinden; Vercel KV (das native Produkt) wurde Ende 2024 eingestellt.
+- `UPSTASH_REDIS_KV_REST_API_URL` / `UPSTASH_REDIS_KV_REST_API_TOKEN` — über Vercel Storage → Marketplace → Upstash (Redis) provisionieren und mit dem Projekt verbinden. **Achtung bei eigenem Custom-Prefix**: die Vercel-Integration legt je nach gewähltem Prefix andere Variablennamen an als Upstashs eigene Konvention (`UPSTASH_REDIS_REST_URL`/`_TOKEN`) — `lib/telegramSession.ts` liest die Werte deshalb explizit unter den oben genannten Namen, nicht über `Redis.fromEnv()`. Nach dem Verbinden im Dashboard nachsehen, welche Namen tatsächlich entstanden sind. Vercel KV (das native Produkt) wurde Ende 2024 eingestellt.
 
-**Telegram-Webhook setzen**, sobald der Code deployt und die drei Variablen oben gesetzt sind:
+**Domain `doc.bastet-covid.org`**: unter Vercel → Settings → Domains zum Projekt `bastet` hinzufügen (nicht `www.doc...`). Da Vercel auch Registrar von `bastet-covid.org` ist, sollte der DNS-Eintrag automatisch entstehen.
+
+**Telegram-Webhook setzen**, sobald der Code deployt und die drei Variablen oben gesetzt sind — **unbedingt die `www.`-Domain verwenden**, nicht die Apex-Domain: `bastet-covid.org` liefert einen 308-Redirect auf `www.bastet-covid.org`, und Telegrams Webhook-Zustellung folgt Redirects auf POST-Requests nicht — die Domain sähe dann "gesetzt" aus, aber es käme nie eine Nachricht an:
 ```bash
-curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://bastet-covid.org/api/telegram"
+curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://www.bastet-covid.org/api/telegram"
 ```
 `<TELEGRAM_BOT_TOKEN>` durch den echten Token ersetzen — nie im Klartext committen oder in einen Chat einfügen.
 
