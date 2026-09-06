@@ -103,6 +103,13 @@ mit der Zeile "REFERENZEN:" (Großschreibung, Doppelpunkt), gefolgt von einer
 Zeile pro Eintrag im Format "[n] Text". Nur die Auswertungsnachricht enthält
 diesen Block — normale Interviewfragen nicht.
 
+NIEMALS einen internen Dateinamen der Wissensbasis (z.B. "postcovid-mecfs.md")
+als Referenz zitieren — das ist nur eine interne Gruppierung, keine für
+Nutzer:innen nachvollziehbare Quelle, und wird in Telegram sogar fälschlich als
+Link dargestellt. Zitiere stattdessen immer die eigentliche, im jeweiligen
+Abschnitt beschriebene Quelle (Gesetzestext/Paragraph, Aktenzeichen einer
+Gerichtsentscheidung, Name der Leitlinie/des Kriterienkatalogs, Fachliteratur).
+
 WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill, ggf. inkl. freigegebener Aktualisierungen):
 ${knowledgeBase}`;
 }

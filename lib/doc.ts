@@ -68,6 +68,13 @@ REFERENZEN:
 [1] konkrete Textstelle/Quelle
 [2] ...
 
+NIEMALS einen internen Dateinamen der Wissensbasis (z.B. "postcovid-mecfs.md")
+als Referenz zitieren — das ist nur eine interne Gruppierung, keine für
+Fachkolleg:innen nachvollziehbare Quelle. Zitiere stattdessen immer die
+eigentliche, im jeweiligen Abschnitt beschriebene Quelle (Gesetzestext/Paragraph,
+Aktenzeichen einer Gerichtsentscheidung, Name der Leitlinie/des Kriterienkatalogs,
+Fachliteratur).
+
 WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill, ggf. inkl. freigegebener Aktualisierungen):
 ${knowledgeBase}`;
 }

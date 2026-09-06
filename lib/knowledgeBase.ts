@@ -32,7 +32,13 @@ function getStaticKnowledgeBase(): string {
   if (staticCached) return staticCached;
   staticCached = FILES.map((file) => {
     const content = fs.readFileSync(path.join(KNOWLEDGE_DIR, file), "utf-8");
-    return `### Quelle: ${file}\n\n${content.trim()}`;
+    // Bewusst NICHT "Quelle: {file}" - das lädt dazu ein, den internen
+    // Dateinamen selbst als REFERENZEN-Eintrag zu zitieren (beobachtet:
+    // "postcovid-mecfs.md" als Zitat, das Telegram sogar automatisch als
+    // Link darstellt, obwohl es keiner ist). Der Dateiname ist nur eine
+    // interne Gruppierung, keine zitierfähige Quelle - siehe auch das
+    // Zitierverbot in lib/chat.ts/lib/doc.ts (AUSWERTUNGS-FORMAT).
+    return `### Interner Abschnitt (nicht zitierfähig, nur Gruppierung): ${file}\n\n${content.trim()}`;
   }).join("\n\n---\n\n");
   return staticCached;
 }
