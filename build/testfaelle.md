@@ -88,3 +88,45 @@ auf 8192 (Commit `6494e40`) plus eine harte Absicherung: `lib/anthropic.ts` wirf
 jetzt einen Fehler statt eine bei `stop_reason: max_tokens` abgeschnittene Antwort
 stillschweigend als Erfolg zurückzugeben (Commit `5dcef0e`) — eine unvollständige
 GdB/MdE-Einschätzung darf nie unbemerkt ausgeliefert werden.
+
+## Fall: Physiotherapeutin — Nachlauf nach Einführung des dritten Blocks (EMR, 06.09.2026)
+
+Gleicher Testfall wie oben, per `/api/doc` direkt getestet, nachdem GdB/MdE um
+einen dritten, eigenständigen Block zur Erwerbsminderungsrente (EMR, SGB VI)
+sowie um eine Würdigung objektiver Testinstrumente (6-Minuten-Gehstrecke,
+Handkraftmessung, neuropsychologische Testung) ergänzt wurde (Commit `5602dbc`).
+
+**Sofort gefundener und behobener Bug**: Der erste Testlauf nach dieser
+Erweiterung brach erneut mit `stop_reason: max_tokens` ab — diesmal bei den
+zuvor ausreichenden 8192 Tokens, weil der zusätzliche EMR-Block spürbar mehr
+Platz braucht als GdB und MdE allein. Behoben durch Anhebung auf 16000 Tokens
+plus `maxDuration = 60` auf allen drei API-Routen (`/api/chat`, `/api/doc`,
+`/api/telegram`), damit die längere Generierung nicht am Standard-Timeout der
+Serverless Function scheitert (Commit `47972ec`). Die harte `max_tokens`-
+Absicherung aus `lib/anthropic.ts` hat den Abbruch wie vorgesehen laut statt
+still gemeldet.
+
+**Ergebnis nach dem Fix:**
+```
+GdB: 50–70 (etwas breiter als die bisherige Baseline 50–60, u. a. durch
+  Einbezug von LSG Baden-Württemberg L 6 SB 1119/24 und eine Objektivierende-
+  Evidenz-Anmerkung zu fehlenden Testinstrumenten)
+MdE: einschlägig dem Grunde nach, Anerkennung des heutigen Post-COVID-Zustands
+  noch offen; orientierende Spanne für den Anerkennungsfall: 30–40 %
+EMR: eher ≥6 Std. (keine Erwerbsminderung), mit Vorbehalt — aus der
+  angepassten 80%-Tätigkeit rückgeschlossen, ausdrücklich unter Hinweis, dass
+  die Prüfung dem allgemeinen Arbeitsmarkt gilt, nicht der angepassten
+  Stelle; Bell-Score-Schätzung (ca. 40–50) und Empfehlung einer eigenständigen
+  sozialmedizinischen Begutachtung nach DRV-Grundsätzen
+Referenzen: 12, vollständig aufgelöst, inkl. neuer EMR-spezifischer Quellen
+  ([11] DRV-Begutachtungsleitfaden, [12] Scheibenbogen et al., Die Ärztliche
+  Begutachtung 2025)
+```
+
+Fazit: Alle drei Blöcke (GdB, MdE, EMR) sowie der vollständige REFERENZEN-Block
+erscheinen zuverlässig, auch bei dieser inhaltlich dichtesten bisher getesteten
+Fallkonstellation. Die EMR-Einordnung erkennt korrekt den Unterschied zwischen
+der individuell angepassten Tätigkeit der Patientin und dem für SGB VI
+maßgeblichen allgemeinen Arbeitsmarkt, statt die 80%-Tätigkeit unreflektiert
+als Beleg fehlender Erwerbsminderung zu werten — genau die Nuance, die bei der
+Fachprompt-Formulierung beabsichtigt war.
