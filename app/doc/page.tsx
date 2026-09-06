@@ -179,11 +179,24 @@ ${cccLines}`;
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userInput }),
       });
-      const data = await response.json();
+      let data: { text?: string; error?: string };
+      try {
+        data = await response.json();
+      } catch {
+        // Ein Plattform-Fehler (z.B. Vercel-Timeout) liefert eine eigene,
+        // nicht-JSON-Fehlerseite statt unserer eigenen Fehlerbehandlung -
+        // ohne diesen Fang landet hier ein kryptischer "Unexpected token"-
+        // Parse-Fehler statt einer verständlichen Meldung.
+        throw new Error(
+          response.status === 504
+            ? "Zeitüberschreitung bei der Erstellung — die Anfrage war vermutlich sehr umfangreich. Bitte in ein bis zwei Minuten erneut versuchen."
+            : `Der Server hat keine gültige Antwort geliefert (HTTP ${response.status}).`
+        );
+      }
       if (!response.ok || data.error) {
         throw new Error(data.error || `HTTP ${response.status}`);
       }
-      setResult(data.text);
+      setResult(data.text ?? "");
     } catch (e) {
       setError(
         "Technisches Problem: " +
