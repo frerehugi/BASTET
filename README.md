@@ -58,7 +58,7 @@ Datenschutz-Hinweis: Der Telegram-Arm ist kein reines No-Storage mehr wie der We
 
 ### Update-Pipeline (Phase 4) — Wissensbasis mit Human-Review
 
-Ein wöchentlicher Vercel Cron (`vercel.json`, Montag 06:00 UTC) prüft fünf Quellen (BSG, sozialgerichtsbarkeit.de, DGUV, AWMF-Register, REHADAT) auf Änderungen. Für BSG per RSS-Feed (verifiziert), für die anderen vier per Content-Hash der jeweiligen Seite — bewusst kein Autopublish: ein Fund landet nur in einer Review-Queue (Upstash) und wird per Telegram an `TELEGRAM_ADMIN_CHAT_ID` gemeldet. Erst nach expliziter Freigabe im Chat wird er Teil der Wissensbasis.
+Ein wöchentlicher Vercel Cron (`vercel.json`, Montag 06:00 UTC) prüft fünf Quellen (BSG, sozialgerichtsbarkeit.de, DGUV, AWMF-Register, VersMedV-Volltext auf gesetze-im-internet.de) auf Änderungen. Für BSG per RSS-Feed (verifiziert, eigener bsg.bund.de-Feed statt des juris.de-Mirrors — letzterer verlangt eine TLS-Renegotiation, die Node/Vercel ablehnt), für die anderen vier per Content-Hash der jeweiligen Seite — bewusst kein Autopublish: ein Fund landet nur in einer Review-Queue (Upstash) und wird per Telegram an `TELEGRAM_ADMIN_CHAT_ID` gemeldet. Erst nach expliziter Freigabe im Chat wird er Teil der Wissensbasis. (REHADAT war ursprünglich als fünfte Quelle vorgesehen, blockierte aber Vercels IPs per WAF mit dauerhaftem 503 — ersetzt durch die ohnehin autoritativere Primärquelle, den VersMedV-Volltext direkt beim BMJ.)
 
 **Zusätzliche Environment Variables dafür:**
 - `CRON_SECRET` — beliebiger langer Zufallsstring, schützt `/api/cron/check-updates` vor fremdem Aufruf (Vercel sendet ihn automatisch als `Authorization: Bearer <CRON_SECRET>` bei geplanten Cron-Aufrufen).
@@ -71,7 +71,7 @@ Ein wöchentlicher Vercel Cron (`vercel.json`, Montag 06:00 UTC) prüft fünf Qu
 
 **Wie freigegebene Updates aktuell gespeichert werden**: als Liste in Upstash Redis (`lib/reviewQueue.ts`), von `getKnowledgeBase()` bei jeder Anfrage angehängt — bewusst kein Schreibzugriff aufs Git-Repo, um keinen GitHub-Token mit Schreibrechten als Secret zu benötigen. Das ist eine bewusste Zwischenlösung für die Testphase; ein späterer Wechsel zu echten Commits in `lib/knowledge/*.md` (und damit einem "richtigen" Deploy pro Freigabe) ist vorgesehen, aber noch nicht umgesetzt.
 
-**Bekannte Einschränkung**: Die Quellen-URLs für DGUV, AWMF und REHADAT wurden nur auf Erreichbarkeit (HTTP 200) geprüft, nicht auf die exakt richtige Unterseite — ihre RSS-Verfügbarkeit bzw. Datumsfeld-Struktur ließ sich nicht automatisiert verifizieren (SPA-Rendering bzw. keine robots-freundliche Struktur). Ein Hash-Treffer erkennt zuverlässig *irgendeine* Änderung der Seite, auch rein kosmetische — das ist die in der Planung benannte Einschränkung dieses Fallback-Verfahrens. Nach dem ersten echten Fund prüfen, ob die URLs noch die richtigen sind.
+**Bekannte Einschränkung**: Die Quellen-URLs für DGUV und AWMF wurden nur auf Erreichbarkeit (HTTP 200) geprüft, nicht auf die exakt richtige Unterseite — ihre RSS-Verfügbarkeit bzw. Datumsfeld-Struktur ließ sich nicht automatisiert verifizieren (SPA-Rendering bzw. keine robots-freundliche Struktur). Ein Hash-Treffer erkennt zuverlässig *irgendeine* Änderung der Seite, auch rein kosmetische — das ist die in der Planung benannte Einschränkung dieses Fallback-Verfahrens. Nach dem ersten echten Fund prüfen, ob die URLs noch die richtigen sind.
 
 Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phasen 3, 6): ERC-8004-Registrierung, x402-Premium-Endpoint, Celo-Builders-Submission.
 

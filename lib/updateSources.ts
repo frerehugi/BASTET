@@ -145,13 +145,15 @@ export const UPDATE_SOURCES: UpdateSource[] = [
     "AWMF-Register — Leitlinie Long/Post-COVID (020-027)",
     "https://register.awmf.org/de/leitlinien/detail/020-027"
   ),
-  // rehadat-literatur.de läuft hinter Myra Cloud (WAF/DDoS-Schutz), das
-  // Vercels Rechenzentrums-IPs beim ersten Cron-Lauf mit 503 blockiert hat,
-  // obwohl ein normaler Fetch von außerhalb 200 liefert — vermutlich
-  // IP-Reputation, nicht die Header. Realistischer Browser-User-Agent
-  // (siehe fetchText) verbessert die Chance, garantiert aber nichts; bei
-  // dauerhaftem 503 ist diese Quelle ohne Änderung am WAF nicht zuverlässig
-  // automatisierbar - fehlschlagende Läufe brechen die Pipeline nicht ab,
-  // sie werden nur nicht geprüft.
-  makeHashSource("rehadat", "REHADAT — Literatur/VersMedV-Umfeld", "https://www.rehadat-literatur.de/"),
+  // Ersetzt rehadat-literatur.de (Myra-Cloud-WAF blockierte Vercels
+  // Rechenzentrums-IPs mit dauerhaftem 503, obwohl von außerhalb erreichbar —
+  // vermutlich IP-Reputation, kein Header-Problem). gesetze-im-internet.de ist
+  // die offizielle Gesetzestext-Quelle des BMJ selbst (verifiziert erreichbar,
+  // 06.09.2026) — für VersMedV-Novellierungen ohnehin die autoritativere
+  // Quelle als eine Literaturdatenbank, die nur darauf verweist.
+  makeHashSource(
+    "versmedv-text",
+    "gesetze-im-internet.de — VersMedV (Volltext, BMJ)",
+    "https://www.gesetze-im-internet.de/versmedv/"
+  ),
 ];
