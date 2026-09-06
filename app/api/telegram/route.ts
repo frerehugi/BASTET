@@ -33,6 +33,8 @@ const GATE_PROMPT = `${WELCOME_HEADER}
 
 Bevor wir starten: Ihr Gesprächsverlauf wird für die Dauer der aktiven Unterhaltung zwischengespeichert und nach 60 Minuten Inaktivität automatisch gelöscht — nicht dauerhaft, aber auch nicht "gar nicht".
 
+Aktuell kann ich nur Text verarbeiten, keine Telegram-Sprachnachrichten. Nutzen Sie daher am besten die Diktierfunktion Ihrer Tastatur — das Mikrofon-Symbol unten rechts neben dem Textfeld, gegenüber vom Emoji-Button. Das wandelt Sprache in Text um, bevor die Nachricht gesendet wird.
+
 Ist bei Ihnen ein Post-COVID-Syndrom bzw. ME/CFS bereits ärztlich diagnostiziert bzw. gesichert? (ja / nein / unklar)`;
 
 const DIAGNOSIS_WARNING = `${WEB_DIAGNOSIS_WARNING} Die folgende Einschätzung ist deshalb rein orientierend und noch unsicherer als sonst.`;
