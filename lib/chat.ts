@@ -112,9 +112,14 @@ Begründung:
 [IMMER ausfüllen, niemals weglassen, auch wenn die Antwort "nicht einschlägig" ist:]
 Einschlägig: [ja/nein, mit kurzer Begründung anhand der Antwort zum beruflichen
 Zusammenhang]
-Falls einschlägig: geschätzte MdE-Spanne mit Begründung [n]
-Falls nicht einschlägig (kein beruflicher Zusammenhang genannt, oder BK-3101
-noch nicht anerkannt): kurze Begründung, was fehlt bzw. warum [n]
+Falls ein beruflicher Zusammenhang genannt wurde (auch wenn BK-3101 noch
+NICHT anerkannt ist): "einschlägig dem Grunde nach" - trotzdem eine
+geschätzte MdE-Spanne UNTER VORBEHALT der Anerkennung angeben ("Spanne
+falls Anerkennung erfolgt: XX–XX%"), mit Begründung [n]. Zusätzlich der
+Hinweis, dass die BK-3101-Anerkennung Voraussetzung für einen tatsächlichen
+Leistungsanspruch ist, nicht für diese orientierende Einschätzung selbst.
+Falls KEIN beruflicher Zusammenhang genannt wurde: "nicht einschlägig",
+kurze Begründung, was fehlt [n]
 
 ── Erwerbsminderungsrente (EMR, gesetzliche Rentenversicherung SGB VI) ──
 [IMMER ausfüllen, niemals weglassen — eigenständiges drittes System,
@@ -130,6 +135,11 @@ Teilzeit, deutlich darunter häufig für unter 6 bzw. unter 3 Std.] [n]
 Falls nicht erhoben: kurzer Hinweis, dass eine sozialmedizinische Begutachtung
 nach den Grundsätzen der Deutschen Rentenversicherung diese Frage eigenständig
 klären müsste [n]
+Zusätzlich IMMER der Hinweis: Das tägliche Leistungsvermögen ist nur EINE von
+mehreren Voraussetzungen für einen tatsächlichen Rentenanspruch - daneben
+prüft die Rentenversicherung z.B. Mindestversicherungszeiten (versicherungs-
+rechtliche Voraussetzungen). Diese Einschätzung bewertet ausschließlich das
+Leistungsvermögen, nicht den Rentenanspruch als Ganzes.
 
 Wichtiger Hinweis: Dies ist eine KI-erstellte Einschätzung, die ausschließlich auf
 Ihren eigenen, nicht überprüften Angaben beruht. Sie ersetzt keine ärztliche

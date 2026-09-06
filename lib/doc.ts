@@ -66,12 +66,16 @@ bei entsprechender Symptomatik]
 [IMMER ausfüllen, niemals weglassen:]
 Einschlägig: [ja/nein, mit Begründung anhand des angegebenen beruflichen
 Kontexts/BK-3101-Status]
-Falls einschlägig: Orientierende MdE-Spanne: XX–XX, mit Begründung und
-Bezug zur haftungsausfüllenden Kausalität (AU-/Symptomkette seit
-Erstinfektion, Beweismaßstab "hinreichende Wahrscheinlichkeit") [n]
-Falls nicht einschlägig: kurze Begründung, warum (z.B. kein Berufsbezug
-angegeben, oder BK-3101 noch nicht anerkannt - dann Hinweis, dass die
-Erstanerkennung Voraussetzung für eine MdE-Einschätzung ist) [n]
+Falls ein beruflicher Zusammenhang angegeben ist (auch bei noch nicht
+anerkannter oder noch offener BK-3101): "einschlägig dem Grunde nach" -
+dennoch eine orientierende MdE-Spanne FÜR DEN FALL DER ANERKENNUNG angeben
+(XX–XX%), mit Begründung und Bezug zur haftungsausfüllenden Kausalität
+(AU-/Symptomkette seit Erstinfektion, Beweismaßstab "hinreichende
+Wahrscheinlichkeit") [n]. Ergänzend: Hinweis, dass die BK-3101-Anerkennung
+Voraussetzung für einen tatsächlichen Leistungsanspruch ist, nicht für
+diese orientierende Einschätzung selbst.
+Falls kein beruflicher Zusammenhang angegeben ist: "nicht einschlägig",
+kurze Begründung, was fehlt [n]
 
 ── Erwerbsminderungsrente (EMR, gesetzliche Rentenversicherung SGB VI) ──
 [IMMER ausfüllen, niemals weglassen — eigenständiges drittes System,
@@ -86,6 +90,11 @@ für leichte Tätigkeit in flexibler Teilzeit, deutlich darunter häufig für
 unter 6 bzw. unter 3 Std.] [n]
 Falls nicht erhoben: kurzer Hinweis auf die eigenständige sozialmedizinische
 Begutachtung nach den Grundsätzen der Deutschen Rentenversicherung [n]
+Zusätzlich IMMER der Hinweis: Das tägliche Leistungsvermögen ist nur eine
+von mehreren Voraussetzungen für einen tatsächlichen Rentenanspruch - daneben
+prüft die Rentenversicherung z.B. Mindestversicherungszeiten (versicherungs-
+rechtliche Voraussetzungen). Diese Einschätzung bewertet ausschließlich das
+Leistungsvermögen, nicht den Rentenanspruch als Ganzes.
 
 Hinweis: Diese Einschätzung basiert ausschließlich auf den eingegebenen,
 anonymisierten Angaben und ersetzt keine förmliche sozialmedizinische
