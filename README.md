@@ -56,6 +56,8 @@ curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://ww
 
 Datenschutz-Hinweis: Der Telegram-Arm ist kein reines No-Storage mehr wie der Web-Arm — der Gesprächsverlauf wird pro `chat_id` in Upstash Redis zwischengespeichert, mit TTL 60 Minuten Inaktivität. Der Bot weist beim Start explizit darauf hin (siehe `GATE_PROMPT` in `app/api/telegram/route.ts`).
 
+**Befehle für alle (nicht nur Admin):** `/about` (Rechtliches, wie der Web-Toggle), `/whoami` (eigene chat_id, z.B. für `TELEGRAM_ADMIN_CHAT_ID`), `/neu` bzw. `/reset` (Gespräch sofort neu starten, statt die 60-Minuten-TTL abzuwarten — Web-Pendant ist ein Seiten-Reload).
+
 ### Update-Pipeline (Phase 4) — Wissensbasis mit Human-Review
 
 Ein wöchentlicher Vercel Cron (`vercel.json`, Montag 06:00 UTC) prüft fünf Quellen (BSG, sozialgerichtsbarkeit.de, DGUV, AWMF-Register, VersMedV-Volltext auf gesetze-im-internet.de) auf Änderungen. Für BSG per RSS-Feed (verifiziert, eigener bsg.bund.de-Feed statt des juris.de-Mirrors — letzterer verlangt eine TLS-Renegotiation, die Node/Vercel ablehnt), für die anderen vier per Content-Hash der jeweiligen Seite — bewusst kein Autopublish: ein Fund landet nur in einer Review-Queue (Upstash) und wird per Telegram an `TELEGRAM_ADMIN_CHAT_ID` gemeldet. Erst nach expliziter Freigabe im Chat wird er Teil der Wissensbasis.

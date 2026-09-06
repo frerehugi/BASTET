@@ -88,6 +88,15 @@ export async function POST(request: Request): Promise<Response> {
     return ok();
   }
 
+  // Ohne dies gäbe es keinen Weg, ein Gespräch neu zu beginnen außer der
+  // 60-Minuten-Inaktivitäts-TTL abzuwarten — Web-Pendant ist ein einfacher
+  // Seiten-Reload.
+  if (/^\/(neu|reset)\b/i.test(text)) {
+    await saveSession(chatId, { messages: [], diagnosisConfirmed: null, turnCount: 0 });
+    await sendTelegramMessage(chatId, GATE_PROMPT);
+    return ok();
+  }
+
   // Freigabe-Workflow der Wissensbasis-Update-Pipeline (Phase 4) — nur für
   // TELEGRAM_ADMIN_CHAT_ID, läuft komplett außerhalb der Patient:innen-
   // Interviewlogik. Bei Treffer nicht in den normalen Gate/Interview-Flow
