@@ -372,7 +372,7 @@ export default function App() {
                   }
                 }}
                 placeholder="Ihre Antwort — Stichworte reichen"
-                rows={4}
+                rows={7}
               />
               <button
                 style={styles.sendButton}
@@ -461,6 +461,7 @@ const styles: Record<string, React.CSSProperties> = {
   gateQuestion: { fontSize: 17, lineHeight: 1.6, fontWeight: 600, margin: 0, color: "var(--text)" },
   buttonRow: { display: "flex", gap: 12, marginTop: 18, flexWrap: "wrap" },
   primaryButton: {
+    flex: "1 1 200px",
     background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
     color: "var(--dark2)",
     border: "none",
@@ -469,8 +470,10 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 15.5,
     fontWeight: 700,
     cursor: "pointer",
+    textAlign: "center",
   },
   secondaryButton: {
+    flex: "1 1 200px",
     background: "rgba(255,255,255,.05)",
     color: "var(--text)",
     border: "1px solid var(--border)",
@@ -479,6 +482,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 15.5,
     fontWeight: 600,
     cursor: "pointer",
+    textAlign: "center",
   },
   progressLine: { fontSize: 13.5, color: "var(--text-faint)", marginBottom: 10, letterSpacing: 0.1 },
   chatWindow: {
@@ -487,7 +491,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid var(--border)",
     borderRadius: 16,
     padding: 16,
-    height: 420,
+    height: 280,
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
@@ -612,7 +616,7 @@ const styles: Record<string, React.CSSProperties> = {
   textarea: {
     width: "100%",
     resize: "vertical",
-    minHeight: 120,
+    minHeight: 190,
     background: "rgba(255,255,255,.05)",
     border: "1px solid var(--border)",
     borderRadius: 16,
