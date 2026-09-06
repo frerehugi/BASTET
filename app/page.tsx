@@ -13,6 +13,7 @@ import {
   isMdeEinschlaegig,
   mentionsNonHealthSector,
   composeBgwLetter,
+  formatDateDe,
   LETTER_SEND_HINT,
   OTHER_SECTOR_NOTICE,
   type LetterFields,
@@ -55,7 +56,7 @@ export default function App() {
   const [letterCopiedIndex, setLetterCopiedIndex] = useState<number | null>(null);
 
   function getLetterFields(i: number): LetterFields {
-    return letterFields[i] ?? { name: "", address: "", date: new Date().toLocaleDateString("de-DE") };
+    return letterFields[i] ?? { name: "", address: "", date: formatDateDe(new Date()) };
   }
   function updateLetterField(i: number, patch: Partial<LetterFields>) {
     setLetterFields((prev) => ({ ...prev, [i]: { ...getLetterFields(i), ...patch } }));
