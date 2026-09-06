@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
   title: "BASTET — Vorbegutachtung Post-COVID / ME-CFS",
@@ -18,7 +21,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="de">
+    <html lang="de" className={inter.variable}>
       <body>
         <div className="topbar">
           <img src="/assets/bastet-badge.png" alt="BASTET" className="topbar-badge" />
