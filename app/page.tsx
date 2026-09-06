@@ -372,7 +372,7 @@ export default function App() {
                   }
                 }}
                 placeholder="Ihre Antwort — Stichworte reichen"
-                rows={7}
+                rows={5}
               />
               <button
                 style={styles.sendButton}
@@ -491,7 +491,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid var(--border)",
     borderRadius: 16,
     padding: 16,
-    height: 280,
+    height: 340,
     overflowY: "auto",
     display: "flex",
     flexDirection: "column",
@@ -616,7 +616,7 @@ const styles: Record<string, React.CSSProperties> = {
   textarea: {
     width: "100%",
     resize: "vertical",
-    minHeight: 190,
+    minHeight: 155,
     background: "rgba(255,255,255,.05)",
     border: "1px solid var(--border)",
     borderRadius: 16,
