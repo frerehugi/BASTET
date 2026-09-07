@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { handleAdminCommand } from "@/lib/adminCommands";
 import { runInterview } from "@/lib/chat";
 import {
@@ -49,6 +50,22 @@ function ok(): Response {
   return new Response("ok");
 }
 
+// Ohne diese Prüfung kann jede:r, die/der die numerische Admin-chat_id kennt
+// oder errät, den Webhook direkt (ohne Telegram) mit einem gefälschten Body
+// aufrufen und den Freigabe-Workflow der Wissensbasis erreichen (handleAdminCommand
+// vertraut allein der chat_id im Body). Der secret_token wird einmalig per
+// setWebhook hinterlegt (siehe README) — Telegram schickt ihn danach bei jeder
+// echten Zustellung im Header zurück, ein Angreifer kennt ihn nicht.
+function hasValidTelegramSecret(request: Request): boolean {
+  const expected = process.env.TELEGRAM_WEBHOOK_SECRET;
+  if (!expected) return false; // kein Secret konfiguriert -> zu, nicht offen
+  const provided = request.headers.get("x-telegram-bot-api-secret-token") ?? "";
+  const expectedBuf = Buffer.from(expected);
+  const providedBuf = Buffer.from(provided);
+  if (expectedBuf.length !== providedBuf.length) return false;
+  return timingSafeEqual(expectedBuf, providedBuf);
+}
+
 async function notifyBestEffort(chatId: number, text: string): Promise<void> {
   // Wird aus einem bereits fehlgeschlagenen Pfad aufgerufen - ein zweiter
   // Fehler hier (z.B. TELEGRAM_BOT_TOKEN selbst kaputt) darf die Response an
@@ -61,6 +78,10 @@ async function notifyBestEffort(chatId: number, text: string): Promise<void> {
 }
 
 export async function POST(request: Request): Promise<Response> {
+  if (!hasValidTelegramSecret(request)) {
+    return new Response("unauthorized", { status: 401 });
+  }
+
   let update: TelegramUpdate;
   try {
     update = await request.json();
