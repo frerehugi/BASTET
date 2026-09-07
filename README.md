@@ -19,9 +19,13 @@ app/
     ├── chat/route.ts      # POST — Betroffenen-Arm-Logik (Web)
     ├── doc/route.ts       # POST — Ärzte-Arm-Logik
     ├── telegram/route.ts  # POST — Telegram-Webhook, ruft dieselbe runInterview()-Logik wie chat/route.ts auf
+    ├── premium/route.ts   # POST — x402-geschützter Endpoint (0,10 USDC), liefert PDF-Zusammenfassung
     └── cron/check-updates/route.ts  # GET, per CRON_SECRET geschützt — wöchentlicher Quellen-Check (Phase 4)
+scripts/
+└── register-agent.ts      # Einmaliges ERC-8004-Registrierungsscript, lokal ausführen (npm run register-agent)
 lib/
 ├── anthropic.ts           # Claude-API-Client (serverseitig)
+├── x402.ts                 # x402-Resource-Server-Konfiguration (Facilitator, Celo Mainnet, Agent-Wallet)
 ├── chat.ts / doc.ts       # System-Prompts + Interviewlogik je Arm
 ├── content.ts              # Titel/Untertitel/Über-BASTET/Krisenhinweis — von Web und Telegram geteilt
 ├── format.ts               # REFERENZEN-Block-Parsing, STATS-Trailer-Stripping — von Web und Telegram geteilt
@@ -45,6 +49,10 @@ ANTHROPIC_API_KEY=sk-ant-... npm run dev
 - `ANTHROPIC_API_KEY` — sonst antworten `/api/chat` und `/api/doc` mit einem Konfigurationsfehler.
 - `TELEGRAM_BOT_TOKEN` — Bot-Token von @BotFather.
 - `UPSTASH_REDIS_KV_REST_API_URL` / `UPSTASH_REDIS_KV_REST_API_TOKEN` — über Vercel Storage → Marketplace → Upstash (Redis) provisionieren und mit dem Projekt verbinden. **Achtung bei eigenem Custom-Prefix**: die Vercel-Integration legt je nach gewähltem Prefix andere Variablennamen an als Upstashs eigene Konvention (`UPSTASH_REDIS_REST_URL`/`_TOKEN`) — `lib/telegramSession.ts` liest die Werte deshalb explizit unter den oben genannten Namen, nicht über `Redis.fromEnv()`. Nach dem Verbinden im Dashboard nachsehen, welche Namen tatsächlich entstanden sind. Vercel KV (das native Produkt) wurde Ende 2024 eingestellt.
+- `AGENT_WALLET_ADDRESS` (optional) — die BASTET-Agent-Wallet, öffentliche Adresse, Default in `lib/x402.ts` bereits gesetzt (`0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608`). Nur als `payTo` in `/api/premium` verwendet, keine Zahlungspflicht für Web/Telegram.
+- `X402_FACILITATOR_URL` (optional) — Default `https://x402.celo.org`.
+
+**`.npmrc` mit `legacy-peer-deps=true`**: `@x402/next` 2.x pinnt `next: ">=16.2.6"` als Peer, verwendet aber ausschließlich die seit Next 15 stabile `next/server`-API (`NextRequest`/`NextResponse`) — der Pin ist konservativer als die tatsächliche Kompatibilität. Ohne `.npmrc` bricht `npm install` (auch auf Vercel) mit `ERESOLVE` ab.
 
 **Domain `doc.bastet-covid.org`**: unter Vercel → Settings → Domains zum Projekt `bastet` hinzufügen (nicht `www.doc...`). Da Vercel auch Registrar von `bastet-covid.org` ist, sollte der DNS-Eintrag automatisch entstehen.
 
@@ -77,7 +85,14 @@ Ein wöchentlicher Vercel Cron (`vercel.json`, Montag 06:00 UTC) prüft fünf Qu
 
 **Bekannte Einschränkung**: Die Quellen-URLs für DGUV und AWMF wurden nur auf Erreichbarkeit (HTTP 200) geprüft, nicht auf die exakt richtige Unterseite — ihre RSS-Verfügbarkeit bzw. Datumsfeld-Struktur ließ sich nicht automatisiert verifizieren (SPA-Rendering bzw. keine robots-freundliche Struktur). Ein Hash-Treffer erkennt zuverlässig *irgendeine* Änderung der Seite, auch rein kosmetische — das ist die in der Planung benannte Einschränkung dieses Fallback-Verfahrens. Nach dem ersten echten Fund prüfen, ob die URLs noch die richtigen sind.
 
-Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phasen 3, 6): ERC-8004-Registrierung, x402-Premium-Endpoint, Celo-Builders-Submission.
+**ERC-8004 / x402 (Phasen 3–4, siehe `build/claude-code-buildplan.md`)**: Code steht, aber noch nichts on-chain ausgeführt.
+- `scripts/register-agent.ts` — einmaliges Registrierungsscript für die ERC-8004 Identity Registry auf Celo Mainnet (`viem`, `data:`-URI-Metadaten). Lokal ausführen, **nie** in einer gehosteten Session mit echtem Private Key:
+  ```bash
+  AGENT_PRIVATE_KEY=0x... npm run register-agent
+  ```
+  Gibt am Ende `agentId` und die passende `https://www.8004scan.io/agents/celo/<id>`-URL für die Celo-Builders-Submission aus. Registry-Adresse/ABI stammen aus dem Build-Plan und sind **vor dem Ausführen mit echtem Geld** gegen `docs.celo.org` bzw. `github.com/celo-org/agent-skills` zu prüfen — von dieser Session aus war das nicht möglich (Netzwerk-Policy blockiert `docs.celo.org`, `forno.celo.org`, `8004scan.io`).
+- `app/api/premium/route.ts` + `lib/x402.ts` — x402-geschützter Endpoint (`@x402/next` v2, 0,10 USDC, Celo Mainnet `eip155:42220`, `payTo` = Agent-Wallet). Nimmt eine bereits erzeugte Auswertung entgegen und liefert sie als PDF mit vollständigen Referenzen zurück. Nicht beworben, Web/Telegram/Doc-Arm bleiben kostenfrei.
+- **Celo-Builders-Submission**: noch nicht ausgeführt — `celobuilders.xyz` war von dieser Session aus ebenfalls nicht erreichbar (Netzwerk-Policy). Muss aus einer Umgebung mit Netzwerkzugriff (lokal oder eine Session ohne diese Einschränkung) über den `celo-builders`-Skill nachgeholt werden.
 
 ## Ordnerübersicht
 
