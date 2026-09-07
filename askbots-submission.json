@@ -1,0 +1,40 @@
+{
+  "name": "BASTET",
+  "propertyType": "website",
+  "propertyUrl": "https://bastet-covid.org",
+  "budget": 10,
+  "skillFilters": [],
+  "locationFilters": [],
+  "questions": [
+    {
+      "id": "gate-clarity",
+      "text": "Open https://bastet-covid.org (German-language tool for Post-COVID/ME-CFS patients preparing a German disability/social-law assessment). Before you start the interview, there's a consent/gate screen explaining what happens to your input. Is it clear from that screen alone what is sent to a third-party AI provider (Anthropic) versus what BASTET itself stores? Quote the exact phrase that told you, or that left you unsure.",
+      "type": "freeform"
+    },
+    {
+      "id": "interview-usability",
+      "text": "Go through the patient interview end-to-end (a few minutes, describe any minor Post-COVID-like symptoms). The design intentionally uses short question blocks and keyword-level answers to accommodate brain fog/cognitive fatigue. Rate how well that actually worked for you as a user.",
+      "type": "rating"
+    },
+    {
+      "id": "output-trust",
+      "text": "Look at the final assessment output (GdB/MdE/EMR ranges with cited sources). Does it read as appropriately uncertain/orientational rather than authoritative? Does each number have a traceable source reference, or are some claims unsupported?",
+      "type": "freeform"
+    },
+    {
+      "id": "doc-arm",
+      "text": "Also check the physician-facing arm at https://doc.bastet-covid.org (structured form instead of chat). Does it produce a comparably well-sourced result, or does it feel like an afterthought compared to the patient arm?",
+      "type": "freeform"
+    },
+    {
+      "id": "bugs",
+      "text": "Any bugs, broken links, dead ends, or confusing steps you hit anywhere in the flow (either arm)? Be specific — what you clicked/typed and what happened.",
+      "type": "freeform"
+    },
+    {
+      "id": "overall",
+      "text": "Overall usefulness of this tool for someone actually preparing for a German disability/social-law assessment.",
+      "type": "rating"
+    }
+  ]
+}

@@ -88,6 +88,14 @@ Ein wöchentlicher Vercel Cron (`vercel.json`, Montag 06:00 UTC) prüft fünf Qu
 
 **Bekannte Einschränkung**: Die Quellen-URLs für DGUV und AWMF wurden nur auf Erreichbarkeit (HTTP 200) geprüft, nicht auf die exakt richtige Unterseite — ihre RSS-Verfügbarkeit bzw. Datumsfeld-Struktur ließ sich nicht automatisiert verifizieren (SPA-Rendering bzw. keine robots-freundliche Struktur). Ein Hash-Treffer erkennt zuverlässig *irgendeine* Änderung der Seite, auch rein kosmetische — das ist die in der Planung benannte Einschränkung dieses Fallback-Verfahrens. Nach dem ersten echten Fund prüfen, ob die URLs noch die richtigen sind.
 
+**AskBots-Submission (Track 3, "AskBots CLI Growth Track")**: `askbots-submission.json` im Repo-Root enthält die vorbereitete Einreichung (6 Fragen, Budget 10 Reviews à 0,11 USDT = 1,10 USDT gesamt, `propertyType: "website"`, `propertyUrl: https://bastet-covid.org`) — lokal gegen die `askbots`-CLI (npm, v0.1.1) validiert:
+```bash
+npx askbots submit --file askbots-submission.json --json
+```
+Noch offen, beides nur lokal (bzw. über die Website) möglich, nicht aus dieser Session heraus (`www.askbots.ai` von der Netzwerk-Policy blockiert):
+- Account bei askbots.ai anlegen, **Funding-Wallet = registrierte Agent-Wallet** (`0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608`, siehe Hackathon-Regeln zu Track 3) — wie genau das geht, stand nicht in der CLI-Dokumentation, sondern vermutlich unter `askbots.ai/docs`.
+- `ASKBOTS_PASSWORD=... npx askbots login --email ...`, dann `npx askbots submit --file askbots-submission.json --execute` — **`--execute` ist in CLI-Version 0.1.1 noch nicht implementiert** ("Funding lands in the next release", laut CLI-README), liefert also aktuell noch keinen echten, bezahlten Review-Lauf. Vor dem ersten Einreichen `npx askbots version` prüfen, ob eine neuere Version das schon kann.
+
 **ERC-8004 / x402 (Phasen 3–4, siehe `build/claude-code-buildplan.md`)**: Code steht, aber noch nichts on-chain ausgeführt.
 - `scripts/register-agent.ts` — einmaliges Registrierungsscript für die ERC-8004 Identity Registry auf Celo Mainnet (`viem`, `data:`-URI-Metadaten). Lokal ausführen, **nie** in einer gehosteten Session mit echtem Private Key:
   ```bash
