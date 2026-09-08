@@ -1,6 +1,6 @@
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
-const MODEL = "claude-sonnet-5";
+const DEFAULT_MODEL = "claude-sonnet-5";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -21,7 +21,8 @@ interface AnthropicResponse {
 export async function callClaude(
   system: string,
   messages: ChatMessage[],
-  maxTokens: number
+  maxTokens: number,
+  model: string = DEFAULT_MODEL
 ): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -38,7 +39,7 @@ export async function callClaude(
       "anthropic-version": ANTHROPIC_VERSION,
     },
     body: JSON.stringify({
-      model: MODEL,
+      model,
       max_tokens: maxTokens,
       system,
       messages,

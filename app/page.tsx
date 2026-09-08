@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { splitReferences } from "@/lib/format";
+import { splitReferences, isQuickVerdict } from "@/lib/format";
 import {
   PATIENT_TITLE,
   PATIENT_SUBTITLE,
@@ -18,9 +18,10 @@ import {
   OTHER_SECTOR_NOTICE,
   type LetterFields,
 } from "@/lib/bgwLetter";
+import DetailedAnalysisUpsell from "./DetailedAnalysisUpsell";
 
 const STORAGE_NOTICE =
-  "Ihre Angaben werden zur Erstellung der Einschätzung an unseren KI-Anbieter (Anthropic) zur Verarbeitung übermittelt. Auf unseren eigenen Servern speichern wir sie nicht darüber hinaus — mit Schließen dieses Fensters sind Ihre Angaben bei uns unwiderruflich weg, planen Sie die gut 15 Minuten möglichst am Stück ein.";
+  "Ihre Angaben werden zur Erstellung der kostenlosen Schnell-Einschätzung an unseren KI-Anbieter (Anthropic) zur Verarbeitung übermittelt. Auf unseren eigenen Servern speichern wir sie nicht darüber hinaus — mit Schließen dieses Fensters sind Ihre Angaben bei uns unwiderruflich weg. Nur falls Sie anschließend die kostenpflichtige Detailanalyse freischalten, wird Ihr Gesprächsverlauf vorübergehend (bis zu 2 Stunden) serverseitig gespeichert, um die Zahlungsbestätigung zu ermöglichen — danach automatisch gelöscht.";
 
 type Role = "user" | "assistant";
 interface Message {
@@ -102,7 +103,7 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/chat", {
+      const response = await fetch("/api/quick-assessment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -256,8 +257,10 @@ export default function App() {
                 }
                 const { body, refs } = splitReferences(m.content);
                 const isOpen = !!openRefs[i];
+                const isQuick = isQuickVerdict(m.content);
                 return (
-                  <div key={i} style={styles.assistantBubble}>
+                  <div key={i}>
+                  <div style={styles.assistantBubble}>
                     {body}
                     {refs && (
                       <div style={styles.refsArea}>
@@ -349,6 +352,14 @@ export default function App() {
                           )}
                         </div>
                       ))}
+                  </div>
+                  {isQuick && (
+                    <DetailedAnalysisUpsell
+                      messages={messages.slice(0, i + 1)}
+                      diagnosisConfirmed={diagnosisConfirmed}
+                      turnCount={turnCount}
+                    />
+                  )}
                   </div>
                 );
               })}

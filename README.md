@@ -12,23 +12,32 @@ Next.js-App (App Router, TypeScript), auf Vercel deployt. Alle drei Kanäle rufe
 middleware.ts             # doc.bastet-covid.org -> intern /doc, Hauptdomain unverändert
 vercel.json                # Cron-Schedule für die Update-Pipeline (wöchentlich, Montag 06:00 UTC)
 app/
-├── page.tsx              # Betroffenen-Arm, Web-UI (Chat-Interview)
+├── page.tsx              # Betroffenen-Arm, Web-UI (Chat-Interview, zweistufig — siehe unten)
+├── DetailedAnalysisUpsell.tsx  # Stripe Express Checkout Element (Apple Pay/Google Pay) + Widerrufs-Checkbox
 ├── doc/page.tsx           # Ärzte-Arm (strukturiertes CCC-Formular)
 ├── layout.tsx             # gemeinsames Layout inkl. BASTET-Kopfzeile
 └── api/
-    ├── chat/route.ts      # POST — Betroffenen-Arm-Logik (Web)
+    ├── quick-assessment/route.ts    # POST — kostenlose Schnell-Einschätzung (Stufe 1, Web)
+    ├── checkout/route.ts             # POST — legt Assessment-Session an + Stripe PaymentIntent
+    ├── detailed-assessment/route.ts  # POST — Detailanalyse (Stufe 2), NUR nach webhook-bestätigter Zahlung
+    ├── stripe/webhook/route.ts       # POST — Stripe-Webhook, signaturgeprüft, einzige Quelle für "bezahlt"
+    ├── stripe/config/route.ts        # GET — liefert STRIPE_PUBLISHABLE_KEY an den Client
+    ├── pricing/route.ts              # GET — liefert den aktuellen Detailanalyse-Preis an den Client
     ├── doc/route.ts       # POST — Ärzte-Arm-Logik
-    ├── telegram/route.ts  # POST — Telegram-Webhook, ruft dieselbe runInterview()-Logik wie chat/route.ts auf
-    ├── premium/route.ts   # POST — x402-geschützter Endpoint (0,10 USDC), liefert PDF-Zusammenfassung
+    ├── telegram/route.ts  # POST — Telegram-Webhook, ruft dieselbe runInterview()-Logik wie die Detailanalyse auf
+    ├── premium/route.ts   # POST — x402-geschützter Endpoint (0,10 USDC), liefert PDF-Zusammenfassung (Krypto, siehe unten — getrennt von Stripe)
     └── cron/check-updates/route.ts  # GET, per CRON_SECRET geschützt — wöchentlicher Quellen-Check (Phase 4)
 scripts/
 └── register-agent.ts      # Einmaliges ERC-8004-Registrierungsscript, lokal ausführen (npm run register-agent)
 lib/
 ├── anthropic.ts           # Claude-API-Client (serverseitig)
+├── stripe.ts                # Stripe-Server-Client (Kartenzahlung/Apple Pay/Google Pay) — getrennt von lib/x402.ts (Krypto)
+├── pricing.ts               # EINZIGER Ort für den Detailanalyse-Preis, siehe Abschnitt unten
+├── assessmentSession.ts    # Upstash-Redis-Session pro Zahlungsvorgang, TTL 2 Std. — Bindeglied zwischen Stripe-Webhook und Detailanalyse
 ├── x402.ts                 # x402-Resource-Server-Konfiguration (Facilitator, Celo Mainnet, Agent-Wallet)
-├── chat.ts / doc.ts       # System-Prompts + Interviewlogik je Arm
+├── chat.ts / doc.ts       # System-Prompts + Interviewlogik je Arm (chat.ts: runQuickAssessment = Stufe 1, runInterview = Stufe 2/Detailanalyse)
 ├── content.ts              # Titel/Untertitel/Über-BASTET/Krisenhinweis — von Web und Telegram geteilt
-├── format.ts               # REFERENZEN-Block-Parsing, STATS-Trailer-Stripping — von Web und Telegram geteilt
+├── format.ts               # REFERENZEN-Block-Parsing, STATS-Trailer-Stripping, Schnell-Einschätzung-Erkennung — von Web und Telegram geteilt
 ├── telegram.ts             # Telegram sendMessage-Helper (chunkt Nachrichten >3800 Zeichen)
 ├── telegramSession.ts      # Upstash-Redis-Session pro chat_id, TTL 60 Min. Inaktivität
 ├── adminCommands.ts        # Telegram-Freigabe-Workflow (/pending, freigeben/ablehnen), nur TELEGRAM_ADMIN_CHAT_ID
@@ -46,12 +55,40 @@ ANTHROPIC_API_KEY=sk-ant-... npm run dev
 ```
 
 **Auf Vercel — Environment Variables:**
-- `ANTHROPIC_API_KEY` — sonst antworten `/api/chat` und `/api/doc` mit einem Konfigurationsfehler.
+- `ANTHROPIC_API_KEY` — sonst antworten `/api/quick-assessment`, `/api/detailed-assessment` und `/api/doc` mit einem Konfigurationsfehler.
 - `TELEGRAM_BOT_TOKEN` — Bot-Token von @BotFather.
 - `TELEGRAM_WEBHOOK_SECRET` — beliebiger langer Zufallsstring (z.B. `openssl rand -hex 32`). Ohne diese Variable lehnt `/api/telegram` **jede** Anfrage mit 401 ab (fail closed) — sie muss vor dem `setWebhook`-Aufruf unten gesetzt sein, siehe dort.
-- `UPSTASH_REDIS_KV_REST_API_URL` / `UPSTASH_REDIS_KV_REST_API_TOKEN` — über Vercel Storage → Marketplace → Upstash (Redis) provisionieren und mit dem Projekt verbinden. **Achtung bei eigenem Custom-Prefix**: die Vercel-Integration legt je nach gewähltem Prefix andere Variablennamen an als Upstashs eigene Konvention (`UPSTASH_REDIS_REST_URL`/`_TOKEN`) — `lib/telegramSession.ts` liest die Werte deshalb explizit unter den oben genannten Namen, nicht über `Redis.fromEnv()`. Nach dem Verbinden im Dashboard nachsehen, welche Namen tatsächlich entstanden sind. Vercel KV (das native Produkt) wurde Ende 2024 eingestellt.
+- `UPSTASH_REDIS_KV_REST_API_URL` / `UPSTASH_REDIS_KV_REST_API_TOKEN` — über Vercel Storage → Marketplace → Upstash (Redis) provisionieren und mit dem Projekt verbinden. **Achtung bei eigenem Custom-Prefix**: die Vercel-Integration legt je nach gewähltem Prefix andere Variablennamen an als Upstashs eigene Konvention (`UPSTASH_REDIS_REST_URL`/`_TOKEN`) — `lib/telegramSession.ts` liest die Werte deshalb explizit unter den oben genannten Namen, nicht über `Redis.fromEnv()`. Nach dem Verbinden im Dashboard nachsehen, welche Namen tatsächlich entstanden sind. Vercel KV (das native Produkt) wurde Ende 2024 eingestellt. Wird jetzt auch von `lib/assessmentSession.ts` für die Detailanalyse-Freischaltung genutzt (dieselbe Instanz, kein zweites Redis nötig).
+- `STRIPE_SECRET_KEY` — aus dem Stripe-Dashboard, geheim, nie im Client.
+- `STRIPE_PUBLISHABLE_KEY` — aus dem Stripe-Dashboard, nicht geheim, wird aber bewusst über `/api/stripe/config` statt `NEXT_PUBLIC_...` ausgeliefert (siehe Kommentar in der Route) — trotzdem als normale (nicht `NEXT_PUBLIC_`) Vercel-Variable eintragen.
+- `STRIPE_WEBHOOK_SECRET` — aus dem Stripe-Dashboard, nach Anlegen des Webhook-Endpoints (siehe unten). Ohne diese Variable lehnt `/api/stripe/webhook` jede Anfrage mit 500 ab.
+- `DETAILED_ANALYSIS_PRICE_CENTS` (optional) — überschreibt den Platzhalter-Preis in `lib/pricing.ts` (aktuell 500 = 5,00 €, **nicht final kalkuliert**). Siehe Abschnitt "Zweistufige Auswertung" unten.
 - `AGENT_WALLET_ADDRESS` (optional) — die BASTET-Agent-Wallet, öffentliche Adresse, Default in `lib/x402.ts` bereits gesetzt (`0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608`). Nur als `payTo` in `/api/premium` verwendet, keine Zahlungspflicht für Web/Telegram.
 - `X402_FACILITATOR_URL` (optional) — Default `https://x402.celo.org`.
+
+### Zweistufige Auswertung (Web-Betroffenen-Arm): kostenlose Schnell-Einschätzung + kostenpflichtige Detailanalyse
+
+**Stufe 1 — kostenlos** (`app/api/quick-assessment/route.ts`, `lib/chat.ts` → `runQuickAssessment`): günstiges/schnelles Modell (`claude-haiku-4-5-20251001`), OHNE Wissensbasis im Kontext. Liefert eine vorsichtig-hypothetisch formulierte, unsourcete Kurzeinordnung anhand vier grober Kriterien (PEM, Dauer, Alltagsbeeinträchtigung, beruflicher Zusammenhang) — bewusst NIEMALS "Sie haben Anspruch auf X", NIEMALS konkrete GdB-/MdE-Zahlen, keine Quellenbelege. Bleibt No-Storage wie die App bisher.
+
+**Stufe 2 — kostenpflichtig** (`app/api/detailed-assessment/route.ts`, `lib/chat.ts` → `runInterview`, unverändert gegenüber vorher): volles Modell (Sonnet) MIT vollständiger Wissensbasis, liefert konkrete GdB-/MdE-Werte mit Quellenbelegen — exakt das bisherige Auswertungsformat. Läuft NUR nach webhook-bestätigter Zahlung; der Client kann das nicht durch eine gefälschte "Zahlung erfolgreich"-Meldung erzwingen (`lib/assessmentSession.ts` speichert den Zahlungsstatus serverseitig, gesetzt ausschließlich von `/api/stripe/webhook`).
+
+**Ablieferung**: die Detailanalyse erscheint inline im selben Chatfenster (wie bisher das einzige Auswertungsformat) — bewusst **kein** PDF-Download für dieses Feature. Begründung: die bestehende REFERENZEN-Anzeige/Kopier-UI in `app/page.tsx` deckt das schon vollständig ab, ein PDF wäre eine zusätzliche, hier nicht nötige Komplexitätsebene (PDF-Erzeugung existiert im Repo bereits für einen anderen Zweck, `app/api/premium/route.ts`, dort aber als eigenständiges x402/Krypto-Feature mit anderer Zielsetzung — "Dossier zum Mitnehmen" statt Zahlungs-Freischaltung).
+
+**Preis**: `lib/pricing.ts`, EINZIGER Ort — `DETAILED_ANALYSIS_PRICE_CENTS` (Konstante, überschreibbar per gleichnamiger Env-Var). Ändert man den Wert dort, aktualisiert sich automatisch: der Stripe-PaymentIntent-Betrag (`app/api/checkout/route.ts`), der angezeigte Preis (`GET /api/pricing`, von `app/DetailedAnalysisUpsell.tsx` zur Laufzeit abgerufen — bewusst nicht als `NEXT_PUBLIC_`-Variable im Client-Bundle eingebrannt, damit eine Preisänderung ohne Rebuild-Unsicherheit überall ankommt). **Der Platzhalter (5,00 €) ist nicht kalkuliert** — vor Live-Gang durch den tatsächlichen Wert ersetzen (Berechnungsgrundlage: reale Anthropic-API-Kosten pro Detailanalyse).
+
+**Zahlungsablauf (Stripe Express Checkout Element, Apple Pay/Google Pay)**:
+1. Nutzer:in bestätigt zuerst die gesetzlich vorgeschriebene Checkbox (§ 356 Abs. 5 BGB, Widerrufsverzicht bei sofort bereitgestellten digitalen Inhalten) — **erst danach wird das Express-Checkout-Element überhaupt gemountet**, es existiert vorher nicht im DOM (nicht nur deaktiviert/versteckt).
+2. Bei Zahlungsbestätigung (`onConfirm`): `POST /api/checkout` legt eine Assessment-Session in Redis an (`status: "pending_payment"`) und einen Stripe-PaymentIntent mit `metadata.sessionId`.
+3. `stripe.confirmPayment(...)` bestätigt die Zahlung (Apple Pay/Google Pay brauchen dafür keinen Redirect).
+4. Stripe sendet `payment_intent.succeeded` an `/api/stripe/webhook` (signaturgeprüft) → Redis-Session wird auf `status: "paid"` gesetzt.
+5. Client pollt `POST /api/detailed-assessment` (bis zu 8× im 1,5-Sekunden-Abstand) — liefert erst, wenn der Webhook-Status `"paid"` erreicht hat.
+
+**Manuelle Schritte im Stripe-Dashboard, die noch offen sind (kann ich nicht selbst erledigen):**
+1. Stripe-Account anlegen/verifizieren, falls noch nicht geschehen.
+2. Unter **Settings → Payment methods → Apple Pay** die Domain `www.bastet-covid.org` verifizieren (Datei-Download + Hosting unter `/.well-known/apple-developer-merchantid-domain-association` — Stripe führt durch diesen Schritt; ohne Verifizierung zeigt Apple Pay im Express-Checkout-Element nichts an).
+3. `STRIPE_SECRET_KEY`, `STRIPE_PUBLISHABLE_KEY` als Vercel-Environment-Variables eintragen (Live- oder Test-Keys, je nach Phase).
+4. Unter **Developers → Webhooks** einen Endpoint auf `https://www.bastet-covid.org/api/stripe/webhook` anlegen, Event `payment_intent.succeeded` abonnieren, den erzeugten Signing Secret als `STRIPE_WEBHOOK_SECRET` eintragen.
+5. Vor Live-Gang: `DETAILED_ANALYSIS_PRICE_CENTS` auf den tatsächlich kalkulierten Preis setzen (siehe oben).
 
 **`.npmrc` mit `legacy-peer-deps=true`**: `@x402/next` 2.x pinnt `next: ">=16.2.6"` als Peer, verwendet aber ausschließlich die seit Next 15 stabile `next/server`-API (`NextRequest`/`NextResponse`) — der Pin ist konservativer als die tatsächliche Kompatibilität. Ohne `.npmrc` bricht `npm install` (auch auf Vercel) mit `ERESOLVE` ab.
 

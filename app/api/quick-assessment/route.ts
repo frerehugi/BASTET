@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
-import { runInterview } from "@/lib/chat";
+import { runQuickAssessment } from "@/lib/chat";
 import type { ChatMessage } from "@/lib/anthropic";
 
 export const runtime = "nodejs";
-export const maxDuration = 150;
+export const maxDuration = 60;
 
-interface ChatRequestBody {
+interface QuickAssessmentRequestBody {
   messages: ChatMessage[];
   diagnosisConfirmed: boolean;
   turnCount: number;
 }
 
 export async function POST(request: Request) {
-  let body: ChatRequestBody;
+  let body: QuickAssessmentRequestBody;
   try {
     body = await request.json();
   } catch {
@@ -24,7 +24,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const text = await runInterview(
+    const text = await runQuickAssessment(
       body.messages,
       !!body.diagnosisConfirmed,
       typeof body.turnCount === "number" ? body.turnCount : 0

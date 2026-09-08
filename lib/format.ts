@@ -48,6 +48,18 @@ export function splitReferences(content: string): ParsedAssessment {
   return { body, refs };
 }
 
+const QUICK_VERDICT_MARKER = "📋 Schnell-Einschätzung";
+
+/**
+ * Erkennt die kostenlose Schnell-Einschätzung (lib/chat.ts runQuickAssessment)
+ * an ihrer festen Kopfzeile — an dieser Stelle zeigt die Web-Oberfläche
+ * (app/page.tsx) das Freischalt-Angebot für die kostenpflichtige
+ * Detailanalyse (app/DetailedAnalysisUpsell.tsx).
+ */
+export function isQuickVerdict(content: string): boolean {
+  return content.trimStart().startsWith(QUICK_VERDICT_MARKER);
+}
+
 const STATS_MARKER = "STATS:";
 
 /**
