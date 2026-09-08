@@ -20,8 +20,15 @@ import {
 } from "@/lib/bgwLetter";
 import DetailedAnalysisUpsell from "./DetailedAnalysisUpsell";
 
-const STORAGE_NOTICE =
+// Zwei Varianten, je nach Kill-Switch (lib/paywall.ts, per GET /api/pricing
+// abgefragt) — bei deaktiviertem Kill-Switch (Default) gibt es weder eine
+// separate Schnell-Einschätzung noch eine Zahlungs-/Speicher-Stufe, die
+// Behauptung müsste sonst falsch werden (siehe commit 274e91c, keine
+// falschen No-Storage-Zusagen).
+const STORAGE_NOTICE_PAYWALL_ON =
   "Ihre Angaben werden zur Erstellung der kostenlosen Schnell-Einschätzung an unseren KI-Anbieter (Anthropic) zur Verarbeitung übermittelt. Auf unseren eigenen Servern speichern wir sie nicht darüber hinaus — mit Schließen dieses Fensters sind Ihre Angaben bei uns unwiderruflich weg. Nur falls Sie anschließend die kostenpflichtige Detailanalyse freischalten, wird Ihr Gesprächsverlauf vorübergehend (bis zu 2 Stunden) serverseitig gespeichert, um die Zahlungsbestätigung zu ermöglichen — danach automatisch gelöscht.";
+const STORAGE_NOTICE_PAYWALL_OFF =
+  "Ihre Angaben werden zur Erstellung der Einschätzung an unseren KI-Anbieter (Anthropic) zur Verarbeitung übermittelt. Auf unseren eigenen Servern speichern wir sie nicht darüber hinaus — mit Schließen dieses Fensters sind Ihre Angaben bei uns unwiderruflich weg, planen Sie die gut 15 Minuten möglichst am Stück ein.";
 
 type Role = "user" | "assistant";
 interface Message {
@@ -55,6 +62,17 @@ export default function App() {
   const [letterFields, setLetterFields] = useState<Record<number, LetterFields>>({});
   const [generatedLetter, setGeneratedLetter] = useState<Record<number, string>>({});
   const [letterCopiedIndex, setLetterCopiedIndex] = useState<number | null>(null);
+  // Default false = Kill-Switch aus (siehe lib/paywall.ts) - passt zum
+  // tatsächlichen Server-Default, falls die Abfrage unten noch nicht
+  // zurück ist, zeigt die Gate-Seite also nicht kurz die falsche Variante.
+  const [paywallEnabled, setPaywallEnabled] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/pricing")
+      .then((r) => r.json())
+      .then((data: { paywallEnabled?: boolean }) => setPaywallEnabled(!!data.paywallEnabled))
+      .catch(() => setPaywallEnabled(false));
+  }, []);
 
   function getLetterFields(i: number): LetterFields {
     return letterFields[i] ?? { name: "", address: "", date: formatDateDe(new Date()) };
@@ -103,7 +121,7 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/quick-assessment", {
+      const response = await fetch("/api/assessment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -190,7 +208,9 @@ export default function App() {
 
         {phase === "gate" && (
           <div style={styles.gateCard}>
-            <p style={styles.noticeText}>{STORAGE_NOTICE}</p>
+            <p style={styles.noticeText}>
+              {paywallEnabled ? STORAGE_NOTICE_PAYWALL_ON : STORAGE_NOTICE_PAYWALL_OFF}
+            </p>
             <div style={styles.divider} />
             <p style={styles.gateQuestion}>
               Ist bei Ihnen ein Post-COVID-Syndrom bzw. ME/CFS bereits ärztlich

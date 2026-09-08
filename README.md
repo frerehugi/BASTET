@@ -17,12 +17,12 @@ app/
 ├── doc/page.tsx           # Ärzte-Arm (strukturiertes CCC-Formular)
 ├── layout.tsx             # gemeinsames Layout inkl. BASTET-Kopfzeile
 └── api/
-    ├── quick-assessment/route.ts    # POST — kostenlose Schnell-Einschätzung (Stufe 1, Web)
-    ├── checkout/route.ts             # POST — legt Assessment-Session an + Stripe PaymentIntent
-    ├── detailed-assessment/route.ts  # POST — Detailanalyse (Stufe 2), NUR nach webhook-bestätigter Zahlung
+    ├── assessment/route.ts           # POST — EINER Endpoint für den Web-Chat, verzweigt auf PAYWALL_ENABLED (lib/paywall.ts): volle Detailanalyse direkt (Default) oder kostenlose Schnell-Einschätzung (Stufe 1)
+    ├── checkout/route.ts             # POST — legt Assessment-Session an + Stripe PaymentIntent (nur erreicht, wenn PAYWALL_ENABLED=true)
+    ├── detailed-assessment/route.ts  # POST — Detailanalyse (Stufe 2), NUR nach webhook-bestätigter Zahlung (nur relevant bei PAYWALL_ENABLED=true)
     ├── stripe/webhook/route.ts       # POST — Stripe-Webhook, signaturgeprüft, einzige Quelle für "bezahlt"
     ├── stripe/config/route.ts        # GET — liefert STRIPE_PUBLISHABLE_KEY an den Client
-    ├── pricing/route.ts              # GET — liefert den aktuellen Detailanalyse-Preis an den Client
+    ├── pricing/route.ts              # GET — liefert Detailanalyse-Preis UND PAYWALL_ENABLED-Status an den Client
     ├── doc/route.ts       # POST — Ärzte-Arm-Logik
     ├── telegram/route.ts  # POST — Telegram-Webhook, ruft dieselbe runInterview()-Logik wie die Detailanalyse auf
     ├── premium/route.ts   # POST — x402-geschützter Endpoint (0,10 USDC), liefert PDF-Zusammenfassung (Krypto, siehe unten — getrennt von Stripe)
@@ -32,6 +32,7 @@ scripts/
 lib/
 ├── anthropic.ts           # Claude-API-Client (serverseitig)
 ├── stripe.ts                # Stripe-Server-Client (Kartenzahlung/Apple Pay/Google Pay) — getrennt von lib/x402.ts (Krypto)
+├── paywall.ts               # Kill-Switch (PAYWALL_ENABLED), siehe eigener README-Abschnitt oben
 ├── pricing.ts               # EINZIGER Ort für den Detailanalyse-Preis, siehe Abschnitt unten
 ├── assessmentSession.ts    # Upstash-Redis-Session pro Zahlungsvorgang, TTL 2 Std. — Bindeglied zwischen Stripe-Webhook und Detailanalyse
 ├── x402.ts                 # x402-Resource-Server-Konfiguration (Facilitator, Celo Mainnet, Agent-Wallet)
@@ -55,7 +56,7 @@ ANTHROPIC_API_KEY=sk-ant-... npm run dev
 ```
 
 **Auf Vercel — Environment Variables:**
-- `ANTHROPIC_API_KEY` — sonst antworten `/api/quick-assessment`, `/api/detailed-assessment` und `/api/doc` mit einem Konfigurationsfehler.
+- `ANTHROPIC_API_KEY` — sonst antworten `/api/assessment`, `/api/detailed-assessment` und `/api/doc` mit einem Konfigurationsfehler.
 - `TELEGRAM_BOT_TOKEN` — Bot-Token von @BotFather.
 - `TELEGRAM_WEBHOOK_SECRET` — beliebiger langer Zufallsstring (z.B. `openssl rand -hex 32`). Ohne diese Variable lehnt `/api/telegram` **jede** Anfrage mit 401 ab (fail closed) — sie muss vor dem `setWebhook`-Aufruf unten gesetzt sein, siehe dort.
 - `UPSTASH_REDIS_KV_REST_API_URL` / `UPSTASH_REDIS_KV_REST_API_TOKEN` — über Vercel Storage → Marketplace → Upstash (Redis) provisionieren und mit dem Projekt verbinden. **Achtung bei eigenem Custom-Prefix**: die Vercel-Integration legt je nach gewähltem Prefix andere Variablennamen an als Upstashs eigene Konvention (`UPSTASH_REDIS_REST_URL`/`_TOKEN`) — `lib/telegramSession.ts` liest die Werte deshalb explizit unter den oben genannten Namen, nicht über `Redis.fromEnv()`. Nach dem Verbinden im Dashboard nachsehen, welche Namen tatsächlich entstanden sind. Vercel KV (das native Produkt) wurde Ende 2024 eingestellt. Wird jetzt auch von `lib/assessmentSession.ts` für die Detailanalyse-Freischaltung genutzt (dieselbe Instanz, kein zweites Redis nötig).
@@ -63,12 +64,24 @@ ANTHROPIC_API_KEY=sk-ant-... npm run dev
 - `STRIPE_PUBLISHABLE_KEY` — aus dem Stripe-Dashboard, nicht geheim, wird aber bewusst über `/api/stripe/config` statt `NEXT_PUBLIC_...` ausgeliefert (siehe Kommentar in der Route) — trotzdem als normale (nicht `NEXT_PUBLIC_`) Vercel-Variable eintragen.
 - `STRIPE_WEBHOOK_SECRET` — aus dem Stripe-Dashboard, nach Anlegen des Webhook-Endpoints (siehe unten). Ohne diese Variable lehnt `/api/stripe/webhook` jede Anfrage mit 500 ab.
 - `DETAILED_ANALYSIS_PRICE_CENTS` (optional) — überschreibt den Platzhalter-Preis in `lib/pricing.ts` (aktuell 500 = 5,00 €, **nicht final kalkuliert**). Siehe Abschnitt "Zweistufige Auswertung" unten.
+- `PAYWALL_ENABLED` (optional, Kill-Switch) — **Default: aus** (unset oder jeder Wert außer exakt `"true"`). Siehe eigener Abschnitt direkt unten, vor "Zweistufige Auswertung".
 - `AGENT_WALLET_ADDRESS` (optional) — die BASTET-Agent-Wallet, öffentliche Adresse, Default in `lib/x402.ts` bereits gesetzt (`0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608`). Nur als `payTo` in `/api/premium` verwendet, keine Zahlungspflicht für Web/Telegram.
 - `X402_FACILITATOR_URL` (optional) — Default `https://x402.celo.org`.
 
-### Zweistufige Auswertung (Web-Betroffenen-Arm): kostenlose Schnell-Einschätzung + kostenpflichtige Detailanalyse
+### Kill-Switch: `PAYWALL_ENABLED`
 
-**Stufe 1 — kostenlos** (`app/api/quick-assessment/route.ts`, `lib/chat.ts` → `runQuickAssessment`): günstiges/schnelles Modell (`claude-haiku-4-5-20251001`), OHNE Wissensbasis im Kontext. Liefert eine vorsichtig-hypothetisch formulierte, unsourcete Kurzeinordnung anhand vier grober Kriterien (PEM, Dauer, Alltagsbeeinträchtigung, beruflicher Zusammenhang) — bewusst NIEMALS "Sie haben Anspruch auf X", NIEMALS konkrete GdB-/MdE-Zahlen, keine Quellenbelege. Bleibt No-Storage wie die App bisher.
+Die gesamte Zahlungsschranke unten (Stripe, Schnell-Einschätzung/Detailanalyse-Trennung) ist per **einem** Flag komplett abschaltbar, ohne dass der Code dafür entfernt oder umgebaut werden muss:
+
+- **`PAYWALL_ENABLED` unset oder ≠ `"true"` (Default, aktueller Stand):** Der Betroffenen-Arm liefert auf **allen** Kanälen (Web wie Telegram) direkt die volle Detailanalyse (GdB/MdE mit Quellenbelegen) — kein Zahlungsschritt, keine Stripe-Elemente, kein Webhook/Entitlement-Check im Pfad. Web verhält sich exakt wie Telegram es schon immer tut.
+- **`PAYWALL_ENABLED=true`:** aktueller Zwei-Stufen-Ablauf wie unten beschrieben (kostenlose Schnell-Einschätzung zuerst, Stripe-Zahlung schaltet die Detailanalyse frei).
+
+**Einziger Verzweigungspunkt im gesamten Code**: `app/api/assessment/route.ts` (POST-Handler), eine einzelne Zeile (`isPaywallEnabled() ? runQuickAssessment(...) : runInterview(...)`, Funktion aus `lib/paywall.ts`). Kein zweiter Ort prüft dieses Flag sicherheitsrelevant — `app/page.tsx` fragt es zusätzlich per `GET /api/pricing` ab, aber nur um den richtigen Datenschutz-Hinweistext auf der Startseite anzuzeigen (rein kosmetisch, ändert am serverseitigen Verhalten nichts). Die komplette Stripe-Infrastruktur (`app/api/checkout`, `app/api/stripe/webhook`, `app/api/detailed-assessment`, `app/DetailedAnalysisUpsell.tsx`, `lib/assessmentSession.ts`) bleibt bei deaktiviertem Kill-Switch unverändert im Repo, wird aber schlicht nie erreicht: `DetailedAnalysisUpsell` rendert sich nur, wenn eine Antwort den Schnell-Einschätzung-Marker trägt (`lib/format.ts` `isQuickVerdict`) — bei einer vollen Detailanalyse ist das nie der Fall.
+
+**Vor Live-Gang mit echter Zahlungspflicht**: `PAYWALL_ENABLED=true` setzen, UND die Stripe-Dashboard-Schritte unten UND den finalen Preis (`DETAILED_ANALYSIS_PRICE_CENTS`) erledigt haben — die Reihenfolge ist wichtig, sonst zeigt die App eine funktionslose oder falsch bepreiste Zahlungsschranke an.
+
+### Zweistufige Auswertung bei `PAYWALL_ENABLED=true` (Web-Betroffenen-Arm): kostenlose Schnell-Einschätzung + kostenpflichtige Detailanalyse
+
+**Stufe 1 — kostenlos** (`app/api/assessment/route.ts`, `lib/chat.ts` → `runQuickAssessment`): günstiges/schnelles Modell (`claude-haiku-4-5-20251001`), OHNE Wissensbasis im Kontext. Liefert eine vorsichtig-hypothetisch formulierte, unsourcete Kurzeinordnung anhand vier grober Kriterien (PEM, Dauer, Alltagsbeeinträchtigung, beruflicher Zusammenhang) — bewusst NIEMALS "Sie haben Anspruch auf X", NIEMALS konkrete GdB-/MdE-Zahlen, keine Quellenbelege. Bleibt No-Storage wie die App bisher.
 
 **Stufe 2 — kostenpflichtig** (`app/api/detailed-assessment/route.ts`, `lib/chat.ts` → `runInterview`, unverändert gegenüber vorher): volles Modell (Sonnet) MIT vollständiger Wissensbasis, liefert konkrete GdB-/MdE-Werte mit Quellenbelegen — exakt das bisherige Auswertungsformat. Läuft NUR nach webhook-bestätigter Zahlung; der Client kann das nicht durch eine gefälschte "Zahlung erfolgreich"-Meldung erzwingen (`lib/assessmentSession.ts` speichert den Zahlungsstatus serverseitig, gesetzt ausschließlich von `/api/stripe/webhook`).
 
