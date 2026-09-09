@@ -18,6 +18,9 @@ import {
   OTHER_SECTOR_NOTICE,
   type LetterFields,
 } from "@/lib/bgwLetter";
+import TriageFlow from "./TriageFlow";
+import type { Answers } from "@/lib/triage/types";
+import { answersToContextText } from "@/lib/triage/context";
 
 const STORAGE_NOTICE =
   "Ihre Angaben werden zur Erstellung der Einschätzung an unseren KI-Anbieter (Anthropic) zur Verarbeitung übermittelt. Auf unseren eigenen Servern speichern wir sie nicht darüber hinaus — mit Schließen dieses Fensters sind Ihre Angaben bei uns unwiderruflich weg, planen Sie die gut 15 Minuten möglichst am Stück ein.";
@@ -27,7 +30,7 @@ interface Message {
   role: Role;
   content: string;
 }
-type Phase = "gate" | "warned" | "chat" | "ended";
+type Phase = "gate" | "warned" | "triage" | "triageResult" | "chat" | "ended";
 
 function useAutoScroll(dep: number) {
   const ref = useRef<HTMLDivElement>(null);
@@ -46,6 +49,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
   const [turnCount, setTurnCount] = useState(0);
   const [lastHistory, setLastHistory] = useState<Message[] | null>(null);
+  const [triageContext, setTriageContext] = useState<string | null>(null);
   const [openRefs, setOpenRefs] = useState<Record<number, boolean>>({});
   const [copiedIndex, setCopiedIndex] = useState<number | "all" | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
@@ -109,6 +113,7 @@ export default function App() {
           messages: history,
           diagnosisConfirmed,
           turnCount,
+          triageContext,
         }),
       });
       let data: { text?: string; error?: string };
@@ -144,13 +149,33 @@ export default function App() {
 
   function startChat(confirmed: boolean) {
     setDiagnosisConfirmed(confirmed);
+    setPhase("triage");
+  }
+
+  /**
+   * Tier 1 abgeschlossen: summaryText kommt fertig formatiert aus
+   * lib/triage/summary.ts (kein API-Call). Wird als erste "Assistent"-
+   * Nachricht ins bestehende Chat-Fenster gehängt, damit Referenzen-Toggle,
+   * Kopieren und "Brief an die BG" unverändert weiterfunktionieren - diese
+   * Nachricht unterscheidet sich für die Anzeige nicht von einer LLM-Antwort.
+   */
+  function handleTriageComplete(answers: Answers, summaryText: string) {
+    setTriageContext(answersToContextText(answers));
+    setMessages([{ role: "assistant", content: summaryText }]);
+    setPhase("triageResult");
+  }
+
+  /** Übergang Tier 1 → Tier 2: ab hier laufen echte Anthropic-API-Calls. */
+  function beginDetailanalyse() {
     setPhase("chat");
-    const opening: Message = {
-      role: "assistant",
-      content:
-        "Danke. Erzählen Sie mir in eigenen Worten, was seit wann bei Ihnen los ist — Stichworte reichen völlig, Sie müssen keine ganzen Sätze schreiben.",
-    };
-    setMessages([opening]);
+    setMessages((m) => [
+      ...m,
+      {
+        role: "assistant",
+        content:
+          "Für die Detailanalyse: Möchten Sie noch etwas ergänzen — z. B. Medikation und Therapieansprechen, bereits durchgeführte objektive Tests (6-Minuten-Gehstrecke, Handkraftmessung, neuropsychologische Testung) samt Ergebnis, oder individuelle Besonderheiten? Stichworte reichen. Falls nicht, schreiben Sie einfach \"weiter zur Auswertung\".",
+      },
+    ]);
   }
 
   function handleSend() {
@@ -225,6 +250,8 @@ export default function App() {
           </div>
         )}
 
+        {phase === "triage" && <TriageFlow onComplete={handleTriageComplete} />}
+
         {phase === "ended" && (
           <div style={styles.gateCard}>
             <p style={styles.bodyText}>
@@ -238,11 +265,13 @@ export default function App() {
           </div>
         )}
 
-        {phase === "chat" && (
+        {(phase === "chat" || phase === "triageResult") && (
           <>
             <div style={styles.progressLine}>
-              {turnCount === 0
-                ? "Beginn des Gesprächs"
+              {phase === "triageResult"
+                ? "Ersteinschätzung abgeschlossen"
+                : turnCount === 0
+                ? "Detailanalyse — Ergänzungen willkommen"
                 : `Frage/Antwort ${turnCount} · Budget ca. 6-8 Austausche`}
             </div>
             <div style={styles.chatWindow} ref={scrollRef}>
@@ -373,41 +402,60 @@ export default function App() {
               )}
             </div>
 
-            <div style={styles.inputRow}>
-              <textarea
-                style={styles.textarea}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSend();
-                  }
-                }}
-                placeholder="Ihre Antwort — Stichworte reichen"
-                rows={5}
-              />
-              <button
-                style={styles.sendButton}
-                onClick={handleSend}
-                disabled={loading || !input.trim()}
-              >
-                Senden
-              </button>
-            </div>
-            <div style={styles.footerRow}>
-              <button style={styles.linkButton} onClick={forceEvaluation} disabled={loading}>
-                Auswertung jetzt erstellen
-              </button>
-              <button
-                style={styles.linkButton}
-                onClick={() => copyText(fullTranscriptText(), "all")}
-                disabled={messages.length === 0}
-              >
-                {copiedAll ? "Gesamter Chat kopiert ✓" : "Gesamten Chat kopieren"}
-              </button>
-              <span style={styles.crisisNote}>{CRISIS_NOTE}</span>
-            </div>
+            {phase === "triageResult" && (
+              <div style={styles.footerRow}>
+                <button style={styles.primaryButton} onClick={beginDetailanalyse}>
+                  Detailanalyse anfordern (Beta)
+                </button>
+                <button
+                  style={styles.linkButton}
+                  onClick={() => copyText(fullTranscriptText(), "all")}
+                >
+                  {copiedAll ? "Kurzauswertung kopiert ✓" : "Kurzauswertung kopieren"}
+                </button>
+                <span style={styles.crisisNote}>{CRISIS_NOTE}</span>
+              </div>
+            )}
+
+            {phase === "chat" && (
+              <>
+                <div style={styles.inputRow}>
+                  <textarea
+                    style={styles.textarea}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                      }
+                    }}
+                    placeholder="Ihre Antwort — Stichworte reichen"
+                    rows={5}
+                  />
+                  <button
+                    style={styles.sendButton}
+                    onClick={handleSend}
+                    disabled={loading || !input.trim()}
+                  >
+                    Senden
+                  </button>
+                </div>
+                <div style={styles.footerRow}>
+                  <button style={styles.linkButton} onClick={forceEvaluation} disabled={loading}>
+                    Auswertung jetzt erstellen
+                  </button>
+                  <button
+                    style={styles.linkButton}
+                    onClick={() => copyText(fullTranscriptText(), "all")}
+                    disabled={messages.length === 0}
+                  >
+                    {copiedAll ? "Gesamter Chat kopiert ✓" : "Gesamten Chat kopieren"}
+                  </button>
+                  <span style={styles.crisisNote}>{CRISIS_NOTE}</span>
+                </div>
+              </>
+            )}
           </>
         )}
       </div>

@@ -9,6 +9,9 @@ interface ChatRequestBody {
   messages: ChatMessage[];
   diagnosisConfirmed: boolean;
   turnCount: number;
+  /** Kompakter Tier-1-Kontext (siehe lib/triage/context.ts), optional - fehlt
+   *  z.B. beim Telegram-Arm, der (noch) keine Tier-1-Ersteinschätzung hat. */
+  triageContext?: string | null;
 }
 
 export async function POST(request: Request) {
@@ -27,7 +30,8 @@ export async function POST(request: Request) {
     const text = await runInterview(
       body.messages,
       !!body.diagnosisConfirmed,
-      typeof body.turnCount === "number" ? body.turnCount : 0
+      typeof body.turnCount === "number" ? body.turnCount : 0,
+      typeof body.triageContext === "string" ? body.triageContext : null
     );
     return NextResponse.json({ text });
   } catch (error) {

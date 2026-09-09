@@ -1,12 +1,37 @@
 import { callClaude, type ChatMessage } from "./anthropic";
 import { getKnowledgeBase } from "./knowledgeBase";
 
-function buildSystemPrompt(diagnosisConfirmed: boolean, turnBudgetHint: string, knowledgeBase: string): string {
+function buildSystemPrompt(
+  diagnosisConfirmed: boolean,
+  turnBudgetHint: string,
+  knowledgeBase: string,
+  triageContext: string | null
+): string {
+  const triageBlock = triageContext
+    ? `
+BEREITS ERHOBENE STRUKTURIERTE ANGABEN (Tier 1, regelbasierte Ersteinschätzung —
+NICHT von dir generiert, sondern deterministisch vom Frontend erhoben, BEVOR
+dieses Gespräch begann):
+${triageContext}
+
+Diese Punkte sind bereits vollständig beantwortet — frage sie UNTER KEINEN
+UMSTÄNDEN erneut ab, auch nicht umformuliert. Nutze sie direkt als gesicherte
+Grundlage für deine Auswertung. Konzentriere dich in diesem Gespräch stattdessen
+auf das, was Tier 1 nicht erfasst hat: Medikation und Therapieansprechen,
+bereits durchgeführte objektive Tests (6-Minuten-Gehstrecke, Handkraftmessung,
+neuropsychologische Testung) samt Ergebnis, individuelle Besonderheiten des
+Verlaufs, sowie Rückfragen zu Punkten, die aus den Tier-1-Angaben unklar
+blieben. Wenn die Tier-1-Angaben für eine vollständige Auswertung bereits
+ausreichen, kannst du auch direkt zur Auswertung übergehen, statt Fragen zu
+erzwingen.
+`
+    : "";
+
   return `Du bist ein Informationsassistent für eine KI-gestützte Vorbegutachtung
 bei Post-COVID/ME-CFS im deutschen Sozialrecht (GdB nach VersMedV, ggf. MdE nach
 SGB VII bei klar genanntem Berufsbezug). Du sprichst Deutsch, direkt und warm,
 niemals bürokratisch-kalt.
-
+${triageBlock}
 STATUS DIAGNOSE: ${diagnosisConfirmed ? "ärztlich gesichert (vom Nutzer bestätigt)." : "NICHT gesichert / unklar — die Person wünscht dennoch eine rein orientierende Einschätzung. Weise im Auswertungstext zusätzlich deutlich darauf hin, dass die Diagnose nicht gesichert ist und die Einschätzung deshalb noch unsicherer ist als ohnehin."}
 
 GRUNDREGELN (nicht verhandelbar):
@@ -66,7 +91,14 @@ ZEITBUDGET (wegen Brain Fog zwingend, Tippen selbst ist anstrengend):
   Thema aus der Liste (z.B. von PEM zu Dauer) gehört aber immer in eine
   eigene, spätere Nachricht, nie in dieselbe wie das vorherige Thema. Grund:
   mehrere Themen auf einmal überfordern bei Brain Fog.
-- Themen in dieser Reihenfolge, jedes eine eigene Nachricht:
+${
+  triageContext
+    ? `- Die vier früher hier aufgeführten Kernthemen (PEM, Dauer, Alltags-/
+  Arbeitsfähigkeit, beruflicher Zusammenhang) liegen bereits aus Tier 1 vor
+  (siehe Block oben) — starte NICHT mit diesen, sondern direkt mit der
+  Vertiefung (Medikation, objektive Tests, individuelle Besonderheiten) oder,
+  falls nichts davon offen ist, direkt mit der Auswertung.`
+    : `- Themen in dieser Reihenfolge, jedes eine eigene Nachricht:
   1. Ist PEM (verzögerte Verschlechterung nach Belastung) vorhanden? Falls ja:
      Latenz bis zur Verschlechterung und übliche Erholungsdauer.
   2. Besteht die Beeinträchtigung schon länger als 6 Monate?
@@ -84,7 +116,8 @@ ZEITBUDGET (wegen Brain Fog zwingend, Tippen selbst ist anstrengend):
   neuropsychologische Testung durchgeführt wurden) nur als eigenes, weiteres
   Thema in einer eigenen Nachricht, wenn das Budget reicht oder die Person es
   von sich aus erwähnt — falls objektive Tests erwähnt werden, aktiv nach dem
-  Ergebnis fragen (ebenfalls als eigenes Thema).
+  Ergebnis fragen (ebenfalls als eigenes Thema).`
+}
 - Bevorzuge Ja/Nein-, Skala- (1-10) oder Stichwort-Fragen. Sag ausdrücklich, dass
   Stichworte reichen.
 - Nenne bei jeder Frage kurz den Fortschritt, z.B. "(noch ca. 2 kurze Fragen)".
@@ -199,7 +232,8 @@ ${knowledgeBase}`;
 export async function runInterview(
   messages: ChatMessage[],
   diagnosisConfirmed: boolean,
-  turnCount: number
+  turnCount: number,
+  triageContext: string | null = null
 ): Promise<string> {
   const budgetHint =
     turnCount >= 5
@@ -207,5 +241,9 @@ export async function runInterview(
       : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
 
   const knowledgeBase = await getKnowledgeBase();
-  return callClaude(buildSystemPrompt(diagnosisConfirmed, budgetHint, knowledgeBase), messages, 16000);
+  return callClaude(
+    buildSystemPrompt(diagnosisConfirmed, budgetHint, knowledgeBase, triageContext),
+    messages,
+    16000
+  );
 }
