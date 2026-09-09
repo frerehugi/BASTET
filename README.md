@@ -44,15 +44,18 @@ ANTHROPIC_API_KEY=sk-ant-... npm run dev
 **Auf Vercel — Environment Variables:**
 - `ANTHROPIC_API_KEY` — sonst antworten `/api/chat` und `/api/doc` mit einem Konfigurationsfehler.
 - `TELEGRAM_BOT_TOKEN` — Bot-Token von @BotFather.
+- `TELEGRAM_WEBHOOK_SECRET` — beliebiger langer Zufallsstring (z.B. `openssl rand -hex 32`). Ohne diese Variable lehnt `/api/telegram` **jede** Anfrage mit 401 ab (fail closed) — sie muss vor dem `setWebhook`-Aufruf unten gesetzt sein, siehe dort.
 - `UPSTASH_REDIS_KV_REST_API_URL` / `UPSTASH_REDIS_KV_REST_API_TOKEN` — über Vercel Storage → Marketplace → Upstash (Redis) provisionieren und mit dem Projekt verbinden. **Achtung bei eigenem Custom-Prefix**: die Vercel-Integration legt je nach gewähltem Prefix andere Variablennamen an als Upstashs eigene Konvention (`UPSTASH_REDIS_REST_URL`/`_TOKEN`) — `lib/telegramSession.ts` liest die Werte deshalb explizit unter den oben genannten Namen, nicht über `Redis.fromEnv()`. Nach dem Verbinden im Dashboard nachsehen, welche Namen tatsächlich entstanden sind. Vercel KV (das native Produkt) wurde Ende 2024 eingestellt.
 
 **Domain `doc.bastet-covid.org`**: unter Vercel → Settings → Domains zum Projekt `bastet` hinzufügen (nicht `www.doc...`). Da Vercel auch Registrar von `bastet-covid.org` ist, sollte der DNS-Eintrag automatisch entstehen.
 
-**Telegram-Webhook setzen**, sobald der Code deployt und die drei Variablen oben gesetzt sind — **unbedingt die `www.`-Domain verwenden**, nicht die Apex-Domain: `bastet-covid.org` liefert einen 308-Redirect auf `www.bastet-covid.org`, und Telegrams Webhook-Zustellung folgt Redirects auf POST-Requests nicht — die Domain sähe dann "gesetzt" aus, aber es käme nie eine Nachricht an:
+**Telegram-Webhook setzen**, sobald der Code deployt und `TELEGRAM_BOT_TOKEN`/`TELEGRAM_WEBHOOK_SECRET`/`UPSTASH_...` gesetzt sind — **unbedingt die `www.`-Domain verwenden**, nicht die Apex-Domain: `bastet-covid.org` liefert einen 308-Redirect auf `www.bastet-covid.org`, und Telegrams Webhook-Zustellung folgt Redirects auf POST-Requests nicht — die Domain sähe dann "gesetzt" aus, aber es käme nie eine Nachricht an. **`secret_token` muss exakt dem Wert von `TELEGRAM_WEBHOOK_SECRET` entsprechen** — ohne (oder mit falschem) `secret_token` weist `/api/telegram` jede Zustellung mit 401 ab und der Bot bleibt stumm:
 ```bash
-curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://www.bastet-covid.org/api/telegram"
+curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://www.bastet-covid.org/api/telegram&secret_token=<TELEGRAM_WEBHOOK_SECRET>"
 ```
-`<TELEGRAM_BOT_TOKEN>` durch den echten Token ersetzen — nie im Klartext committen oder in einen Chat einfügen.
+`<TELEGRAM_BOT_TOKEN>` und `<TELEGRAM_WEBHOOK_SECRET>` durch die echten Werte ersetzen — nie im Klartext committen oder in einen Chat einfügen.
+
+**Sicherheitshinweis (behoben)**: `/api/telegram` prüfte bislang die Herkunft eingehender Requests nicht — `handleAdminCommand` (`lib/adminCommands.ts`) vertraute allein der `chat.id` im Request-Body, sodass ein gefälschter Direkt-Request an den Endpoint (unter Umgehung von Telegram) mit bekannter/erratener Admin-chat_id den Freigabe-Workflow der Wissensbasis erreichen konnte. Jetzt per `X-Telegram-Bot-Api-Secret-Token`-Header (`TELEGRAM_WEBHOOK_SECRET`, oben) abgesichert — **bestehende Deployments müssen den Webhook mit `secret_token` neu setzen (Befehl oben), sonst bleibt der Bot nach dem Deploy stumm.**
 
 Datenschutz-Hinweis: Der Telegram-Arm ist kein reines No-Storage mehr wie der Web-Arm — der Gesprächsverlauf wird pro `chat_id` in Upstash Redis zwischengespeichert, mit TTL 60 Minuten Inaktivität. Der Bot weist beim Start explizit darauf hin (siehe `GATE_PROMPT` in `app/api/telegram/route.ts`).
 
