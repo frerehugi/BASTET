@@ -42,7 +42,10 @@ export async function callClaude(
     // max_uses begrenzt die Recherchekosten pro Anfrage - die Wissensbasis
     // deckt den Regelfall ab, web_search soll gezielt ergänzen (aktuellere
     // Urteile/Normfassungen), nicht die komplette Recherche neu aufrollen.
-    body.tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }];
+    // web_search_20260209 (mit dynamischem Filtering) statt der älteren
+    // web_search_20250305-Variante, da MODEL (Sonnet 5) den neueren Typ
+    // unterstützt - siehe claude-api-Skill, API-Drift-Tabelle.
+    body.tools = [{ type: "web_search_20260209", name: "web_search", max_uses: 5 }];
   }
 
   const response = await fetch(ANTHROPIC_API_URL, {
