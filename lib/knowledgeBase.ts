@@ -29,6 +29,7 @@ const FILES = [
   "bg-kontaktdaten.md",
   "standardbrief-bgw.md",
   "quellen.md",
+  "sgb-index-alle-buecher.md",
 ];
 
 let staticCached: string | null = null;
