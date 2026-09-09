@@ -18,6 +18,11 @@ interface TriageFlowProps {
  */
 export default function TriageFlow({ onComplete }: TriageFlowProps) {
   const [answers, setAnswers] = useState<Answers>({});
+  // Laufende Mehrfachauswahl der aktuell angezeigten Multi-Frage, getrennt von
+  // `answers`: `answers[id]` darf erst beim "Weiter"-Klick gesetzt werden,
+  // sonst hält nextQuestion() die Frage schon nach der ersten Option-Auswahl
+  // für beantwortet und springt vorzeitig zur nächsten Frage.
+  const [draft, setDraft] = useState<string[]>([]);
 
   const current = nextQuestion(answers);
   const { done, total } = progress(answers);
@@ -28,29 +33,26 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
     maybeFinish(next);
   }
 
-  function toggleMulti(id: QuestionId, value: string) {
-    const existing = (answers[id] as string[] | undefined) ?? [];
-    let updated: string[];
-    if (value === "keine") {
-      updated = existing.includes("keine") ? [] : ["keine"];
-    } else {
+  function toggleMulti(value: string) {
+    setDraft((existing) => {
+      if (value === "keine") {
+        return existing.includes("keine") ? [] : ["keine"];
+      }
       const withoutKeine = existing.filter((v) => v !== "keine");
-      updated = withoutKeine.includes(value)
+      return withoutKeine.includes(value)
         ? withoutKeine.filter((v) => v !== value)
         : [...withoutKeine, value];
-    }
-    setAnswers({ ...answers, [id]: updated });
+    });
   }
 
   function confirmMulti(id: QuestionId) {
     // Multi-Select braucht einen expliziten "Weiter"-Klick, da mehrere
     // Optionen zutreffen können - anders als bei single-select, wo die
     // Auswahl selbst schon der Bestätigungsklick ist.
-    maybeFinish(answers);
-    // erzwingt Neubewertung von nextQuestion() auch wenn sich der Wert
-    // gegenüber dem letzten Toggle nicht geändert hat (z.B. "keine" nochmal
-    // angeklickt und wieder abgewählt) - simple Re-Render reicht, da
-    // nextQuestion() answers[id] bereits prüft.
+    const next = { ...answers, [id]: draft };
+    setAnswers(next);
+    setDraft([]);
+    maybeFinish(next);
   }
 
   function maybeFinish(current: Answers) {
@@ -89,12 +91,12 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
         <>
           <div style={styles.optionGrid}>
             {current.options.map((opt) => {
-              const selected = ((answers[current.id] as string[] | undefined) ?? []).includes(opt.value);
+              const selected = draft.includes(opt.value);
               return (
                 <button
                   key={opt.value}
                   style={selected ? styles.optionButtonSelected : styles.optionButton}
-                  onClick={() => toggleMulti(current.id, opt.value)}
+                  onClick={() => toggleMulti(opt.value)}
                 >
                   {selected ? "✓ " : ""}
                   {opt.label}
@@ -105,7 +107,7 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
           <button
             style={styles.continueButton}
             onClick={() => confirmMulti(current.id)}
-            disabled={((answers[current.id] as string[] | undefined) ?? []).length === 0}
+            disabled={draft.length === 0}
           >
             Weiter
           </button>
