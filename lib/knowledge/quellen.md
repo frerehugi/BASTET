@@ -5,7 +5,8 @@
 - **BMAS-Broschüre "Versorgungsmedizin-Verordnung" (Volltext inkl. Anlage, PDF, Stand lfd. aktualisiert)**: https://www.bmas.de/SharedDocs/Downloads/DE/Publikationen/k710-versorgungsmed-verordnung.pdf
 - **REHADAT-Recht/-Literatur** (Volltext VMG, Rechtsprechung, Kapitel einzeln verlinkt): https://www.rehadat-recht.de/ und https://www.rehadat-literatur.de/
 - **DGUV** (Formulargutachten, UV-Recht-Entscheidungssammlung): https://www.dguv.de/ , https://www.dguv.de/uv-recht/
-- **SGB VII, SGB IX, SGB XIV** im Volltext: https://www.gesetze-im-internet.de/
+- **SGB V, VI, VII, IX, X, XIV** im Volltext: https://www.gesetze-im-internet.de/ — für Begutachtungsverfahrensrecht siehe die neue Übersicht in `sgb-verfahrensrecht-begutachtung.md` (§ 275 SGB V, § 43 SGB VI, § 200 SGB VII, §§ 14/17/152 SGB IX, § 21 SGB X)
+- **sozialgesetzbuch-sgb.de** — praktisches Volltext-Nachschlagewerk für SGB I–XIV mit Querverweisen; als Einstieg nützlich, für die maßgebliche Fassung im Zweifel gesetze-im-internet.de heranziehen
 
 ## Fachgesellschaften / Leitlinien
 - **Sektion Begutachtung der Deutschen Gesellschaft für Orthopädie und Unfallchirurgie (DGOU)**, in Zusammenarbeit mit DGNB — Bemessungsempfehlungen für Verletzungsfolgen (auch in der Privaten Unfallversicherung relevant)
