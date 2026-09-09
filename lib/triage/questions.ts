@@ -59,7 +59,7 @@ export const QUESTIONS: Question[] = [
     options: [
       { value: "muskel", label: "Muskelschmerzen" },
       { value: "gelenk", label: "Gelenkschmerzen (ohne Schwellung/Rötung)" },
-      { value: "kopf-neu", label: "Kopfschmerzen neuen Typs/Musters" },
+      { value: "kopf-neu", label: "Neuartige Kopfschmerzen" },
       { value: "hals", label: "Halsschmerzen" },
       { value: "lymphknoten", label: "Druckschmerzhafte Lymphknoten" },
       { value: "keine", label: "Keine davon" },
@@ -82,8 +82,7 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "autonom",
-    prompt:
-      "Haben Sie eines der folgenden autonomen/körperlichen Anzeichen? (Mehrfachauswahl)",
+    prompt: "Welche der folgenden autonomen/körperlichen Anzeichen haben Sie? (Mehrfachauswahl)",
     type: "multi",
     options: [
       { value: "orthostatisch", label: "Schwindel/Herzrasen im Stehen" },
@@ -96,8 +95,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "autonomHfDokumentiert",
     showIf: (a) => Array.isArray(a.autonom) && a.autonom.includes("orthostatisch"),
-    prompt:
-      "Wurde ein Herzfrequenzanstieg beim Aufstehen (z. B. Schellong-Test, Kipptisch) je gemessen?",
+    prompt: "Wurde jemals ein Herzfrequenzanstieg beim Aufstehen (z. B. Schellong-Test, Kipptisch) gemessen?",
     type: "single",
     options: [
       { value: "ja", label: "Ja, ≥30 bpm bzw. auf ≥120 bpm dokumentiert" },
@@ -107,8 +105,9 @@ export const QUESTIONS: Question[] = [
   },
   {
     id: "schlaf",
-    prompt: "Wie würden Sie Ihren Schlaf beschreiben?",
-    type: "single",
+    prompt: "Welche der folgenden Schlafprobleme haben Sie? (Mehrfachauswahl möglich)",
+    type: "multi",
+    exclusiveValue: "unauffaellig",
     options: [
       { value: "nicht-erholsam", label: "Nicht erholsam, trotz ausreichender Dauer" },
       { value: "ein-durchschlaf", label: "Ein-/Durchschlafstörung" },
@@ -143,11 +142,12 @@ export const QUESTIONS: Question[] = [
   {
     id: "beruflicherKontext",
     prompt:
-      "Bestand ein beruflicher Zusammenhang mit Ihrer Erkrankung (z. B. Tätigkeit im Gesundheitsdienst, in der Wohlfahrtspflege oder in einem Labor, dort infiziert)?",
+      "Bestand ein beruflicher Zusammenhang mit Ihrer Erkrankung — z. B. Ansteckung bei einer Tätigkeit im Gesundheitsdienst, in der Wohlfahrtspflege oder in einem Labor?",
     type: "single",
     options: [
       { value: "ja", label: "Ja" },
       { value: "nein", label: "Nein" },
+      { value: "unsicher", label: "Unsicher / möglicher, aber unklarer Zusammenhang" },
     ],
   },
   {

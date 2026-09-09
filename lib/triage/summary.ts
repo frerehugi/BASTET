@@ -10,11 +10,12 @@ import type { Answers, TriageResult } from "./types";
 function summarizeAngaben(answers: Answers): string {
   const parts: string[] = [];
   if (answers.pem === "ja") {
-    parts.push("Es besteht eine Post-exertionelle Malaise (PEM) mit verzögerter Verschlechterung nach Belastung");
+    parts.push("eine Post-exertionelle Malaise (PEM) mit verzögerter Verschlechterung nach Belastung");
   } else if (answers.pem === "unklar") {
-    parts.push("Ob eine Post-exertionelle Malaise (PEM) vorliegt, ist noch unklar");
+    parts.push("möglicherweise eine Post-exertionelle Malaise (PEM), noch nicht sicher beurteilbar");
   }
-  if (answers.schlaf && answers.schlaf !== "unauffaellig") {
+  const schlaf = Array.isArray(answers.schlaf) ? answers.schlaf : [];
+  if (schlaf.some((s) => s !== "unauffaellig")) {
     parts.push("eine Schlafstörung");
   }
   const schmerz = Array.isArray(answers.schmerz) ? answers.schmerz : [];

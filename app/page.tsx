@@ -173,7 +173,7 @@ export default function App() {
       {
         role: "assistant",
         content:
-          "Für die Detailanalyse: Möchten Sie noch etwas ergänzen — z. B. Medikation und Therapieansprechen, bereits durchgeführte objektive Tests (6-Minuten-Gehstrecke, Handkraftmessung, neuropsychologische Testung) samt Ergebnis, oder individuelle Besonderheiten? Stichworte reichen. Falls nicht, schreiben Sie einfach \"weiter zur Auswertung\".",
+          "Für die Detailanalyse stelle ich noch ein paar kurze Vertiefungsfragen — zu Medikation/Therapieansprechen, bereits durchgeführten objektiven Tests und individuellen Besonderheiten. Stichworte reichen. Erste Frage:",
       },
     ]);
   }

@@ -25,7 +25,7 @@ export function computeTriage(answers: Answers): TriageResult {
   const schmerz = asMulti(answers.schmerz);
   const kognitiv = asMulti(answers.kognitiv);
   const autonom = asMulti(answers.autonom);
-  const schlaf = answers.schlaf as string | undefined;
+  const schlaf = asMulti(answers.schlaf);
   const psychKomorbid = answers.psychKomorbid as string | undefined;
   const arbeitsfaehigkeit = answers.arbeitsfaehigkeit as string | undefined;
   const beruflicherKontext = answers.beruflicherKontext as string | undefined;
@@ -37,10 +37,13 @@ export function computeTriage(answers: Answers): TriageResult {
 
   // --- 1. CCC-Erfüllung ---------------------------------------------------
   const dauerErfuellt = dauer === "ja";
-  const schlafErfuellt = !!schlaf && schlaf !== "unauffaellig";
+  const cccSchlafErfuellt = schlaf.length > 0 && !schlaf.includes("unauffaellig");
+  // IOM/SEID verlangt konkret "nicht erholsamen Schlaf", nicht irgendeine
+  // Schlafstörung (CCC ist hier breiter: auch Rhythmusstörung zählt).
+  const iomSchlafErfuellt = schlaf.includes("nicht-erholsam");
   const cccDomains = {
     pemFatigue: pem === "ja",
-    schlaf: schlafErfuellt,
+    schlaf: cccSchlafErfuellt,
     schmerz: schmerzCount >= 2,
     kognitiv: kognitivCount >= 2,
     autonom: autonomCount >= 1,
@@ -80,7 +83,7 @@ export function computeTriage(answers: Answers): TriageResult {
   const iomKognitivOderOrthostase = kognitivCount >= 1 || iomOrthostatisch;
   const iomDetail: string[] = [
     `PEM: ${pem === "ja" ? "erfüllt" : pem === "unklar" ? "unklar" : "nicht erfüllt"}`,
-    `Nicht erholsamer Schlaf: ${schlafErfuellt ? "erfüllt" : "nicht erfüllt"}`,
+    `Nicht erholsamer Schlaf: ${iomSchlafErfuellt ? "erfüllt" : "nicht erfüllt"}`,
     `Dauer ≥6 Monate: ${dauerErfuellt ? "erfüllt" : "nicht erfüllt"}`,
     `Kognitive Beeinträchtigung ODER orthostatische Intoleranz (≥1): ${iomKognitivOderOrthostase ? "erfüllt" : "nicht erfüllt"}`,
   ];
@@ -90,7 +93,7 @@ export function computeTriage(answers: Answers): TriageResult {
   } else if (pem !== "ja") {
     iomErfuellt = "nein";
   } else {
-    const iomZusatzkriterien = [schlafErfuellt, dauerErfuellt, iomKognitivOderOrthostase].filter(Boolean).length;
+    const iomZusatzkriterien = [iomSchlafErfuellt, dauerErfuellt, iomKognitivOderOrthostase].filter(Boolean).length;
     iomErfuellt = iomZusatzkriterien === 3 ? "ja" : iomZusatzkriterien >= 2 ? "teilweise" : "nein";
   }
 
@@ -157,7 +160,10 @@ export function computeTriage(answers: Answers): TriageResult {
   // --- 3. MdE (gesetzliche Unfallversicherung) ----------------------------
   const mdeEinschlaegig = beruflicherKontext === "ja";
   let mdeGrund: string;
-  if (!mdeEinschlaegig) {
+  if (beruflicherKontext === "unsicher") {
+    mdeGrund =
+      "Beruflicher Zusammenhang als unsicher angegeben — MdE-Einschlägigkeit kann hier nicht eingeordnet werden, das sollte in der Detailanalyse geklärt werden.";
+  } else if (!mdeEinschlaegig) {
     mdeGrund = "Kein beruflicher Zusammenhang angegeben — MdE nach SGB VII nicht einschlägig.";
   } else if (bk3101Status === "anerkannt") {
     mdeGrund = "Beruflicher Zusammenhang angegeben, BK-3101 bereits anerkannt — MdE-Bemessung einschlägig.";
@@ -195,6 +201,8 @@ export function computeTriage(answers: Answers): TriageResult {
   if (pem === "unklar") offenePunkte.push("Ob PEM vorliegt, ist noch unklar.");
   if (unsichereDatenlage) offenePunkte.push("Arbeitsfähigkeit bzw. PEM-Erholungsdauer nicht präzise genug für eine engere GdB-Spanne.");
   if (arbeitsfaehigkeit === "unklar") offenePunkte.push("Leistungsvermögen für die EMR-Einordnung nicht eingeschätzt.");
+  if (beruflicherKontext === "unsicher")
+    offenePunkte.push("Ob ein beruflicher Zusammenhang besteht, ist unsicher — relevant für die MdE-Einschlägigkeit.");
   offenePunkte.push("Objektive Tests (6-Minuten-Gehstrecke, Handkraftmessung, neuropsychologische Testung) wurden hier nicht erfasst.");
 
   const empfehlungDetailanalyse = cccErfuellt === "ja" || cccErfuellt === "teilweise" || offenePunkte.length > 1;

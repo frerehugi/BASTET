@@ -31,6 +31,9 @@ export interface Question {
   hint?: string;
   type: "single" | "multi";
   options: ChoiceOption[];
+  /** Bei Mehrfachauswahl: Wert, der sich mit allen anderen gegenseitig
+   *  ausschließt (z.B. "keine davon" oder "unauffällig"). Default: "keine". */
+  exclusiveValue?: string;
 }
 
 export type Answers = Partial<Record<QuestionId, string | string[]>>;

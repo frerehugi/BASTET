@@ -33,15 +33,17 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
     maybeFinish(next);
   }
 
-  function toggleMulti(value: string) {
+  function toggleMulti(id: QuestionId, value: string) {
+    const question = QUESTIONS.find((q) => q.id === id);
+    const exclusive = question?.exclusiveValue ?? "keine";
     setDraft((existing) => {
-      if (value === "keine") {
-        return existing.includes("keine") ? [] : ["keine"];
+      if (value === exclusive) {
+        return existing.includes(exclusive) ? [] : [exclusive];
       }
-      const withoutKeine = existing.filter((v) => v !== "keine");
-      return withoutKeine.includes(value)
-        ? withoutKeine.filter((v) => v !== value)
-        : [...withoutKeine, value];
+      const withoutExclusive = existing.filter((v) => v !== exclusive);
+      return withoutExclusive.includes(value)
+        ? withoutExclusive.filter((v) => v !== value)
+        : [...withoutExclusive, value];
     });
   }
 
@@ -96,7 +98,7 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
                 <button
                   key={opt.value}
                   style={selected ? styles.optionButtonSelected : styles.optionButton}
-                  onClick={() => toggleMulti(opt.value)}
+                  onClick={() => toggleMulti(current.id, opt.value)}
                 >
                   {selected ? "✓ " : ""}
                   {opt.label}
