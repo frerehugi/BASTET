@@ -359,7 +359,7 @@ export default function App() {
                                 an den Server gesendet oder gespeichert.
                               </p>
                               <button
-                                style={styles.primaryButton}
+                                style={styles.footerPrimaryButton}
                                 onClick={() => handleGenerateLetter(i, body)}
                                 disabled={!getLetterFields(i).name.trim() || !getLetterFields(i).address.trim()}
                               >
@@ -404,7 +404,7 @@ export default function App() {
 
             {phase === "triageResult" && (
               <div style={styles.footerRow}>
-                <button style={styles.primaryButton} onClick={beginDetailanalyse}>
+                <button style={styles.footerPrimaryButton} onClick={beginDetailanalyse}>
                   Detailanalyse anfordern (Beta)
                 </button>
                 <button
@@ -523,6 +523,24 @@ const styles: Record<string, React.CSSProperties> = {
   buttonRow: { display: "flex", gap: 12, marginTop: 18, flexWrap: "wrap" },
   primaryButton: {
     flex: "1 1 200px",
+    background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
+    color: "var(--dark2)",
+    border: "none",
+    borderRadius: 999,
+    padding: "12px 20px",
+    fontSize: 15.5,
+    fontWeight: 700,
+    cursor: "pointer",
+    textAlign: "center",
+  },
+  // Gleiche Optik wie primaryButton, aber ohne dessen flex: "1 1 200px" —
+  // das ist für buttonRow gedacht (display:flex, Reihe). In footerRow
+  // (flexDirection: column) wird die 200px-Flex-Basis stattdessen als HÖHE
+  // interpretiert und flex-grow:1 lässt den Button über die volle Höhe/
+  // Breite des Footers aufblähen. alignSelf: "flex-start" hält ihn auf
+  // Inhaltsgröße, wie linkButton direkt darunter.
+  footerPrimaryButton: {
+    alignSelf: "flex-start",
     background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
     color: "var(--dark2)",
     border: "none",
