@@ -21,13 +21,28 @@ interface AnthropicResponse {
 export async function callClaude(
   system: string,
   messages: ChatMessage[],
-  maxTokens: number
+  maxTokens: number,
+  enableWebSearch: boolean = false
 ): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error(
       "ANTHROPIC_API_KEY ist auf dem Server nicht gesetzt (Vercel Environment Variables)."
     );
+  }
+
+  const body: Record<string, unknown> = {
+    model: MODEL,
+    max_tokens: maxTokens,
+    system,
+    messages,
+  };
+
+  if (enableWebSearch) {
+    // max_uses begrenzt die Recherchekosten pro Anfrage - die Wissensbasis
+    // deckt den Regelfall ab, web_search soll gezielt ergänzen (aktuellere
+    // Urteile/Normfassungen), nicht die komplette Recherche neu aufrollen.
+    body.tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }];
   }
 
   const response = await fetch(ANTHROPIC_API_URL, {
@@ -37,12 +52,7 @@ export async function callClaude(
       "x-api-key": apiKey,
       "anthropic-version": ANTHROPIC_VERSION,
     },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: maxTokens,
-      system,
-      messages,
-    }),
+    body: JSON.stringify(body),
   });
 
   const data = (await response.json()) as AnthropicResponse;

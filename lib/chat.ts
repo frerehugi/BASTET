@@ -16,14 +16,7 @@ ${triageContext}
 
 Diese Punkte sind bereits vollständig beantwortet — frage sie UNTER KEINEN
 UMSTÄNDEN erneut ab, auch nicht umformuliert. Nutze sie direkt als gesicherte
-Grundlage für deine Auswertung. Konzentriere dich in diesem Gespräch stattdessen
-auf das, was Tier 1 nicht erfasst hat: Medikation und Therapieansprechen,
-bereits durchgeführte objektive Tests (6-Minuten-Gehstrecke, Handkraftmessung,
-neuropsychologische Testung) samt Ergebnis, individuelle Besonderheiten des
-Verlaufs, sowie Rückfragen zu Punkten, die aus den Tier-1-Angaben unklar
-blieben. Wenn die Tier-1-Angaben für eine vollständige Auswertung bereits
-ausreichen, kannst du auch direkt zur Auswertung übergehen, statt Fragen zu
-erzwingen.
+Grundlage für deine Auswertung.
 `
     : "";
 
@@ -95,9 +88,24 @@ ${
   triageContext
     ? `- Die vier früher hier aufgeführten Kernthemen (PEM, Dauer, Alltags-/
   Arbeitsfähigkeit, beruflicher Zusammenhang) liegen bereits aus Tier 1 vor
-  (siehe Block oben) — starte NICHT mit diesen, sondern direkt mit der
-  Vertiefung (Medikation, objektive Tests, individuelle Besonderheiten) oder,
-  falls nichts davon offen ist, direkt mit der Auswertung.`
+  (siehe Block oben) — starte NICHT mit diesen. Stattdessen gilt dieselbe
+  Ein-Thema-pro-Nachricht-Pflicht für die Vertiefung, in dieser Reihenfolge:
+  1. Medikation und Therapieansprechen (was wurde versucht, hat es geholfen?).
+  2. Wurden bereits objektive Tests durchgeführt (6-Minuten-Gehstrecke,
+     Handkraftmessung/Dynamometrie, neuropsychologische Testung, Schellong-
+     Test)? Falls ja: konkretes Ergebnis aktiv erfragen, nicht nur ob
+     durchgeführt.
+  3. Individuelle Besonderheiten des Verlaufs, plus gezielte Rückfrage zu
+     Punkten, die aus den Tier-1-Angaben noch unklar blieben (z.B. "unklar"-
+     oder "nicht getestet"-Antworten aus Tier 1).
+  Erst NACH diesen drei Themen (oder einem expliziten Wunsch der Person, direkt
+  auszuwerten, oder erkennbarer Erschöpfung — siehe unten) zur Auswertung
+  übergehen. Nutze für Themen 2 und 3 bei Bedarf web_search, um die kuratierte
+  Wissensbasis zu ergänzen (z.B. aktuellere Gerichtsentscheidungen oder
+  Normfassungen als die dort hinterlegten) — die Wissensbasis hat aber
+  Vorrang, wo sie eine Aussage bereits abdeckt; web_search ergänzt, ersetzt
+  sie nicht. Jede web-recherchierte Aussage braucht eine eigene REFERENZ nach
+  demselben Belegprinzip wie Wissensbasis-Aussagen (siehe ZITIERWEISE unten).`
     : `- Themen in dieser Reihenfolge, jedes eine eigene Nachricht:
   1. Ist PEM (verzögerte Verschlechterung nach Belastung) vorhanden? Falls ja:
      Latenz bis zur Verschlechterung und übliche Erholungsdauer.
@@ -218,6 +226,10 @@ Fachartikel/Gutachten üblichen Stil, je nach Quellentyp:
   "Renz-Polster, Scheibenbogen. Post-COVID-Syndrom mit Fatigue und
   Belastungsintoleranz. Die Innere Medizin. 2022;63:830–839.").
 - Buchbeitrag: "[Autor(en)]. In: [Hrsg.] (Hrsg.), [Buchtitel]. [Verlag]."
+- Website/Web-Suche-Ergebnis (nur wenn über web_search recherchiert, nicht aus
+  der kuratierten Wissensbasis): "[Titel/Betreiber der Seite], abgerufen
+  [TT.MM.JJJJ], [URL]" — Datum ist das der Recherche in diesem Gespräch, nicht
+  raten.
 - Konsenskriterien/Kriterienkataloge ohne klassische Publikationsangabe: Name
   ausgeschrieben, ggf. mit Urheber:innen/Jahr, falls in der Wissensbasis
   vermerkt (z.B. "Kanadische Konsenskriterien (CCC)").
@@ -244,6 +256,9 @@ export async function runInterview(
   return callClaude(
     buildSystemPrompt(diagnosisConfirmed, budgetHint, knowledgeBase, triageContext),
     messages,
-    16000
+    16000,
+    !!triageContext // web_search nur in Tier 2 (triageContext gesetzt) - Tier 1
+    // läuft ohnehin ohne API-Call, und Telegram/doc-Arm ohne Tier-1-Vorlauf
+    // bleiben unverändert beim bisherigen Verhalten ohne Tool-Zugriff.
   );
 }
