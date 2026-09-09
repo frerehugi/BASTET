@@ -38,6 +38,8 @@ export type Answers = Partial<Record<QuestionId, string | string[]>>;
 export interface TriageResult {
   cccErfuellt: "ja" | "teilweise" | "nein" | "unklar";
   cccDetail: string[];
+  iomErfuellt: "ja" | "teilweise" | "nein" | "unklar";
+  iomDetail: string[];
   gdbSpanneVon: number;
   gdbSpanneBis: number;
   gdbBegruendung: string[];

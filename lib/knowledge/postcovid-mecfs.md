@@ -23,6 +23,15 @@ PEM ist laut Konsensusstatement **zwingend** für die Diagnose (auch nach Intern
 
 Für die klinische Objektivierung von PEM empfohlen: **DePaul Symptom Questionnaire (DSQ-PEM)**.
 
+### ME/CFS: IOM-Kriterien (SEID), Institute of Medicine 2015 — schlankere Alternative zu CCC
+Das Institute of Medicine (heute National Academy of Medicine) schlug 2015 unter dem Namen **SEID** ("Systemic Exertion Intolerance Disease") einen bewusst schlankeren, stärker auf die klinische Praxis (Hausarztebene) zugeschnittenen Kriterienkatalog vor — weniger Einzelpunkte als CCC, dafür alle vier Kernkriterien zwingend (keine "mindestens X von Y"-Logik wie bei CCC):
+1. Erhebliche Beeinträchtigung der Fähigkeit, prämorbide Aktivitäten (beruflich, schulisch, sozial, persönlich) auszuüben, seit >6 Monaten, begleitet von (oft ausgeprägter) Fatigue — neu aufgetreten, nicht lebenslang, nicht Folge andauernder Überlastung, durch Ruhe nicht wesentlich gebessert (zwingend)
+2. Post-exertionelle Malaise (PEM) (zwingend)
+3. Nicht erholsamer Schlaf (zwingend)
+4. Mindestens eines von: kognitive Beeinträchtigung ODER orthostatische Intoleranz (zwingend, aber mit Wahlmöglichkeit zwischen den beiden)
+
+**Verhältnis CCC ↔ IOM/SEID**: Beide Kriterienkataloge werden in der Praxis parallel berichtet ("CCC/IOM dual reporting"), da sie unterschiedliche Zwecke erfüllen — CCC ist umfassender und differenzierter (u. a. für Forschung/Begutachtung geeignet), SEID niedrigschwelliger für die Erstdiagnose in der hausärztlichen Versorgung gedacht. Ein SEID-positiver, CCC-negativer (oder umgekehrt) Befund ist möglich und sollte in der Auswertung nicht als Widerspruch, sondern als unterschiedlich strenge Maßstäbe kommuniziert werden. Für die GdB/MdE-Begutachtung bleibt CCC laut D-A-CH-Konsensusstatement die primär empfohlene Grundlage (siehe oben); SEID/IOM dient ergänzend der Einordnung, wie robust die Diagnose auch nach dem niedrigschwelligeren Maßstab ist.
+
 ### Long-/Post-COVID (AWMF S1-Leitlinie, aktuell Stand Mai 2024)
 - Diagnose ist **klinisch** (Anamnese + Ausschluss relevanter Differentialdiagnosen); **keine** einzelne Laboruntersuchung oder Laborwerte-Panel kann Long-/Post-COVID diagnostizieren oder objektivieren oder ausschließen — normale Laborwerte schließen die Erkrankung **nicht** aus.
 - Differentialdiagnostische Abklärung ist bei neu aufgetretenen Symptomen nach durchgemachter SARS-CoV-2-Infektion obligat, bevor die Diagnose gestellt wird.

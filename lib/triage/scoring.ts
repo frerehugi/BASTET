@@ -71,6 +71,29 @@ export function computeTriage(answers: Answers): TriageResult {
     cccErfuellt = erfuellteZusatzkriterien === 5 ? "ja" : erfuellteZusatzkriterien >= 3 ? "teilweise" : "nein";
   }
 
+  // --- 1b. IOM-Kriterien (SEID, Institute of Medicine 2015) ---------------
+  // Schlanker als CCC: Fatigue + PEM + nicht erholsamer Schlaf + Dauer sind
+  // ALLE verpflichtend, zusätzlich mindestens eines von (kognitive
+  // Beeinträchtigung ODER orthostatische Intoleranz) - nicht irgendein
+  // autonomes Symptom, IOM verlangt hier konkret Orthostase.
+  const iomOrthostatisch = autonom.includes("orthostatisch");
+  const iomKognitivOderOrthostase = kognitivCount >= 1 || iomOrthostatisch;
+  const iomDetail: string[] = [
+    `PEM: ${pem === "ja" ? "erfüllt" : pem === "unklar" ? "unklar" : "nicht erfüllt"}`,
+    `Nicht erholsamer Schlaf: ${schlafErfuellt ? "erfüllt" : "nicht erfüllt"}`,
+    `Dauer ≥6 Monate: ${dauerErfuellt ? "erfüllt" : "nicht erfüllt"}`,
+    `Kognitive Beeinträchtigung ODER orthostatische Intoleranz (≥1): ${iomKognitivOderOrthostase ? "erfüllt" : "nicht erfüllt"}`,
+  ];
+  let iomErfuellt: TriageResult["iomErfuellt"];
+  if (pem === "unklar") {
+    iomErfuellt = "unklar";
+  } else if (pem !== "ja") {
+    iomErfuellt = "nein";
+  } else {
+    const iomZusatzkriterien = [schlafErfuellt, dauerErfuellt, iomKognitivOderOrthostase].filter(Boolean).length;
+    iomErfuellt = iomZusatzkriterien === 3 ? "ja" : iomZusatzkriterien >= 2 ? "teilweise" : "nein";
+  }
+
   // --- 2. GdB-Spanne (grobe Einordnung, siehe Kalibrierungsmatrix) --------
   // Globalfunktion als Ausgangspunkt (Analogie Hirnschäden-Skala, VersMedV
   // 3.1.1 - siehe ccc-fragenkatalog-kalibrierung.md Abschnitt 2), approximiert
@@ -179,6 +202,8 @@ export function computeTriage(answers: Answers): TriageResult {
   return {
     cccErfuellt,
     cccDetail,
+    iomErfuellt,
+    iomDetail,
     gdbSpanneVon: gdbVon,
     gdbSpanneBis: gdbBis,
     gdbBegruendung,

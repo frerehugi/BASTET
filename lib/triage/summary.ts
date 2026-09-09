@@ -63,6 +63,7 @@ export function formatTriageSummary(answers: Answers, result: TriageResult): str
   };
 
   const cccRef = refFor("Kanadische Konsenskriterien (CCC)");
+  const iomRef = refFor("Institute of Medicine (IOM) 2015, SEID-Kriterien (\"Systemic Exertion Intolerance Disease\")");
   const gdbRef = refFor("VersMedV, Anlage Teil B Nr. 18.4 i. V. m. Nr. 3.7 (analoge Beurteilung bei ME/CFS/Fatigue-Syndromen)");
   const mdeRef = result.mdeEinschlaegig ? refFor("§ 56 Abs. 1 SGB VII, i. V. m. BK-Nr. 3101 BKV") : null;
   const emrRef = result.emrKategorie !== "nicht_erhoben" ? refFor("§ 43 SGB VI (Rente wegen Erwerbsminderung)") : null;
@@ -72,7 +73,7 @@ export function formatTriageSummary(answers: Answers, result: TriageResult): str
   lines.push("");
   lines.push(`Zusammenfassung Ihrer Angaben: ${summarizeAngaben(answers)}`);
   lines.push(
-    `CCC-Kriterien erfüllt: ${result.cccErfuellt} [${cccRef}] · Dauer ≥6 Monate: ${result.dauerErfuellt ? "ja" : "nein"}`
+    `CCC-Kriterien erfüllt: ${result.cccErfuellt} [${cccRef}] · IOM-Kriterien (SEID) erfüllt: ${result.iomErfuellt} [${iomRef}] · Dauer ≥6 Monate: ${result.dauerErfuellt ? "ja" : "nein"}`
   );
   lines.push("");
   lines.push("── GdB (Schwerbehindertenrecht) ──");
