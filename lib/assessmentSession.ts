@@ -1,16 +1,19 @@
-// Serverseitige Zwischenspeicherung des Gesprächsverlaufs für die
-// kostenpflichtige Detailanalyse. Existiert NUR für Nutzer:innen, die die
-// Detailanalyse freischalten wollen — die kostenlose Schnell-Einschätzung
-// bleibt No-Storage wie bisher (siehe lib/chat.ts runQuickAssessment).
+// Serverseitige Zwischenspeicherung des ausgefüllten Fragebogens für die
+// kostenpflichtige Detailanalyse (nur relevant bei PAYWALL_ENABLED=true).
+// Existiert NUR für Nutzer:innen, die die Detailanalyse ausfüllen UND eine
+// aktive Bezahlschranke antreffen — die kostenlose Schnell-Einschätzung
+// bleibt No-Storage wie bisher (siehe lib/chat.ts runQuickAssessment), und
+// bei deaktiviertem Kill-Switch läuft die Detailanalyse direkt ohne diesen
+// Speicher (siehe app/api/detailed-assessment/route.ts).
 //
 // Warum überhaupt Speicherung nötig ist: Die Zahlungsbestätigung läuft über
 // einen asynchronen Stripe-Webhook (app/api/stripe/webhook/route.ts), der
-// unabhängig vom Client eintrifft. Ohne serverseitige Ablage des Transkripts
+// unabhängig vom Client eintrifft. Ohne serverseitige Ablage des Fragebogens
 // gäbe es keine Möglichkeit, die Detailanalyse erst NACH echter, webhook-
 // verifizierter Zahlung zu erzeugen, ohne dem Client (der die Zahlung fälschen
 // könnte) blind zu vertrauen.
 import { Redis } from "@upstash/redis";
-import type { ChatMessage } from "./anthropic";
+import type { Stage1Answers, Stage2Answers } from "./interviewAnswers";
 
 let cachedRedis: Redis | null = null;
 
@@ -38,9 +41,9 @@ export type AssessmentSessionStatus = "pending_payment" | "paid";
 
 export interface AssessmentSession {
   status: AssessmentSessionStatus;
-  messages: ChatMessage[];
+  stage1: Stage1Answers;
+  stage2: Stage2Answers;
   diagnosisConfirmed: boolean;
-  turnCount: number;
   createdAt: number;
   paidAt?: number;
 }

@@ -1,31 +1,21 @@
-// POST /api/assessment — der EINE Web-Chat-Endpoint für den Betroffenen-Arm,
-// unabhängig vom Zahlungs-Kill-Switch (siehe lib/paywall.ts). Einziger
-// Verzweigungspunkt im gesamten Request-Fluss:
-//   - PAYWALL_ENABLED=true  -> kostenlose Schnell-Einschätzung (Stufe 1,
-//     lib/chat.ts runQuickAssessment), Detailanalyse dann nur über
-//     app/api/detailed-assessment nach bezahlter Freischaltung.
-//   - PAYWALL_ENABLED unset/false (Default) -> direkt die volle
-//     Detailanalyse (lib/chat.ts runInterview), exakt wie der Telegram-Arm
-//     sie schon immer bekommt — kein Zahlungs-, kein Webhook-, kein
-//     Entitlement-Schritt im Pfad.
-// Die Stripe-/Freischalt-Routen (checkout, stripe/webhook, detailed-
-// assessment) bleiben unverändert im Repo, werden bei deaktiviertem Kill-
-// Switch aber schlicht nie aufgerufen: app/DetailedAnalysisUpsell.tsx
-// rendert sich nur, wenn eine Antwort von hier den Schnell-Einschätzung-
-// Marker trägt (lib/format.ts isQuickVerdict) — bei voller Detailanalyse ist
-// das nie der Fall.
+// POST /api/assessment — Stufe 1, die kostenlose Schnell-Einschätzung.
+// Unconditionally frei, unabhängig von PAYWALL_ENABLED (siehe lib/paywall.ts)
+// — der Kill-Switch betrifft ausschließlich Stufe 2 (app/api/detailed-
+// assessment/route.ts). Nimmt den bereits ausgefüllten Stufe-1-Fragebogen
+// entgegen (lib/interviewAnswers.ts Stage1Answers), serialisiert ihn
+// (lib/serializeAnswers.ts) und ruft lib/chat.ts runQuickAssessment einmalig
+// auf — kein Gesprächsverlauf, keine serverseitige Speicherung.
 import { NextResponse } from "next/server";
-import { runQuickAssessment, runInterview } from "@/lib/chat";
-import { isPaywallEnabled } from "@/lib/paywall";
-import type { ChatMessage } from "@/lib/anthropic";
+import { runQuickAssessment } from "@/lib/chat";
+import { serializeStage1 } from "@/lib/serializeAnswers";
+import type { Stage1Answers } from "@/lib/interviewAnswers";
 
 export const runtime = "nodejs";
-export const maxDuration = 150;
+export const maxDuration = 30;
 
 interface AssessmentRequestBody {
-  messages: ChatMessage[];
+  stage1: Stage1Answers;
   diagnosisConfirmed: boolean;
-  turnCount: number;
 }
 
 export async function POST(request: Request) {
@@ -36,17 +26,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Ungültiges JSON." }, { status: 400 });
   }
 
-  if (!Array.isArray(body.messages)) {
-    return NextResponse.json({ error: "messages fehlt oder ist ungültig." }, { status: 400 });
+  if (!body.stage1 || typeof body.stage1 !== "object") {
+    return NextResponse.json({ error: "stage1 fehlt oder ist ungültig." }, { status: 400 });
   }
 
-  const diagnosisConfirmed = !!body.diagnosisConfirmed;
-  const turnCount = typeof body.turnCount === "number" ? body.turnCount : 0;
-
   try {
-    const text = isPaywallEnabled()
-      ? await runQuickAssessment(body.messages, diagnosisConfirmed, turnCount)
-      : await runInterview(body.messages, diagnosisConfirmed, turnCount);
+    const serialized = serializeStage1(body.stage1);
+    const text = await runQuickAssessment(serialized, !!body.diagnosisConfirmed);
     return NextResponse.json({ text });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unbekannter Fehler.";

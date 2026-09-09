@@ -1,24 +1,25 @@
-// POST /api/checkout — wird aufgerufen, wenn Nutzer:innen die kostenpflichtige
-// Detailanalyse freischalten wollen, BEVOR die eigentliche Zahlung läuft.
-// Speichert den bisherigen Gesprächsverlauf serverseitig (siehe
-// lib/assessmentSession.ts, warum das nötig ist) und legt beim Stripe-
-// PaymentIntent die sessionId als Metadata ab, damit der Webhook
-// (app/api/stripe/webhook/route.ts) nach erfolgreicher Zahlung weiß, welche
-// Session freizuschalten ist.
+// POST /api/checkout — wird aufgerufen, wenn Nutzer:innen die (bei aktivem
+// Kill-Switch) kostenpflichtige Detailanalyse abschicken, BEVOR die
+// eigentliche Zahlung läuft. Speichert den ausgefüllten Fragebogen
+// serverseitig (siehe lib/assessmentSession.ts, warum das nötig ist) und
+// legt beim Stripe-PaymentIntent die sessionId als Metadata ab, damit der
+// Webhook (app/api/stripe/webhook/route.ts) nach erfolgreicher Zahlung
+// weiß, welche Session freizuschalten ist. Nur erreicht, wenn
+// PAYWALL_ENABLED=true — siehe app/api/detailed-assessment/route.ts.
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { getStripeClient } from "@/lib/stripe";
 import { DETAILED_ANALYSIS_PRICE_CENTS, DETAILED_ANALYSIS_CURRENCY } from "@/lib/pricing";
 import { createAssessmentSession } from "@/lib/assessmentSession";
-import type { ChatMessage } from "@/lib/anthropic";
+import type { Stage1Answers, Stage2Answers } from "@/lib/interviewAnswers";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
 interface CheckoutRequestBody {
-  messages: ChatMessage[];
+  stage1: Stage1Answers;
+  stage2: Stage2Answers;
   diagnosisConfirmed: boolean;
-  turnCount: number;
 }
 
 export async function POST(request: Request) {
@@ -29,17 +30,17 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Ungültiges JSON." }, { status: 400 });
   }
 
-  if (!Array.isArray(body.messages) || body.messages.length === 0) {
-    return NextResponse.json({ error: "messages fehlt oder ist leer." }, { status: 400 });
+  if (!body.stage1 || !body.stage2) {
+    return NextResponse.json({ error: "stage1/stage2 fehlt oder ist ungültig." }, { status: 400 });
   }
 
   const sessionId = randomUUID();
 
   try {
     await createAssessmentSession(sessionId, {
-      messages: body.messages,
+      stage1: body.stage1,
+      stage2: body.stage2,
       diagnosisConfirmed: !!body.diagnosisConfirmed,
-      turnCount: typeof body.turnCount === "number" ? body.turnCount : 0,
     });
 
     const stripe = getStripeClient();

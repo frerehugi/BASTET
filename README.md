@@ -12,19 +12,22 @@ Next.js-App (App Router, TypeScript), auf Vercel deployt. Alle drei Kanäle rufe
 middleware.ts             # doc.bastet-covid.org -> intern /doc, Hauptdomain unverändert
 vercel.json                # Cron-Schedule für die Update-Pipeline (wöchentlich, Montag 06:00 UTC)
 app/
-├── page.tsx              # Betroffenen-Arm, Web-UI (Chat-Interview, zweistufig — siehe unten)
-├── DetailedAnalysisUpsell.tsx  # Stripe Express Checkout Element (Apple Pay/Google Pay) + Widerrufs-Checkbox
-├── doc/page.tsx           # Ärzte-Arm (strukturiertes CCC-Formular)
+├── page.tsx              # Betroffenen-Arm, Web-UI — formularbasiert, zweistufig (siehe unten), KEIN Freitext-Chat mehr
+├── Stage1Form.tsx          # Stufe 1: 8 Fragen, ein Formular
+├── Stage2Form.tsx          # Stufe 2: 19 Fragen, gruppiert in Abschnitte, ein Formular
+├── FormControls.tsx        # geteilte Eingabe-Bausteine (ChoiceGroup, MultiSelectGroup, SkippableTextArea, YesNoDetail)
+├── DetailedAnalysisFlow.tsx  # liefert Stufe 2: direkt (Kill-Switch aus) oder über Stripe Express Checkout Element (Kill-Switch an)
+├── doc/page.tsx           # Ärzte-Arm (strukturiertes CCC-Formular, unverändert)
 ├── layout.tsx             # gemeinsames Layout inkl. BASTET-Kopfzeile
 └── api/
-    ├── assessment/route.ts           # POST — EINER Endpoint für den Web-Chat, verzweigt auf PAYWALL_ENABLED (lib/paywall.ts): volle Detailanalyse direkt (Default) oder kostenlose Schnell-Einschätzung (Stufe 1)
+    ├── assessment/route.ts           # POST — Stufe 1, immer kostenlos, unabhängig von PAYWALL_ENABLED
     ├── checkout/route.ts             # POST — legt Assessment-Session an + Stripe PaymentIntent (nur erreicht, wenn PAYWALL_ENABLED=true)
-    ├── detailed-assessment/route.ts  # POST — Detailanalyse (Stufe 2), NUR nach webhook-bestätigter Zahlung (nur relevant bei PAYWALL_ENABLED=true)
+    ├── detailed-assessment/route.ts  # POST — Stufe 2. EINZIGER Verzweigungspunkt für PAYWALL_ENABLED (lib/paywall.ts): direkt (aus) oder nur nach webhook-bestätigter Zahlung (an)
     ├── stripe/webhook/route.ts       # POST — Stripe-Webhook, signaturgeprüft, einzige Quelle für "bezahlt"
     ├── stripe/config/route.ts        # GET — liefert STRIPE_PUBLISHABLE_KEY an den Client
     ├── pricing/route.ts              # GET — liefert Detailanalyse-Preis UND PAYWALL_ENABLED-Status an den Client
     ├── doc/route.ts       # POST — Ärzte-Arm-Logik
-    ├── telegram/route.ts  # POST — Telegram-Webhook, ruft dieselbe runInterview()-Logik wie die Detailanalyse auf
+    ├── telegram/route.ts  # POST — Telegram-Webhook, ruft weiterhin das freie Chat-Interview (runInterview) auf — UNVERÄNDERT, nicht Teil des Formular-Umbaus
     ├── premium/route.ts   # POST — x402-geschützter Endpoint (0,10 USDC), liefert PDF-Zusammenfassung (Krypto, siehe unten — getrennt von Stripe)
     └── cron/check-updates/route.ts  # GET, per CRON_SECRET geschützt — wöchentlicher Quellen-Check (Phase 4)
 scripts/
@@ -35,10 +38,12 @@ lib/
 ├── paywall.ts               # Kill-Switch (PAYWALL_ENABLED), siehe eigener README-Abschnitt oben
 ├── pricing.ts               # EINZIGER Ort für den Detailanalyse-Preis, siehe Abschnitt unten
 ├── assessmentSession.ts    # Upstash-Redis-Session pro Zahlungsvorgang, TTL 2 Std. — Bindeglied zwischen Stripe-Webhook und Detailanalyse
+├── interviewAnswers.ts     # Datenmodell (Stage1Answers/Stage2Answers) + Options-Listen, von UI und Serialisierung geteilt
+├── serializeAnswers.ts     # wandelt strukturierte Antworten in den Text um, der als EINE Nachricht ans Modell geht
 ├── x402.ts                 # x402-Resource-Server-Konfiguration (Facilitator, Celo Mainnet, Agent-Wallet)
-├── chat.ts / doc.ts       # System-Prompts + Interviewlogik je Arm (chat.ts: runQuickAssessment = Stufe 1, runInterview = Stufe 2/Detailanalyse)
+├── chat.ts / doc.ts       # System-Prompts + Interviewlogik je Arm — chat.ts: runInterview/buildSystemPrompt bleiben UNVERÄNDERT für Telegram (freies Gespräch); runQuickAssessment (Stufe 1) und runDetailedAssessmentFromAnswers (Stufe 2) sind eigene, einmalige (nicht Turn-basierte) Funktionen für das Web-Formular
 ├── content.ts              # Titel/Untertitel/Über-BASTET/Krisenhinweis — von Web und Telegram geteilt
-├── format.ts               # REFERENZEN-Block-Parsing, STATS-Trailer-Stripping, Schnell-Einschätzung-Erkennung — von Web und Telegram geteilt
+├── format.ts               # REFERENZEN-Block-Parsing, STATS-Trailer-Stripping — von Web und Telegram geteilt
 ├── telegram.ts             # Telegram sendMessage-Helper (chunkt Nachrichten >3800 Zeichen)
 ├── telegramSession.ts      # Upstash-Redis-Session pro chat_id, TTL 60 Min. Inaktivität
 ├── adminCommands.ts        # Telegram-Freigabe-Workflow (/pending, freigeben/ablehnen), nur TELEGRAM_ADMIN_CHAT_ID
@@ -70,28 +75,32 @@ ANTHROPIC_API_KEY=sk-ant-... npm run dev
 
 ### Kill-Switch: `PAYWALL_ENABLED`
 
-Die gesamte Zahlungsschranke unten (Stripe, Schnell-Einschätzung/Detailanalyse-Trennung) ist per **einem** Flag komplett abschaltbar, ohne dass der Code dafür entfernt oder umgebaut werden muss:
+Die gesamte Zahlungsschranke (Stripe) ist per **einem** Flag komplett abschaltbar, ohne dass der Code dafür entfernt oder umgebaut werden muss. Betrifft NUR Stufe 2 (Detailanalyse) — Stufe 1 (Schnell-Einschätzung) ist immer kostenlos, unabhängig vom Flag:
 
-- **`PAYWALL_ENABLED` unset oder ≠ `"true"` (Default, aktueller Stand):** Der Betroffenen-Arm liefert auf **allen** Kanälen (Web wie Telegram) direkt die volle Detailanalyse (GdB/MdE mit Quellenbelegen) — kein Zahlungsschritt, keine Stripe-Elemente, kein Webhook/Entitlement-Check im Pfad. Web verhält sich exakt wie Telegram es schon immer tut.
-- **`PAYWALL_ENABLED=true`:** aktueller Zwei-Stufen-Ablauf wie unten beschrieben (kostenlose Schnell-Einschätzung zuerst, Stripe-Zahlung schaltet die Detailanalyse frei).
+- **`PAYWALL_ENABLED` unset oder ≠ `"true"` (Default, aktueller Stand):** Stufe 2 liefert direkt, ohne Zahlungsschritt, ohne Stripe-Elemente, ohne Webhook/Entitlement-Check im Pfad.
+- **`PAYWALL_ENABLED=true`:** Stufe 2 läuft über Stripe Express Checkout Element (Apple Pay/Google Pay) wie unten beschrieben.
 
-**Einziger Verzweigungspunkt im gesamten Code**: `app/api/assessment/route.ts` (POST-Handler), eine einzelne Zeile (`isPaywallEnabled() ? runQuickAssessment(...) : runInterview(...)`, Funktion aus `lib/paywall.ts`). Kein zweiter Ort prüft dieses Flag sicherheitsrelevant — `app/page.tsx` fragt es zusätzlich per `GET /api/pricing` ab, aber nur um den richtigen Datenschutz-Hinweistext auf der Startseite anzuzeigen (rein kosmetisch, ändert am serverseitigen Verhalten nichts). Die komplette Stripe-Infrastruktur (`app/api/checkout`, `app/api/stripe/webhook`, `app/api/detailed-assessment`, `app/DetailedAnalysisUpsell.tsx`, `lib/assessmentSession.ts`) bleibt bei deaktiviertem Kill-Switch unverändert im Repo, wird aber schlicht nie erreicht: `DetailedAnalysisUpsell` rendert sich nur, wenn eine Antwort den Schnell-Einschätzung-Marker trägt (`lib/format.ts` `isQuickVerdict`) — bei einer vollen Detailanalyse ist das nie der Fall.
+**Einziger Verzweigungspunkt im gesamten Code**: `app/api/detailed-assessment/route.ts` (POST-Handler), eine `isPaywallEnabled()`-Prüfung (Funktion aus `lib/paywall.ts`) — bei `true` wird nur eine `sessionId` akzeptiert und die Session muss bereits `"paid"` sein; bei `false`/unset werden `stage1`/`stage2` direkt akzeptiert und sofort ausgewertet. Kein zweiter Ort prüft dieses Flag sicherheitsrelevant — `app/page.tsx` fragt es zusätzlich per `GET /api/pricing` ab, aber nur um den richtigen Datenschutz-Hinweistext anzuzeigen und `app/DetailedAnalysisFlow.tsx` mitzuteilen, welchen der beiden Wege es nehmen soll (rein für UI-Verzweigung, keine Sicherheitsprüfung). Die komplette Stripe-Infrastruktur (`app/api/checkout`, `app/api/stripe/webhook`, `lib/assessmentSession.ts`) bleibt bei deaktiviertem Kill-Switch unverändert im Repo, wird aber schlicht nie erreicht.
 
 **Vor Live-Gang mit echter Zahlungspflicht**: `PAYWALL_ENABLED=true` setzen, UND die Stripe-Dashboard-Schritte unten UND den finalen Preis (`DETAILED_ANALYSIS_PRICE_CENTS`) erledigt haben — die Reihenfolge ist wichtig, sonst zeigt die App eine funktionslose oder falsch bepreiste Zahlungsschranke an.
 
-### Zweistufige Auswertung bei `PAYWALL_ENABLED=true` (Web-Betroffenen-Arm): kostenlose Schnell-Einschätzung + kostenpflichtige Detailanalyse
+### Formularbasiertes Interview: kostenlose Schnell-Einschätzung + Detailanalyse
 
-**Stufe 1 — kostenlos** (`app/api/assessment/route.ts`, `lib/chat.ts` → `runQuickAssessment`): günstiges/schnelles Modell (`claude-haiku-4-5-20251001`), OHNE Wissensbasis im Kontext. Liefert eine vorsichtig-hypothetisch formulierte, unsourcete Kurzeinordnung anhand vier grober Kriterien (PEM, Dauer, Alltagsbeeinträchtigung, beruflicher Zusammenhang) — bewusst NIEMALS "Sie haben Anspruch auf X", NIEMALS konkrete GdB-/MdE-Zahlen, keine Quellenbelege. Bleibt No-Storage wie die App bisher.
+Der Web-Betroffenen-Arm nutzt seit dem Formular-Umbau **kein freies Chat-Interview mehr** — der Telegram-Arm dagegen unverändert (`app/api/telegram/route.ts` → `lib/chat.ts` `runInterview`, wird von diesem Umbau nicht berührt). Grund für den Umbau: Ohne Pausierbarkeit/Fortsetzbarkeit (bewusst keine neue Persistenz-Infrastruktur, siehe unten) ist die **Kürze des Fragebogens selbst** die PEM-Schutzmaßnahme (post-exertionelle Malaise durch zu lange/anstrengende Sitzungen) — nicht Pausierbarkeit. Ein deutlich zusammengestrichener, kombinierter Fragenkatalog (27 Fragen statt ursprünglich ~44 angedacht) mit ehrlicher "keine Speicherung vor Abschluss"-Kommunikation erreicht dasselbe Ziel ohne die Komplexität eines Fortsetzungs-Mechanismus.
 
-**Stufe 2 — kostenpflichtig** (`app/api/detailed-assessment/route.ts`, `lib/chat.ts` → `runInterview`, unverändert gegenüber vorher): volles Modell (Sonnet) MIT vollständiger Wissensbasis, liefert konkrete GdB-/MdE-Werte mit Quellenbelegen — exakt das bisherige Auswertungsformat. Läuft NUR nach webhook-bestätigter Zahlung; der Client kann das nicht durch eine gefälschte "Zahlung erfolgreich"-Meldung erzwingen (`lib/assessmentSession.ts` speichert den Zahlungsstatus serverseitig, gesetzt ausschließlich von `/api/stripe/webhook`).
+**Kein neuer Persistenz-Layer**: Die Antworten leben ausschließlich als React-State im Browser (`app/page.tsx`), bis eine Stufe abgeschickt wird — schließt man die Seite vorher, sind sie weg (wird auch so kommuniziert, kein Resume-Versprechen). Die einzige serverseitige Speicherung ist die bereits bestehende, TTL-begrenzte `lib/assessmentSession.ts` (2 Std.), und die greift ausschließlich, wenn `PAYWALL_ENABLED=true` ist — sonst überhaupt nicht.
 
-**Ablieferung**: die Detailanalyse erscheint inline im selben Chatfenster (wie bisher das einzige Auswertungsformat) — bewusst **kein** PDF-Download für dieses Feature. Begründung: die bestehende REFERENZEN-Anzeige/Kopier-UI in `app/page.tsx` deckt das schon vollständig ab, ein PDF wäre eine zusätzliche, hier nicht nötige Komplexitätsebene (PDF-Erzeugung existiert im Repo bereits für einen anderen Zweck, `app/api/premium/route.ts`, dort aber als eigenständiges x402/Krypto-Feature mit anderer Zielsetzung — "Dossier zum Mitnehmen" statt Zahlungs-Freischaltung).
+**Stufe 1 — kostenlos, 8 Fragen** (`app/Stage1Form.tsx` → `app/api/assessment/route.ts` → `lib/chat.ts` `runQuickAssessment`): ein einziges, auf einmal ausgefülltes Formular (Infektionszeitpunkt/-nachweis, Akutverlauf, Beruf, beruflicher Kontakt/BK-Meldung, Beschwerdebeginn/-verlauf, Gesamttendenz, Symptomüberblick, Vorerkrankungen). Wird als EINE serialisierte Nachricht (`lib/serializeAnswers.ts` `serializeStage1`) an ein günstiges/schnelles Modell (`claude-haiku-4-5-20251001`) geschickt, OHNE Wissensbasis im Kontext — liefert eine vorsichtig-hypothetisch formulierte, unsourcete Kurzeinordnung anhand vier grober Kriterien (PEM, Dauer, Alltagsbeeinträchtigung, beruflicher Zusammenhang), NIEMALS konkrete GdB-/MdE-Zahlen, keine Quellenbelege. Bleibt No-Storage.
 
-**Preis**: `lib/pricing.ts`, EINZIGER Ort — `DETAILED_ANALYSIS_PRICE_CENTS` (Konstante, überschreibbar per gleichnamiger Env-Var). Ändert man den Wert dort, aktualisiert sich automatisch: der Stripe-PaymentIntent-Betrag (`app/api/checkout/route.ts`), der angezeigte Preis (`GET /api/pricing`, von `app/DetailedAnalysisUpsell.tsx` zur Laufzeit abgerufen — bewusst nicht als `NEXT_PUBLIC_`-Variable im Client-Bundle eingebrannt, damit eine Preisänderung ohne Rebuild-Unsicherheit überall ankommt). **Der Platzhalter (5,00 €) ist nicht kalkuliert** — vor Live-Gang durch den tatsächlichen Wert ersetzen (Berechnungsgrundlage: reale Anthropic-API-Kosten pro Detailanalyse).
+**Stufe 2 — 19 weitere Fragen** (`app/Stage2Form.tsx` → `app/api/detailed-assessment/route.ts` → `lib/chat.ts` `runDetailedAssessmentFromAnswers`, eine EIGENE Funktion/eigener Prompt, getrennt von `runInterview` — dieses bleibt für Telegram unverändert): ein durchgehendes Formular in Abschnitten (Fatigue/PEM, Kognitiv, Riech-/Schmeck, Kreislauf/PoTS, Herz-Kreislauf, Atemwege, Psyche, ME/CFS-Doppelprüfung, Vorschäden & Verlauf) mit einfachem Fortschrittszähler ("X von Y beantwortet"), keine Unterbrechbarkeit zwischen den Abschnitten. **Jede Freitextfrage hat einen sichtbaren "Überspringen"-Button**; übersprungene Antworten werden im Prompt explizit als "— übersprungen —" markiert und dürfen vom Modell NIE stillschweigend als "nein" gewertet werden (Anweisung im System-Prompt) — ebenso fehlt-noch-Antworten ("— keine Angabe —"). Volles Modell (Sonnet) MIT vollständiger Wissensbasis, liefert **drei strikt getrennte Ergebnisblöcke** (nie zu einem Gesamturteil verschmolzen): GUV-Spur (BK-3101-Kausalitäts-Check anhand der drei Prüfschritte aus der Wissensbasis — bewusst OHNE eine Anknüpfungstatsachen-Punktbewertung oder eine KldB-Berufsliste, weil beides in der kuratierten Wissensbasis nicht vorhanden ist und nicht erfunden werden darf), Schwerbehindertenrecht-Spur (GdB) und Erwerbsminderungsrente-Spur (EMR, inkl. Hinweis auf "Summierung ungewöhnlicher Leistungseinschränkungen" wo plausibel). Zusätzlich eine ME/CFS-Doppelprüfung, die IOM- und CCC-Kriterien getrennt meldet ("Nach IOM-Kriterien: …" / "Nach CCC: …", nie zusammengefasst). Alle konkreten Werte/Schwellen kommen aus der Wissensbasis, nie hartkodiert im Prompt.
 
-**Zahlungsablauf (Stripe Express Checkout Element, Apple Pay/Google Pay)**:
+**Ablieferung**: die Detailanalyse erscheint inline (`app/DetailedAnalysisFlow.tsx`, dieselbe REFERENZEN-Anzeige/Kopier-UI wie bisher, inkl. BGW-Brief-Feature) — bewusst **kein** PDF-Download für dieses Feature (PDF-Erzeugung existiert im Repo bereits für einen anderen Zweck, `app/api/premium/route.ts`, dort als eigenständiges x402/Krypto-Feature mit anderer Zielsetzung — "Dossier zum Mitnehmen" statt Auswertungs-Ausgabe).
+
+**Preis**: `lib/pricing.ts`, EINZIGER Ort — `DETAILED_ANALYSIS_PRICE_CENTS` (Konstante, überschreibbar per gleichnamiger Env-Var). Ändert man den Wert dort, aktualisiert sich automatisch: der Stripe-PaymentIntent-Betrag (`app/api/checkout/route.ts`), der angezeigte Preis (`GET /api/pricing`, von `app/DetailedAnalysisFlow.tsx` zur Laufzeit abgerufen — bewusst nicht als `NEXT_PUBLIC_`-Variable im Client-Bundle eingebrannt, damit eine Preisänderung ohne Rebuild-Unsicherheit überall ankommt). **Der Platzhalter (5,00 €) ist nicht kalkuliert** — vor Live-Gang durch den tatsächlichen Wert ersetzen (Berechnungsgrundlage: reale Anthropic-API-Kosten pro Detailanalyse).
+
+**Zahlungsablauf bei `PAYWALL_ENABLED=true` (Stripe Express Checkout Element, Apple Pay/Google Pay)**:
 1. Nutzer:in bestätigt zuerst die gesetzlich vorgeschriebene Checkbox (§ 356 Abs. 5 BGB, Widerrufsverzicht bei sofort bereitgestellten digitalen Inhalten) — **erst danach wird das Express-Checkout-Element überhaupt gemountet**, es existiert vorher nicht im DOM (nicht nur deaktiviert/versteckt).
-2. Bei Zahlungsbestätigung (`onConfirm`): `POST /api/checkout` legt eine Assessment-Session in Redis an (`status: "pending_payment"`) und einen Stripe-PaymentIntent mit `metadata.sessionId`.
+2. Bei Zahlungsbestätigung (`onConfirm`): `POST /api/checkout` legt eine Assessment-Session in Redis an (`status: "pending_payment"`, Inhalt jetzt `stage1`/`stage2` statt eines Chat-Transkripts) und einen Stripe-PaymentIntent mit `metadata.sessionId`.
 3. `stripe.confirmPayment(...)` bestätigt die Zahlung (Apple Pay/Google Pay brauchen dafür keinen Redirect).
 4. Stripe sendet `payment_intent.succeeded` an `/api/stripe/webhook` (signaturgeprüft) → Redis-Session wird auf `status: "paid"` gesetzt.
 5. Client pollt `POST /api/detailed-assessment` (bis zu 8× im 1,5-Sekunden-Abstand) — liefert erst, wenn der Webhook-Status `"paid"` erreicht hat.
