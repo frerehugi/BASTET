@@ -21,6 +21,7 @@ const FILES = [
   "ccc-fragenkatalog-kalibrierung.md",
   "nervensystem-psyche-herz-gdb.md",
   "neurologie-vergleichsfaelle.md",
+  "neurologie-mde-guv-tabellen.md",
   "schmerz-neuro-kardio-erweiterung.md",
   "schlaf-schwindel-kognitiv-faelle.md",
   "unfallversicherung-mde.md",

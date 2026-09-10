@@ -11,6 +11,7 @@
 ## Rechtsprechung / Sozialgerichtsverfahren
 - **DGUV UV-Recht-Entscheidungssammlung** (LSG-/BSG-Rechtsprechung zu Gutachterfragen, u. a. Befangenheit): https://www.dguv.de/uv-recht/
 - Für die Frage der Gutachter-Befangenheit bei institutioneller Nähe zur Unfallversicherung siehe `unfallversicherung-gutachter-befangenheit.md` (§ 118 SGG/§§ 406, 42 ZPO, § 109 SGG, § 128 SGG) — Entscheidungen recherchiert über anwalt24.de-Urteilsdatenbank, haufe.de, gesetze-bayern.de (BeckRS)
+- DGNB (Deutsche Gesellschaft für Neurowissenschaftliche Begutachtung): S2k-Leitlinie "Begutachtung nach gedecktem Schädel-Hirntrauma im Erwachsenenalter", AWMF-Register-Nr. 094-002, Stand 31.07.2024: https://register.awmf.org/assets/guidelines/094-002l_S2k_Begutachtung-bei-gedecktem-Schaedel-Hirntrauma-Erwachsene_2024-08.pdf — Grundlage für `neurologie-mde-guv-tabellen.md`
 
 ## Fachgesellschaften / Leitlinien
 - **Sektion Begutachtung der Deutschen Gesellschaft für Orthopädie und Unfallchirurgie (DGOU)**, in Zusammenarbeit mit DGNB — Bemessungsempfehlungen für Verletzungsfolgen (auch in der Privaten Unfallversicherung relevant)
