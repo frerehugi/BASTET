@@ -41,6 +41,14 @@ function gdbLine(result: TriageResult): string {
   return `Geschätzte Spanne: ${result.gdbSpanneVon}–${result.gdbSpanneBis}`;
 }
 
+function mdeEinschlaegigLabel(answers: Answers, result: TriageResult): string {
+  // beruflicherKontext "unsicher" macht result.mdeEinschlaegig zu false (wie
+  // "nein"), aber mdeGrund sagt explizit "kann nicht eingeordnet werden" -
+  // "Einschlägig: nein" direkt daneben wäre widersprüchlich zu lesen.
+  if (answers.beruflicherKontext === "unsicher") return "unsicher";
+  return result.mdeEinschlaegig ? "ja" : "nein";
+}
+
 function emrLabel(result: TriageResult): string {
   switch (result.emrKategorie) {
     case "voll":
@@ -83,7 +91,7 @@ export function formatTriageSummary(answers: Answers, result: TriageResult): str
   for (const b of result.gdbBegruendung) lines.push(`- ${b} [${gdbRef}]`);
   lines.push("");
   lines.push("── MdE (gesetzliche Unfallversicherung) ──");
-  lines.push(`Einschlägig: ${result.mdeEinschlaegig ? "ja" : "nein"}`);
+  lines.push(`Einschlägig: ${mdeEinschlaegigLabel(answers, result)}`);
   lines.push(`${result.mdeGrund}${mdeRef ? ` [${mdeRef}]` : ""}`);
   lines.push("");
   lines.push("── Erwerbsminderungsrente (EMR, gesetzliche Rentenversicherung SGB VI) ──");
