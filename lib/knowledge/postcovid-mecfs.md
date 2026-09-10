@@ -100,6 +100,8 @@ Das Institute of Medicine (heute National Academy of Medicine) schlug 2015 unter
 |---|---|
 | Diagnosekriterien ME/CFS | Kanadische Konsenskriterien (CCC), PEM zwingend, DSQ-PEM zur Objektivierung |
 | Diagnosekriterien Long/Post-COVID | AWMF S1-Leitlinie (Stand 05/2024), klinische Diagnose, kein Laborausschluss möglich |
+| Gegenargument zu "nur Schonverhalten" | Charlton et al. 2026 (Nature Communications): Muskelbefunde bei ME/CFS/Long COVID unterscheiden sich von reiner Bettruhe-Dekonditionierung (Abschnitt 2) |
+| Erholungsprognose Fatigue ohne PEM | Maffitt et al. 2024: deutliche Besserung über 12 Monate bei post-COVID fatigue ohne PEM-Nachweis — relevant für Heilungsbewährung (Abschnitt 3, Abschnitt 5) |
 | Schweregrad-Einschätzung | Bell-Score (0–100, kein direktes GdB-Äquivalent), FUNCAP55 (55 Fragen) |
 | GdB/GdS-Rechtsgrundlage | VersMedV Teil B Nr. 18.4 (analoge Beurteilung) → Anwendung von 3.7 |
 | MdE/GUV-Rechtsgrundlage | SGB VII, BK-Nr. 3101, MdE-Erfahrungssätze bei Schönberger/Mehrtens/Valentin (10. Aufl. 2024) |
