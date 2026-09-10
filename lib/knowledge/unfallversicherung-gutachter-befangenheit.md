@@ -62,7 +62,7 @@ Auswahl zu benennen und auf das Widerspruchsrecht hinzuweisen, gilt **ausdrückl
 nicht** für Gerichte, die im Rahmen eines SGG-Rechtsstreits selbst ein Gutachten
 einholen:
 
-> BSG, Urteil v. 10.04.2013 – B 2 U 34/11 R (Leitsatz 1): "Eine Pflicht zur
+> BSG, Urteil v. 11.04.2013 – B 2 U 34/11 R (Leitsatz 1): "Eine Pflicht zur
 > Belehrung über das Widerspruchsrecht und zur Benennung einer Auswahl an
 > Sachverständigen trifft den Träger der gesetzlichen Unfallversicherung lediglich
 > bei der Einholung von Sachverständigengutachten. Sie besteht nicht für Gerichte,
@@ -165,7 +165,7 @@ BG-Klinik, das Gutachten kann also nicht neutral sein" trägt rechtlich allein
 - LSG München, Beschluss v. 10.05.2021 – L 17 U 340/17 (BeckRS 2021, 13815)
 - LSG Thüringen, Beschluss v. 11.04.2023 – L 1 U 1380/19
 - BSG, Urteil v. 15.03.1995 – 5 RJ 54/94
-- BSG, Urteil v. 10.04.2013 – B 2 U 34/11 R
+- BSG, Urteil v. 11.04.2013 – B 2 U 34/11 R
 - BSG, Beschluss – B 9 V 45/14 B (Beweiswert Verwaltungs-/Gerichtsgutachten)
 - BSG, Urteil v. 05.02.2008 – B 2 U 8/07 R (in Bezug genommen durch LSG Thüringen
   L 1 B 187/08 U)

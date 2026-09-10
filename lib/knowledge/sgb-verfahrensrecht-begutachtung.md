@@ -41,7 +41,7 @@ mangel) sind in der Literatur nicht abschließend geklärt — kein Automatismus
 
 **Wichtige Einschränkung**: § 200 Abs. 2 SGB VII bindet nur den Unfallversicherungs-
 träger im Verwaltungsverfahren — **nicht** Gerichte, die im Rahmen eines SGG-Rechts-
-streits selbst ein Gutachten einholen (BSG, Urteil v. 10.04.2013 – B 2 U 34/11 R,
+streits selbst ein Gutachten einholen (BSG, Urteil v. 11.04.2013 – B 2 U 34/11 R,
 Leitsatz 1). Für die gerichtliche Gutachtenbeauftragung gilt stattdessen das eigen-
 ständige Instrumentarium aus `unfallversicherung-gutachter-befangenheit.md`
 (Befangenheitsablehnung nach § 118 Abs. 1 SGG i. V. m. §§ 406, 42 ZPO, sowie das
