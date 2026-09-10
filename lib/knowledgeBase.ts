@@ -24,6 +24,7 @@ const FILES = [
   "schmerz-neuro-kardio-erweiterung.md",
   "schlaf-schwindel-kognitiv-faelle.md",
   "unfallversicherung-mde.md",
+  "unfallversicherung-gutachter-befangenheit.md",
   "sgb-verfahrensrecht-begutachtung.md",
   "bg-pflichten-mitwirkung.md",
   "bg-kontaktdaten.md",

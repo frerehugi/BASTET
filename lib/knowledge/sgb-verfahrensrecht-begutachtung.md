@@ -39,6 +39,16 @@ Widerspruchsrecht), ist verfahrensfehlerhaft — ein legitimer Ansatzpunkt für 
 berichtet wird. Rechtsfolgen im Einzelfall (Verwertungsverbot vs. bloßer Verfahrens-
 mangel) sind in der Literatur nicht abschließend geklärt — kein Automatismus.
 
+**Wichtige Einschränkung**: § 200 Abs. 2 SGB VII bindet nur den Unfallversicherungs-
+träger im Verwaltungsverfahren — **nicht** Gerichte, die im Rahmen eines SGG-Rechts-
+streits selbst ein Gutachten einholen (BSG, Urteil v. 10.04.2013 – B 2 U 34/11 R,
+Leitsatz 1). Für die gerichtliche Gutachtenbeauftragung gilt stattdessen das eigen-
+ständige Instrumentarium aus `unfallversicherung-gutachter-befangenheit.md`
+(Befangenheitsablehnung nach § 118 Abs. 1 SGG i. V. m. §§ 406, 42 ZPO, sowie das
+Vorschlagsrecht nach § 109 SGG) — insbesondere relevant bei der in dieser Datei
+ebenfalls behandelten Frage, ob ein Gutachter mit institutioneller Nähe zur BG
+(z. B. Anstellung an einer BG-Klinik) im Gerichtsverfahren abgelehnt werden kann.
+
 ## 2. SGB IX — Zuständigkeitsklärung und Begutachtungsverfahren bei Teilhabeleistungen
 
 **§ 14 SGB IX (Leistender Rehabilitationsträger)** — Fristenkaskade:

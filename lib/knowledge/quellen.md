@@ -8,6 +8,10 @@
 - **SGB V, VI, VII, IX, X, XIV** im Volltext: https://www.gesetze-im-internet.de/ — für Begutachtungsverfahrensrecht siehe die neue Übersicht in `sgb-verfahrensrecht-begutachtung.md` (§ 275 SGB V, § 43 SGB VI, § 200 SGB VII, §§ 14/17/152 SGB IX, § 21 SGB X)
 - **sozialgesetzbuch-sgb.de** — praktisches Volltext-Nachschlagewerk für SGB I–XIV mit Querverweisen; als Einstieg nützlich, für die maßgebliche Fassung im Zweifel gesetze-im-internet.de heranziehen
 
+## Rechtsprechung / Sozialgerichtsverfahren
+- **DGUV UV-Recht-Entscheidungssammlung** (LSG-/BSG-Rechtsprechung zu Gutachterfragen, u. a. Befangenheit): https://www.dguv.de/uv-recht/
+- Für die Frage der Gutachter-Befangenheit bei institutioneller Nähe zur Unfallversicherung siehe `unfallversicherung-gutachter-befangenheit.md` (§ 118 SGG/§§ 406, 42 ZPO, § 109 SGG, § 128 SGG) — Entscheidungen recherchiert über anwalt24.de-Urteilsdatenbank, haufe.de, gesetze-bayern.de (BeckRS)
+
 ## Fachgesellschaften / Leitlinien
 - **Sektion Begutachtung der Deutschen Gesellschaft für Orthopädie und Unfallchirurgie (DGOU)**, in Zusammenarbeit mit DGNB — Bemessungsempfehlungen für Verletzungsfolgen (auch in der Privaten Unfallversicherung relevant)
 - DGUV-Kursunterlagen "Die Begutachtung in der gesetzlichen Unfallversicherung" — Formulargutachten-Übersicht
