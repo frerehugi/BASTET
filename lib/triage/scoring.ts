@@ -199,6 +199,10 @@ export function computeTriage(answers: Answers): TriageResult {
   // --- 5. Offene Punkte / Empfehlung Detailanalyse -------------------------
   const offenePunkte: string[] = [];
   if (pem === "unklar") offenePunkte.push("Ob PEM vorliegt, ist noch unklar.");
+  if (pem === "nein")
+    offenePunkte.push(
+      "CCC/IOM sind mangels PEM nicht erfüllt — das schließt eine andere postakute Infektionsfolge (PAIS) mit Fatigue/Belastungsintoleranz ohne PEM nicht aus. Das wäre diagnostisch etwas anderes als ME/CFS und sollte ärztlich eingeordnet werden, statt hier als 'keine relevante Erkrankung' missverstanden zu werden."
+    );
   if (unsichereDatenlage) offenePunkte.push("Arbeitsfähigkeit bzw. PEM-Erholungsdauer nicht präzise genug für eine engere GdB-Spanne.");
   if (arbeitsfaehigkeit === "unklar") offenePunkte.push("Leistungsvermögen für die EMR-Einordnung nicht eingeschätzt.");
   if (beruflicherKontext === "unsicher")
