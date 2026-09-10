@@ -30,6 +30,7 @@
 - AWMF S1-Leitlinie Long/Post-COVID (Stand Mai 2024) — über AWMF-Register abrufbar
 - Deutsche Gesellschaft für ME/CFS, Artikel für Gutachter:innen: https://www.mecfs.de/artikel-fuer-gutachterinnen-zu-me-cfs/ (robots-gesperrt für automatisierten Zugriff, manuell aufrufen)
 - DGUV forum, laufende Berichte "COVID-19 als Berufskrankheit" (Update-Reihe, zuletzt 2023/2024): https://forum.dguv.de/
+- Charlton BT, Slaghekke A, Appelman B, et al.: "Skeletal muscle properties in long COVID and ME/CFS differ from those induced by bed rest", Nature Communications 17, 9125 (veröffentlicht 28.07.2026); Preprint-Fassung (medRxiv, Mai 2025, frei zugänglich, inhaltlich mit der finalen Version konsistent): https://www.medrxiv.org/content/10.1101/2025.05.02.25326885.full.pdf — Einzelstudie (n=25-26/Gruppe), Ergebnisse laut Autor:innen nicht direkt auf bettlägerige/hausgebundene Patient:innen übertragbar (Selektionsbias hin zu mobilen, milder Betroffenen)
 
 ## Stand dieser Wissensbasis
 Recherchiert und zusammengestellt: September 2026. Die VersMedV wird regelmäßig novelliert (zuletzt Teil A grundlegend zum 3. Oktober 2025) — bei wichtigen Entscheidungen aktuelle Fassung über die Links oben prüfen bzw. gezielt nachsuchen.

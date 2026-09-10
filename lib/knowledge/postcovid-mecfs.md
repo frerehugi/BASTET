@@ -10,7 +10,29 @@ Schwerpunktkapitel auf ausdrücklichen Wunsch — Grundlage: Scheibenbogen/Bellm
 - Präpandemisch in Deutschland ca. 300.000 Betroffene geschätzt; durch SARS-CoV-2 deutlicher Anstieg.
 - Ein Teil der Long-/Post-COVID-Patient:innen erfüllt die ME/CFS-Kriterien; Long-/Post-COVID ist aber ein weiteres, unspezifischeres Symptomkomplex-Konzept (RKI-Definition), ME/CFS eine spezifische, klinisch definierte Erkrankung darunter.
 
-## 2. Diagnosekriterien
+## 2. Pathophysiologie: objektivierbare Muskelbefunde gegen die reine Dekonditionierungs-Hypothese
+
+Aktuelle Forschung (Charlton et al., *Nature Communications* 17, 9125, veröffentlicht 28.07.2026) liefert erstmals einen direkten Vergleich zwischen Long-COVID-/ME/CFS-bedingten Muskelveränderungen und den Effekten reiner, experimentell kontrollierter Bewegungsmangel-Dekonditionierung — relevant als Gegenargument, wenn in einem Gutachten oder Widerspruchsverfahren die Belastungsintoleranz auf bloßes Schonverhalten reduziert wird ("das ist nur Trainingsmangel, durch Aktivierung behebbar").
+
+**Studiendesign**: Vergleich von (a) 24 Gesunden nach streng kontrollierter 60-tägiger Kopf-tief-Bettruhe (AGBRESA-Studie) mit (b) einer Querschnittskohorte aus 25 Long-COVID-Patient:innen, 26 ME/CFS-Patient:innen (CCC-diagnostiziert, PEM per DSQ-PEM bestätigt) und 30 gematchten Gesunden — jeweils mit maximalem Fahrrad-Belastungstest und Muskelbiopsie (M. vastus lateralis).
+
+**Zentrale Befunde, die sich vom reinen Dekonditionierungs-Muster unterscheiden**:
+- **Muskelfasertyp-Verschiebung**: Long-COVID- und ME/CFS-Patient:innen zeigten mehr glykolytische Typ-IIa/IIx-Fasern und weniger oxidative Typ-I-Fasern; bei ME/CFS zusätzlich eine selektive Atrophie speziell der Typ-I-Fasern. Nach Bettruhe: klassische, gleichmäßige Atrophie aller Fasertypen, aber **keine** Verschiebung der Fasertyp-Zusammensetzung — umgekehrtes Muster.
+- **Mitochondrienfunktion**: Reduzierte oxidative Phosphorylierungskapazität bei beiden Patientengruppen, aber **ohne** die bei Gesunden/nach Bettruhe übliche Korrelation zur maximalen Sauerstoffaufnahme (VO2max) — Hinweis auf eine intrinsische mitochondriale Störung, nicht auf das übliche Dekonditionierungs-Muster.
+- **Kapillarisierung**: Bei ME/CFS (nicht bei Long COVID) reduziertes Kapillar-Faser-Verhältnis, unabhängig vom Fasertyp — nach Bettruhe blieb dieses Verhältnis stabil.
+- **Herz-Kreislauf-Reaktion**: Patient:innen zeigten einen stärkeren Herzfrequenz-Anstieg pro Sauerstoffaufnahme-Einheit (Hinweis auf reduziertes Schlagvolumen oder gestörte periphere Sauerstoffausschöpfung) — ein Muster, das nach Bettruhe nicht auftrat.
+
+**Schlussfolgerung der Autor:innen**: Die beobachteten Muskel- und Stoffwechselveränderungen bei Long COVID/ME/CFS unterscheiden sich in Muster und Mechanismus von reiner bewegungsmangelbedingter Rückbildung. Bloße körperliche Inaktivität erklärt die Veränderungen nicht ausreichend; es gibt Hinweise auf eine eigenständige mitochondriale und mikrovaskuläre Störung. Rehabilitationsstrategien sollten Patient:innen entsprechend nicht wie "einfach nur dekonditioniert" behandeln.
+
+**Wichtige Limitationen (von den Autor:innen selbst benannt, nicht verschweigen)**:
+- Querschnittsdesign — keine Aussage über Kausalität oder zeitlichen Verlauf möglich.
+- **Selektionsbias hin zu mobilen, milder betroffenen Patient:innen** (mussten ins Labor reisen und einen maximalen Belastungstest durchstehen können) — die Autor:innen schreiben explizit, die Ergebnisse seien "not directly applicable to home-bound patients". Für schwer/sehr schwer betroffene, bettlägerige Patient:innen — ein relevanter Teil der BASTET-Zielgruppe — ist die Übertragbarkeit also ausdrücklich eingeschränkt.
+- ME/CFS-Patient:innen waren im Schnitt deutlich länger krank als Long-COVID-Patient:innen (vor 2020 diagnostiziert) — Krankheitsdauer und -mechanismus lassen sich nicht sauber trennen.
+- Einzelstudie (n=25–26 pro Patientengruppe), keine Leitlinien-Ebene — als aktuelle Forschung zu zitieren, nicht als etablierter medizinischer Konsens.
+
+**Praktischer Nutzen für BASTET**: Objektivierbares Gegenargument gegen eine "reine Schonverhalten"-Argumentation in Gutachten oder Widerspruchsverfahren — mit dem Vorbehalt, dass die Studie selbst nur für mobilere Patient:innen validiert ist und nicht unkritisch auf schwerste Verläufe übertragen werden sollte.
+
+## 3. Diagnosekriterien
 
 ### ME/CFS: Kanadische Konsenskriterien (CCC), von D-A-CH-Konsensusstatement 2024 (Hoffmann et al.) für Diagnostik und Begutachtung empfohlen
 PEM ist laut Konsensusstatement **zwingend** für die Diagnose (auch nach International Consensus Criteria und NICE-Leitlinie). Grobstruktur der CCC (Kategorien, keine wörtliche Wiedergabe des urheberrechtlich geschützten Originaltexts — Original z. B. als Fragebogen der Charité Berlin verfügbar):
@@ -44,12 +66,12 @@ Das Institute of Medicine (heute National Academy of Medicine) schlug 2015 unter
 - Differentialdiagnostische Abklärung ist bei neu aufgetretenen Symptomen nach durchgemachter SARS-CoV-2-Infektion obligat, bevor die Diagnose gestellt wird.
 - Bei Verdacht auf zugrundeliegendes ME/CFS: systematische Anwendung der CCC empfohlen (Renz-Polster/Scheibenbogen 2022, *Der Internist*).
 
-## 3. Schweregrad-Erfassung — Instrumente für die Begutachtung
+## 4. Schweregrad-Erfassung — Instrumente für die Begutachtung
 - **Bell-Score (Bell Disability Scale)**: 0–100-Skala zur Einschätzung der allgemeinen Funktionseinschränkung/Behinderung bei ME/CFS. Wichtig: **Ein Bell-Score von z. B. 50 ist nicht mit einem GdB von 50 gleichzusetzen** — er liefert nur einen Anhaltspunkt in der Gesamtwürdigung, ersetzt sie aber nicht.
 - **FUNCAP55**: Fragebogen zur Funktionskapazität und Symptomschwere anhand von 55 Fragen — von der Schweizerischen Gesellschaft für ME/CFS als interaktive Online-Version bereitgestellt; empfohlen zur Selbsteinschätzung/Antragsvorbereitung durch Betroffene.
 - Klinisch-physikalische Untersuchung plus die genannten Fragebögen (CCC-Checkliste, DSQ-PEM) sind laut D-A-CH-Konsensusstatement die Grundlage für Gutachter:innen — nicht ein einzelner Laborwert oder Score.
 
-## 4. GdB/GdS-Einordnung (Schwerbehindertenrecht/VersMedV)
+## 5. GdB/GdS-Einordnung (Schwerbehindertenrecht/VersMedV)
 
 - Es gibt **keinen eigenen VersMedV-Punkt** für ME/CFS oder Post-/Long-COVID. Maßgeblich ist **VersMedV Teil B, Nr. 18.4**: "Fibromyalgie und Chronisches Fatigue-Syndrom (CFS) und ähnliche Syndrome sind jeweils im Einzelfall entsprechend der funktionellen Auswirkungen **analog** zu beurteilen."
 - Nach Vorgabe des Sachverständigenbeirats beim BMAS (von den Gerichten bestätigt) erfolgt die Analogbewertung anhand des Abschnitts **3.7 "Neurosen, Persönlichkeitsstörungen, Folgen psychischer Traumen"** (siehe `references/nervensystem-psyche-herz-gdb.md`) — **nicht** weil ME/CFS eine psychische Erkrankung wäre (WHO-Klassifikation: neurologisch!), sondern weil dort die Bewertungslogik nach Grad der funktionellen/sozialen Beeinträchtigung am ehesten übertragbar ist.
@@ -59,7 +81,7 @@ Das Institute of Medicine (heute National Academy of Medicine) schlug 2015 unter
 - GdB-Bandbreite theoretisch 0–100, praxisrelevant bei mittelschwerem bis schwerem ME/CFS meist im Bereich ab 50 (Analogie zu "schweren Störungen" nach 3.7); bei sehr schwer/bettlägerig Betroffenen bis 100.
 - Kritikpunkt aus Patientensicht (u. a. FragDenStaat-Anfrage 2026 an Versorgungsämter): GdB-Anträge bei ME/CFS würden häufig unter "psychischen" statt "neurologischen" Erkrankungsbildern geführt und im Vergleich zur tatsächlichen Teilhabeeinschränkung zu niedrig bewilligt — Kenntnis der CCC bei Gutachter:innen wird angezweifelt. Für die eigene Begutachtungspraxis relevant: explizite Dokumentation von PEM/CCC-Erfüllung und Verweis auf 18.4 (analog) hilft, Fehlkodierung als rein psychiatrische Störung zu vermeiden.
 
-## 5. MdE / gesetzliche Unfallversicherung (SGB VII) — Post-COVID als Berufskrankheit
+## 6. MdE / gesetzliche Unfallversicherung (SGB VII) — Post-COVID als Berufskrankheit
 
 - **BK-Nr. 3101** (Infektionskrankheiten) erfasst Personen, die durch ihre Tätigkeit im Gesundheitsdienst, in der Wohlfahrtspflege oder im Labor mit SARS-CoV-2 infiziert wurden und deshalb an COVID-19 erkrankten (bzw. vergleichbar exponierte Gruppen). Voraussetzung: mindestens geringfügige klinische Symptome nach der Infektion.
 - **Long-/Post-COVID-Zustand als Unfallfolge**: laut Sozialgerichtsentscheidungen (z. B. SG-Verfahren, dokumentiert bei sozialrechtsiegen.de 2026) inzwischen **allgemein als der BK-Nr. 3101 zurechenbares Krankheitsbild anerkannt**, sofern die Kausalität hinreichend wahrscheinlich ist. Rechtsprechung stützt sich dabei auf die AWMF-S1-Leitlinie Long/Post-COVID (Stand Mai 2024).
@@ -69,7 +91,7 @@ Das Institute of Medicine (heute National Academy of Medicine) schlug 2015 unter
 - ~75 % der COVID-19-Verdachtsanzeigen in der GUV entfallen auf die Berufsgenossenschaft für Gesundheitsdienst und Wohlfahrtspflege (BGW); Anteil an Langzeitverläufen bei anerkannten Fällen dort 1,5–2 %.
 - Praxishinweis für Gutachten: Bei V. a. Post-COVID-Begutachtung im GUV-Kontext **immer** prüfen, ob (a) eine anerkannte BK 3101 als Anknüpfungspunkt vorliegt, (b) die aktuelle AWMF-S1-Leitlinie für die Diagnosestellung herangezogen wurde, und (c) ggf. eine zugrunde liegende ME/CFS-Komponente nach CCC gesondert erfasst und dokumentiert wurde (PEM-Nachweis mittels DSQ-PEM), da dies für die MdE-Höhe und spätere Neufeststellungen (>5-%-Schwelle, siehe `references/unfallversicherung-mde.md`) relevant sein kann.
 
-## 6. Zusammenfassung: Wo finde ich was?
+## 7. Zusammenfassung: Wo finde ich was?
 | Frage | Antwort/Fundstelle |
 |---|---|
 | Diagnosekriterien ME/CFS | Kanadische Konsenskriterien (CCC), PEM zwingend, DSQ-PEM zur Objektivierung |
