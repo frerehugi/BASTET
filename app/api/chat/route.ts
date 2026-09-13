@@ -17,6 +17,12 @@ interface ChatRequestBody {
    *  Kalibrierungsanker für Tier 2 (siehe lib/triage/context.ts,
    *  triageResultToPromptAnchor()) - wie triageContext optional. */
   triageAnchor?: string | null;
+  /** true, wenn aus dem Tier-1-Vorlauf bereits sicher bekannt ist, dass kein
+   *  beruflicher Zusammenhang besteht (answers.beruflicherKontext === "nein")
+   *  - steuert die konservative Wissensbasis-Selektion in lib/chat.ts (siehe
+   *  build/effizienz-plan.md Abschnitt 2). Optional, Default false (voller
+   *  Bestand, unverändertes Verhalten). */
+  beruflicherKontextNein?: boolean;
 }
 
 export async function POST(request: Request) {
@@ -36,7 +42,8 @@ export async function POST(request: Request) {
     !!body.diagnosisConfirmed,
     typeof body.turnCount === "number" ? body.turnCount : 0,
     typeof body.triageContext === "string" ? body.triageContext : null,
-    typeof body.triageAnchor === "string" ? body.triageAnchor : null
+    typeof body.triageAnchor === "string" ? body.triageAnchor : null,
+    !!body.beruflicherKontextNein
   );
 
   // Erstes Chunk manuell abrufen, BEVOR die Response erstellt wird: ein

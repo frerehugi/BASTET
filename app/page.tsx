@@ -53,6 +53,7 @@ export default function App() {
   const [lastHistory, setLastHistory] = useState<Message[] | null>(null);
   const [triageContext, setTriageContext] = useState<string | null>(null);
   const [triageAnchor, setTriageAnchor] = useState<string | null>(null);
+  const [beruflicherKontextNein, setBeruflicherKontextNein] = useState(false);
   const [openRefs, setOpenRefs] = useState<Record<number, boolean>>({});
   const [copiedIndex, setCopiedIndex] = useState<number | "all" | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
@@ -123,6 +124,7 @@ export default function App() {
           turnCount,
           triageContext,
           triageAnchor,
+          beruflicherKontextNein,
         }),
       });
 
@@ -209,6 +211,11 @@ export default function App() {
     // Tier 2 aufbereitet, siehe lib/triage/context.ts,
     // triageResultToPromptAnchor() und build/effizienz-plan.md Abschnitt 6.
     setTriageAnchor(triageResultToPromptAnchor(computeTriage(answers)));
+    // Konservative Wissensbasis-Selektion (build/effizienz-plan.md
+    // Abschnitt 2): nur bei eindeutigem "Nein" auf die Berufsbezug-Frage
+    // steuert das die Bundle-Wahl in lib/chat.ts - "unsicher" bleibt
+    // absichtlich beim vollen Bestand (siehe dortiger Kommentar).
+    setBeruflicherKontextNein(answers.beruflicherKontext === "nein");
     setMessages([{ role: "assistant", content: summaryText }]);
     setPhase("triageResult");
   }

@@ -303,11 +303,23 @@ async function buildSystemBlocks(
   diagnosisConfirmed: boolean,
   turnBudgetHint: string,
   triageContext: string | null,
-  triageAnchor: string | null
+  triageAnchor: string | null,
+  beruflicherKontextNein: boolean
 ): Promise<SystemTextBlock[]> {
   const hasTriageContext = !!triageContext;
-  const staticKnowledgeBase = getStaticKnowledgeBase();
+  // Konservative Selektion (build/effizienz-plan.md Abschnitt 2): die reinen
+  // BG-Kontakt-/Verfahrenshilfen (bg-kontaktdaten.md, standardbrief-bgw.md)
+  // nur auslassen, wenn aus dem Tier-1-Vorlauf bereits sicher bekannt ist,
+  // dass kein beruflicher Zusammenhang besteht - sonst (kein Tier-1-Vorlauf,
+  // "ja" oder "unsicher") immer der volle Bestand, wie zuvor.
+  const fullKnowledgeBase = !beruflicherKontextNein;
+  const staticKnowledgeBase = getStaticKnowledgeBase(fullKnowledgeBase);
   const knowledgeAddendum = await getKnowledgeAddendum();
+  const wissensbasisHeader = fullKnowledgeBase
+    ? "WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):"
+    : "WISSENSBASIS (aus dem de-begutachtung-Skill; BG-Kontaktdaten und Standardbrief-Vorlage " +
+      "ausgelassen, da laut Tier-1-Vorlauf kein beruflicher Zusammenhang besteht - MdE bleibt " +
+      "trotzdem zu bewerten, nur ohne diese beiden Ablaufhilfen):";
 
   return [
     {
@@ -317,7 +329,7 @@ async function buildSystemBlocks(
     },
     {
       type: "text",
-      text: `WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):\n${staticKnowledgeBase}`,
+      text: `${wissensbasisHeader}\n${staticKnowledgeBase}`,
       cache_control: { type: "ephemeral", ttl: "1h" },
     },
     {
@@ -338,9 +350,16 @@ export async function runInterview(
   diagnosisConfirmed: boolean,
   turnCount: number,
   triageContext: string | null = null,
-  triageAnchor: string | null = null
+  triageAnchor: string | null = null,
+  beruflicherKontextNein: boolean = false
 ): Promise<string> {
-  const system = await buildSystemBlocks(diagnosisConfirmed, budgetHintFor(turnCount), triageContext, triageAnchor);
+  const system = await buildSystemBlocks(
+    diagnosisConfirmed,
+    budgetHintFor(turnCount),
+    triageContext,
+    triageAnchor,
+    beruflicherKontextNein
+  );
   return callClaude(
     system,
     messages,
@@ -365,8 +384,15 @@ export async function* runInterviewStream(
   diagnosisConfirmed: boolean,
   turnCount: number,
   triageContext: string | null = null,
-  triageAnchor: string | null = null
+  triageAnchor: string | null = null,
+  beruflicherKontextNein: boolean = false
 ): AsyncGenerator<string, void, unknown> {
-  const system = await buildSystemBlocks(diagnosisConfirmed, budgetHintFor(turnCount), triageContext, triageAnchor);
+  const system = await buildSystemBlocks(
+    diagnosisConfirmed,
+    budgetHintFor(turnCount),
+    triageContext,
+    triageAnchor,
+    beruflicherKontextNein
+  );
   yield* streamClaude(system, messages, 16000, !!triageContext, true);
 }
