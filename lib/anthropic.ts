@@ -7,6 +7,20 @@ export interface ChatMessage {
   content: string;
 }
 
+// Ein System-Prompt-Block mit optionalem Cache-Breakpoint. `system` kann
+// entweder ein einzelner String sein (kein Caching, Legacy-Pfad) oder ein
+// Array solcher Blöcke - siehe lib/chat.ts/lib/doc.ts für die
+// statisch/dynamisch-Aufteilung, die das Caching erst wirksam macht
+// (Reihenfolge: stabile Blöcke mit cache_control zuerst, variable Inhalte
+// zuletzt und ohne Marker, siehe build/effizienz-plan.md Abschnitt 1).
+export interface SystemTextBlock {
+  type: "text";
+  text: string;
+  cache_control?: { type: "ephemeral"; ttl?: "5m" | "1h" };
+}
+
+export type SystemPrompt = string | SystemTextBlock[];
+
 interface AnthropicContentBlock {
   type: string;
   text?: string;
@@ -19,10 +33,11 @@ interface AnthropicResponse {
 }
 
 export async function callClaude(
-  system: string,
+  system: SystemPrompt,
   messages: ChatMessage[],
   maxTokens: number,
-  enableWebSearch: boolean = false
+  enableWebSearch: boolean = false,
+  cacheMessages: boolean = false
 ): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -37,6 +52,16 @@ export async function callClaude(
     system,
     messages,
   };
+
+  if (cacheMessages) {
+    // Automatischer Top-Level-Breakpoint auf den letzten cachefähigen Block
+    // der wachsenden `messages`-Historie (Multi-Turn-Interview) - ergänzt die
+    // expliziten Breakpoints auf den statischen system-Blöcken (Regeln,
+    // Wissensbasis), siehe lib/chat.ts. Nur für den mehrstufigen Interview-
+    // Arm sinnvoll; beim Einzelaufruf (lib/doc.ts) gäbe es nichts, das ein
+    // zweites Mal gelesen würde, nur unnötige Schreibkosten.
+    body.cache_control = { type: "ephemeral", ttl: "1h" };
+  }
 
   if (enableWebSearch) {
     // max_uses begrenzt die Recherchekosten pro Anfrage - die Wissensbasis

@@ -11,6 +11,12 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
+    // Nur für scripts/regression-test.mts relevant: Node (>=22) führt .ts-
+    // Dateien nativ aus, braucht dafür aber explizite .ts-Endungen bei
+    // relativen Imports (anders als die "bundler"-Auflösung von Next.js).
+    // Ungefährlich mit noEmit:true - tsc emittiert hier ohnehin nichts,
+    // Next.js/SWC bündeln unabhängig von dieser Option.
+    "allowImportingTsExtensions": true,
     "jsx": "preserve",
     "incremental": true,
     "plugins": [{ "name": "next" }],
@@ -18,6 +24,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.mts", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]
 }

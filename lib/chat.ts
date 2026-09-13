@@ -1,31 +1,42 @@
-import { callClaude, type ChatMessage } from "./anthropic";
-import { getKnowledgeBase } from "./knowledgeBase";
+import { callClaude, type ChatMessage, type SystemTextBlock } from "./anthropic";
+import { getStaticKnowledgeBase, getKnowledgeAddendum } from "./knowledgeBase";
 
-function buildSystemPrompt(
-  diagnosisConfirmed: boolean,
-  turnBudgetHint: string,
-  knowledgeBase: string,
-  triageContext: string | null
-): string {
-  const triageBlock = triageContext
+// Cache-Architektur (siehe build/effizienz-plan.md Abschnitt 1): der
+// System-Prompt wird als drei Blöcke aufgebaut, in Reihenfolge stabil -> groß
+// -> variabel, damit Prompt Caching greift (reiner Präfix-Match - jede
+// Bytedifferenz vor einem Breakpoint invalidiert alles Nachfolgende):
+//
+//   Block A (RULES)     - Regeltexte, pro Konversation nur 2 mögliche
+//                          Varianten (mit/ohne Tier-1-Vorlauf), eigener
+//                          cache_control-Breakpoint.
+//   Block B (KB)         - die ~48K-Token-Wissensbasis, byte-identisch für
+//                          alle Anfragen, eigener cache_control-Breakpoint
+//                          (getrennt von Block A, damit ein Regeltext-Deploy
+//                          nicht die viel teurere KB-Cache-Zeile invalidiert).
+//   Block C (dynamisch)  - Diagnose-Status, die tatsächlichen Tier-1-Antworten,
+//                          Turn-Budget-Fortschritt, Wissensbasis-Addendum.
+//                          Ändert sich pro Turn/Patient:in - KEIN
+//                          cache_control hier.
+//
+// Zusätzlich cached lib/anthropic.ts (cacheMessages) die wachsende
+// messages-Historie über einen automatischen Top-Level-Breakpoint.
+
+function buildRulesBlock(hasTriageContext: boolean): string {
+  const triageHinweis = hasTriageContext
     ? `
-BEREITS ERHOBENE STRUKTURIERTE ANGABEN (Tier 1, regelbasierte Ersteinschätzung —
-NICHT von dir generiert, sondern deterministisch vom Frontend erhoben, BEVOR
-dieses Gespräch begann):
-${triageContext}
 
-Diese Punkte sind bereits vollständig beantwortet — frage sie UNTER KEINEN
-UMSTÄNDEN erneut ab, auch nicht umformuliert. Nutze sie direkt als gesicherte
-Grundlage für deine Auswertung.
-`
+HINWEIS TIER-1-VORLAUF: Für dieses Gespräch liegen bereits vollständig
+beantwortete, regelbasiert erhobene Tier-1-Angaben vor (siehe Abschnitt
+"BEREITS ERHOBENE STRUKTURIERTE ANGABEN" weiter unten, nach der
+Wissensbasis). Frage die dort behandelten Themen UNTER KEINEN UMSTÄNDEN
+erneut ab, auch nicht umformuliert — nutze sie direkt als gesicherte
+Grundlage für deine Auswertung.`
     : "";
 
   return `Du bist ein Informationsassistent für eine KI-gestützte Vorbegutachtung
 bei Post-COVID/ME-CFS im deutschen Sozialrecht (GdB nach VersMedV, ggf. MdE nach
 SGB VII bei klar genanntem Berufsbezug). Du sprichst Deutsch, direkt und warm,
-niemals bürokratisch-kalt.
-${triageBlock}
-STATUS DIAGNOSE: ${diagnosisConfirmed ? "ärztlich gesichert (vom Nutzer bestätigt)." : "NICHT gesichert / unklar — die Person wünscht dennoch eine rein orientierende Einschätzung. Weise im Auswertungstext zusätzlich deutlich darauf hin, dass die Diagnose nicht gesichert ist und die Einschätzung deshalb noch unsicherer ist als ohnehin."}
+niemals bürokratisch-kalt.${triageHinweis}
 
 GRUNDREGELN (nicht verhandelbar):
 - Du stellst keine Diagnosen. Du bewertest ausschließlich, was die Person selbst
@@ -72,8 +83,8 @@ GRUNDREGELN (nicht verhandelbar):
 - Du bist kein Ersatz für Fachanwalt/Fachärztin — verweise am Ende aktiv dorthin.
 
 ZEITBUDGET (wegen Brain Fog zwingend, Tippen selbst ist anstrengend):
-- Gesamtes Interview soll in ca. 6-8 Austauschen abschließbar sein.
-  ${turnBudgetHint}
+- Gesamtes Interview soll in ca. 6-8 Austauschen abschließbar sein. Der
+  aktuelle Fortschritt steht unten im Abschnitt "AKTUELLER STAND".
 - NICHT VERHANDELBAR: Jede deiner Nachrichten enthält GENAU EINEN Themenkomplex
   aus der Liste unten — niemals mehrere nummerierte Themen in derselben
   Nachricht. Stelle das eine Thema, dann WARTE auf die Antwort, erst danach
@@ -85,7 +96,7 @@ ZEITBUDGET (wegen Brain Fog zwingend, Tippen selbst ist anstrengend):
   eigene, spätere Nachricht, nie in dieselbe wie das vorherige Thema. Grund:
   mehrere Themen auf einmal überfordern bei Brain Fog.
 ${
-  triageContext
+  hasTriageContext
     ? `- Die vier früher hier aufgeführten Kernthemen (PEM, Dauer, Alltags-/
   Arbeitsfähigkeit, beruflicher Zusammenhang) liegen bereits aus Tier 1 vor
   (siehe Block oben) — starte NICHT mit diesen. Stattdessen gilt dieselbe
@@ -238,10 +249,68 @@ Fachartikel/Gutachten üblichen Stil, je nach Quellentyp:
   vermerkt (z.B. "Kanadische Konsenskriterien (CCC)").
 Nur Angaben verwenden, die tatsächlich in der Wissensbasis stehen (insbesondere
 in der Quellen-Übersicht) — fehlende Angaben (Verlag, Jahr, Seite, Auflage) NICHT
-erfinden, sondern weglassen.
+erfinden, sondern weglassen.`;
+}
 
-WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill, ggf. inkl. freigegebener Aktualisierungen):
-${knowledgeBase}`;
+function buildDynamicContext(
+  diagnosisConfirmed: boolean,
+  turnBudgetHint: string,
+  triageContext: string | null,
+  knowledgeAddendum: string
+): string {
+  const parts: string[] = [];
+
+  parts.push(
+    `STATUS DIAGNOSE: ${diagnosisConfirmed ? "ärztlich gesichert (vom Nutzer bestätigt)." : "NICHT gesichert / unklar — die Person wünscht dennoch eine rein orientierende Einschätzung. Weise im Auswertungstext zusätzlich deutlich darauf hin, dass die Diagnose nicht gesichert ist und die Einschätzung deshalb noch unsicherer ist als ohnehin."}`
+  );
+
+  if (triageContext) {
+    parts.push(`BEREITS ERHOBENE STRUKTURIERTE ANGABEN (Tier 1, regelbasierte Ersteinschätzung —
+NICHT von dir generiert, sondern deterministisch vom Frontend erhoben, BEVOR
+dieses Gespräch begann):
+${triageContext}
+
+Diese Punkte sind bereits vollständig beantwortet — frage sie UNTER KEINEN
+UMSTÄNDEN erneut ab, auch nicht umformuliert. Nutze sie direkt als gesicherte
+Grundlage für deine Auswertung.`);
+  }
+
+  parts.push(`AKTUELLER STAND:\n${turnBudgetHint}`);
+
+  if (knowledgeAddendum) {
+    parts.push(
+      `AKTUALISIERUNGEN DER WISSENSBASIS (nach menschlicher Freigabe, siehe Update-Pipeline):\n\n${knowledgeAddendum}`
+    );
+  }
+
+  return parts.join("\n\n");
+}
+
+async function buildSystemBlocks(
+  diagnosisConfirmed: boolean,
+  turnBudgetHint: string,
+  triageContext: string | null
+): Promise<SystemTextBlock[]> {
+  const hasTriageContext = !!triageContext;
+  const staticKnowledgeBase = getStaticKnowledgeBase();
+  const knowledgeAddendum = await getKnowledgeAddendum();
+
+  return [
+    {
+      type: "text",
+      text: buildRulesBlock(hasTriageContext),
+      cache_control: { type: "ephemeral", ttl: "1h" },
+    },
+    {
+      type: "text",
+      text: `WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):\n${staticKnowledgeBase}`,
+      cache_control: { type: "ephemeral", ttl: "1h" },
+    },
+    {
+      type: "text",
+      text: buildDynamicContext(diagnosisConfirmed, turnBudgetHint, triageContext, knowledgeAddendum),
+    },
+  ];
 }
 
 export async function runInterview(
@@ -255,13 +324,15 @@ export async function runInterview(
       ? "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist."
       : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
 
-  const knowledgeBase = await getKnowledgeBase();
+  const system = await buildSystemBlocks(diagnosisConfirmed, budgetHint, triageContext);
   return callClaude(
-    buildSystemPrompt(diagnosisConfirmed, budgetHint, knowledgeBase, triageContext),
+    system,
     messages,
     16000,
-    !!triageContext // web_search nur in Tier 2 (triageContext gesetzt) - Tier 1
+    !!triageContext, // web_search nur in Tier 2 (triageContext gesetzt) - Tier 1
     // läuft ohnehin ohne API-Call, und Telegram/doc-Arm ohne Tier-1-Vorlauf
     // bleiben unverändert beim bisherigen Verhalten ohne Tool-Zugriff.
+    true // cacheMessages - wachsende Interview-Historie über automatisches
+    // Top-Level-cache_control mitcachen (siehe lib/anthropic.ts).
   );
 }
