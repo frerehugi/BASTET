@@ -36,7 +36,15 @@ const FILES = [
 
 let staticCached: string | null = null;
 
-function getStaticKnowledgeBase(): string {
+/**
+ * Byte-identisch über alle Anfragen/Nutzer:innen hinweg (reine Git-Dateien,
+ * kein Redis-Zugriff) - bewusst getrennt von getKnowledgeAddendum() exportiert,
+ * damit lib/chat.ts/lib/doc.ts diesen Teil als eigenen, stabilen
+ * cache_control-Breakpoint verwenden können, ohne dass ein freigegebenes
+ * Wissensbasis-Update (selten, siehe getKnowledgeAddendum) die viel teurere
+ * Kern-Cache-Zeile mit invalidiert. Siehe build/effizienz-plan.md Abschnitt 1.
+ */
+export function getStaticKnowledgeBase(): string {
   if (staticCached) return staticCached;
   staticCached = FILES.map((file) => {
     const content = fs.readFileSync(path.join(KNOWLEDGE_DIR, file), "utf-8");
@@ -52,21 +60,21 @@ function getStaticKnowledgeBase(): string {
 }
 
 /**
- * Statischer Teil (Git-Dateien, dauerhaft gecacht) plus dynamischer Teil
- * (per Update-Pipeline + menschlicher Freigabe in Upstash abgelegte
- * Aktualisierungen, siehe lib/reviewQueue.ts und build/claude-code-buildplan.md
- * Phase 4). Ohne freigegebene Aktualisierungen identisch zum rein statischen
- * Stand — ein Ausfall des Redis-Abrufs darf die Kernfunktion nie blockieren,
- * daher best-effort mit stillem Fallback auf den statischen Teil.
+ * Dynamischer Teil: per Update-Pipeline + menschlicher Freigabe in Upstash
+ * abgelegte Aktualisierungen (siehe lib/reviewQueue.ts und
+ * build/claude-code-buildplan.md Phase 4). Leerstring, wenn keine
+ * freigegebenen Aktualisierungen vorliegen oder der Abruf fehlschlägt - ein
+ * Ausfall des Redis-Abrufs darf die Kernfunktion nie blockieren, daher
+ * best-effort mit stillem Fallback. Bewusst getrennt von
+ * getStaticKnowledgeBase() zurückgegeben, damit die Aufrufer diesen (kleinen,
+ * ungecachten) Teil separat ans Ende des System-Prompts stellen können, statt
+ * ihn in den großen, gecachten Wissensbasis-Block zu mischen.
  */
-export async function getKnowledgeBase(): Promise<string> {
-  const staticPart = getStaticKnowledgeBase();
-  let addendum = "";
+export async function getKnowledgeAddendum(): Promise<string> {
   try {
-    addendum = await getApprovedAddendumText();
+    return await getApprovedAddendumText();
   } catch (error) {
     console.error("Konnte Wissensbasis-Aktualisierungen nicht laden, nutze nur den statischen Stand:", error);
+    return "";
   }
-  if (!addendum) return staticPart;
-  return `${staticPart}\n\n---\n\n### Aktualisierungen (nach menschlicher Freigabe, siehe Update-Pipeline)\n\n${addendum}`;
 }

@@ -1,7 +1,13 @@
-import { callClaude } from "./anthropic";
-import { getKnowledgeBase } from "./knowledgeBase";
+import { callClaude, type SystemTextBlock } from "./anthropic";
+import { getStaticKnowledgeBase, getKnowledgeAddendum } from "./knowledgeBase";
 
-function buildSystemPrompt(knowledgeBase: string): string {
+// Gleiche Cache-Architektur wie lib/chat.ts (siehe dortigen Kommentar und
+// build/effizienz-plan.md Abschnitt 1): Regeln und Wissensbasis sind hier
+// beide vollständig statisch (keine Turn-/Triage-Dynamik im Doc-Arm), nur das
+// seltene Wissensbasis-Addendum ist variabel und bleibt daher außerhalb der
+// cache_control-Breakpoints.
+
+function buildRulesBlock(): string {
   return `Du bist eine fachliche Orientierungshilfe für Ärzt:innen zur GdB/MdE-
 Einschätzung bei Post-COVID/ME-CFS im deutschen Sozialrecht. Zielgruppe sind
 Fachkolleg:innen, keine Patient:innen - du sprichst kollegial, präzise, ohne
@@ -131,13 +137,37 @@ Fachartikel/Gutachten üblichen Stil, je nach Quellentyp:
   vermerkt (z.B. "Kanadische Konsenskriterien (CCC)").
 Nur Angaben verwenden, die tatsächlich in der Wissensbasis stehen (insbesondere
 in der Quellen-Übersicht) — fehlende Angaben (Verlag, Jahr, Seite, Auflage) NICHT
-erfinden, sondern weglassen.
+erfinden, sondern weglassen.`;
+}
 
-WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill, ggf. inkl. freigegebener Aktualisierungen):
-${knowledgeBase}`;
+async function buildSystemBlocks(): Promise<SystemTextBlock[]> {
+  const staticKnowledgeBase = getStaticKnowledgeBase();
+  const knowledgeAddendum = await getKnowledgeAddendum();
+
+  const blocks: SystemTextBlock[] = [
+    {
+      type: "text",
+      text: buildRulesBlock(),
+      cache_control: { type: "ephemeral", ttl: "1h" },
+    },
+    {
+      type: "text",
+      text: `WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):\n${staticKnowledgeBase}`,
+      cache_control: { type: "ephemeral", ttl: "1h" },
+    },
+  ];
+
+  if (knowledgeAddendum) {
+    blocks.push({
+      type: "text",
+      text: `AKTUALISIERUNGEN DER WISSENSBASIS (nach menschlicher Freigabe, siehe Update-Pipeline):\n\n${knowledgeAddendum}`,
+    });
+  }
+
+  return blocks;
 }
 
 export async function runDocAssessment(userInput: string): Promise<string> {
-  const knowledgeBase = await getKnowledgeBase();
-  return callClaude(buildSystemPrompt(knowledgeBase), [{ role: "user", content: userInput }], 16000);
+  const system = await buildSystemBlocks();
+  return callClaude(system, [{ role: "user", content: userInput }], 16000);
 }
