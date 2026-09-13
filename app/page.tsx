@@ -111,15 +111,27 @@ export default function App() {
     setError(null);
     // Index der neuen Assistent-Nachricht, die gleich inkrementell befüllt
     // wird - `messages`-State ist zu diesem Zeitpunkt bereits `history`
-    // (siehe handleSend/forceEvaluation, die setMessages(next) VOR
-    // callChatApi(next) aufrufen), also landet sie direkt dahinter.
+    // (siehe handleSend/forceEvaluation/beginDetailanalyse, die
+    // setMessages(next) VOR callChatApi(next) aufrufen), also landet sie
+    // direkt dahinter.
     const assistantIndex = history.length;
+    // `history` beginnt nach Tier 1 mit lokal erzeugten assistant-Nachrichten
+    // (Tier-1-Kurzauswertung, ggf. der Detailanalyse-Teaser) - die wurden nie
+    // vom Modell generiert und dürfen NICHT als Konversationsverlauf an die
+    // Anthropic-API gesendet werden: die API verlangt zwingend, dass die
+    // erste Nachricht role "user" ist, sonst schlägt der Call fehl. Für die
+    // Anzeige (messages-State, oben) bleibt der volle Verlauf inkl. dieser
+    // lokalen Texte erhalten - nur der an /api/chat gesendete Ausschnitt wird
+    // auf den echten, mit der ersten Nutzer-Nachricht beginnenden
+    // API-Verlauf beschränkt.
+    const firstUserIdx = history.findIndex((m) => m.role === "user");
+    const apiMessages = firstUserIdx === -1 ? [] : history.slice(firstUserIdx);
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: history,
+          messages: apiMessages,
           diagnosisConfirmed,
           turnCount,
           triageContext,
@@ -220,17 +232,24 @@ export default function App() {
     setPhase("triageResult");
   }
 
-  /** Übergang Tier 1 → Tier 2: ab hier laufen echte Anthropic-API-Calls. */
+  /**
+   * Übergang Tier 1 → Tier 2: ab hier laufen echte Anthropic-API-Calls.
+   * Löst (wie forceEvaluation unten) direkt einen echten Call aus, statt nur
+   * einen lokalen Text anzuzeigen, der eine "erste Frage" ankündigt, die nie
+   * kommt (Bugfix: der Text endete zuvor auf "Erste Frage:", ohne dass
+   * danach je eine gestellt wurde - erst ein Senden durch die Person hätte
+   * den ersten echten Call ausgelöst).
+   */
   function beginDetailanalyse() {
     setPhase("chat");
-    setMessages((m) => [
-      ...m,
-      {
-        role: "assistant",
-        content:
-          "Für die Detailanalyse stelle ich noch ein paar kurze Vertiefungsfragen — zu Medikation/Therapieansprechen, bereits durchgeführten objektiven Tests und individuellen Besonderheiten. Stichworte reichen. Erste Frage:",
-      },
-    ]);
+    const directive: Message = {
+      role: "user",
+      content:
+        "[Bitte jetzt mit der Detailanalyse beginnen und die erste Vertiefungsfrage stellen — zu Medikation/Therapieansprechen, bereits durchgeführten objektiven Tests oder individuellen Besonderheiten.]",
+    };
+    const next = [...messages, directive];
+    setMessages(next);
+    callChatApi(next);
   }
 
   function handleSend() {
