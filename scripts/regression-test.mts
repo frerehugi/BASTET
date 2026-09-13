@@ -1,6 +1,7 @@
-// Regressionstest "Stufe 1" (siehe build/effizienz-plan.md Abschnitt 5):
-// deterministische Struktur-Checks gegen die echten API-Routen, kein
-// LLM-Judge. Prüft pro Testfall aus scripts/regression/fixtures.ts:
+// Regressionstest gegen die echten API-Routen, kein LLM-Judge (siehe
+// build/effizienz-plan.md Abschnitt 5). Zwei Stufen:
+//
+// Stufe 1 - deterministische Struktur-Checks, für jeden Testfall:
 //   1. Alle drei Blöcke (GdB/MdE/EMR) sind vorhanden.
 //   2. Kein API-Fehler (insbesondere keine max_tokens-Abschneidung -
 //      lib/anthropic.ts wirft dafür bereits eine Exception, die die Route
@@ -8,6 +9,17 @@
 //   3. Referenz-Integrität: jede im Text zitierte [n] hat einen Eintrag im
 //      REFERENZEN-Block, und umgekehrt (keine verwaisten Referenzen).
 //   4. Kein interner Wissensbasis-Dateiname (*.md) im REFERENZEN-Block.
+//
+// Stufe 2 - inhaltliche Stichwort-Checks, optional pro Testfall
+// (scripts/regression/fixtures.mts, expectedTopics/forbiddenInIntermediateTurns):
+//   5. Erwartete Themen (PEM, Dauer, Berufsbezug, ...) kommen in der finalen
+//      Auswertung tatsächlich vor - grobe Stichwortsuche, kein Ersatz für
+//      fachliche Prüfung, aber ein harter Rauchtest gegen "ein Kernthema
+//      wird plötzlich nicht mehr aufgegriffen".
+//   6. Bei simuliertem Tier-1-Vorlauf (triageContext gesetzt): die bereits
+//      geklärten Themen tauchen in KEINER Zwischenfrage vor der finalen
+//      Auswertung erneut auf (prüft den "HINWEIS TIER-1-VORLAUF" aus
+//      lib/chat.ts).
 //
 // Voraussetzungen zum Ausführen (macht ECHTE, kostenpflichtige API-Aufrufe -
 // siehe build/effizienz-plan.md: nicht bei jedem Commit laufen lassen,
@@ -22,7 +34,7 @@
 
 import type { ChatMessage } from "../lib/anthropic.ts";
 import { splitReferences } from "../lib/format.ts";
-import { FIXTURES, type ChatFixture, type DocFixture } from "./regression/fixtures.mts";
+import { FIXTURES, type ChatFixture, type DocFixture, type TopicCheck } from "./regression/fixtures.mts";
 
 const BASE_URL = process.env.BASTET_TEST_BASE_URL ?? "http://localhost:3000";
 const MAX_CHAT_TURNS = 6;
@@ -31,6 +43,12 @@ const FALLBACK_MESSAGE = "Bitte jetzt zur Auswertung übergehen, das reicht mir.
 interface ApiResult {
   text?: string;
   error?: string;
+}
+
+interface ChatRunResult extends ApiResult {
+  turnsUsed: number;
+  /** Alle Assistent-Antworten VOR der finalen Auswertung (für Stufe-2-Checks). */
+  intermediateTexts: string[];
 }
 
 interface CheckResult {
@@ -52,9 +70,10 @@ async function postJson(path: string, payload: unknown): Promise<ApiResult> {
   return { text: data.text };
 }
 
-async function runChatFixture(fixture: ChatFixture): Promise<ApiResult & { turnsUsed: number }> {
+async function runChatFixture(fixture: ChatFixture): Promise<ChatRunResult> {
   const messages: ChatMessage[] = [];
   const scripted = [...fixture.userTurns];
+  const intermediateTexts: string[] = [];
   let turnCount = 0;
   let lastText: string | undefined;
 
@@ -66,27 +85,35 @@ async function runChatFixture(fixture: ChatFixture): Promise<ApiResult & { turns
       messages,
       diagnosisConfirmed: fixture.diagnosisConfirmed,
       turnCount,
+      triageContext: fixture.triageContext ?? null,
+      triageAnchor: fixture.triageAnchor ?? null,
     });
     turnCount += 1;
 
-    if (result.error) return { error: result.error, turnsUsed: turnCount };
+    if (result.error) return { error: result.error, turnsUsed: turnCount, intermediateTexts };
     lastText = result.text;
     messages.push({ role: "assistant", content: result.text ?? "" });
 
     if (result.text?.includes("REFERENZEN:")) {
-      return { text: result.text, turnsUsed: turnCount };
+      return { text: result.text, turnsUsed: turnCount, intermediateTexts };
     }
+    if (result.text) intermediateTexts.push(result.text);
   }
 
   return {
     text: lastText,
     error: lastText ? undefined : "Keine Antwort erhalten",
     turnsUsed: turnCount,
+    intermediateTexts,
   };
 }
 
-async function runDocFixture(fixture: DocFixture): Promise<ApiResult> {
-  return postJson("/api/doc", { userInput: fixture.userInput });
+async function runDocFixture(fixture: DocFixture): Promise<ChatRunResult> {
+  // Einzelaufruf (kein Multi-Turn) - turnsUsed/intermediateTexts existieren
+  // trotzdem, damit runChatFixture() und runDocFixture() denselben
+  // Rückgabetyp teilen und main() unten ohne Union-Narrowing auskommt.
+  const result = await postJson("/api/doc", { userInput: fixture.userInput });
+  return { ...result, turnsUsed: 1, intermediateTexts: [] };
 }
 
 function checkBlocksPresent(text: string): CheckResult {
@@ -131,6 +158,25 @@ function checkNoFilenameLeak(text: string): CheckResult {
   return { name: "Kein interner Dateiname (*.md) im REFERENZEN-Block", ok: !leaked };
 }
 
+function checkExpectedTopics(text: string, topics: TopicCheck[]): CheckResult[] {
+  return topics.map((topic) => ({
+    name: `Stufe 2: ${topic.label}`,
+    ok: topic.pattern.test(text),
+    detail: topic.pattern.test(text) ? undefined : `Muster ${topic.pattern} nicht in der Auswertung gefunden`,
+  }));
+}
+
+function checkForbiddenInIntermediateTurns(intermediateTexts: string[], forbidden: TopicCheck[]): CheckResult[] {
+  return forbidden.map((topic) => {
+    const hit = intermediateTexts.find((t) => topic.pattern.test(t));
+    return {
+      name: `Stufe 2: keine erneute Frage zu "${topic.label}"`,
+      ok: !hit,
+      detail: hit ? `Muster ${topic.pattern} tauchte in einer Zwischenfrage wieder auf` : undefined,
+    };
+  });
+}
+
 async function main(): Promise<void> {
   let failures = 0;
 
@@ -138,11 +184,9 @@ async function main(): Promise<void> {
     console.log(`\n=== ${fixture.id} (${fixture.arm}) ===`);
 
     const result =
-      fixture.arm === "chat"
-        ? await runChatFixture(fixture)
-        : await runDocFixture(fixture);
+      fixture.arm === "chat" ? await runChatFixture(fixture) : await runDocFixture(fixture);
 
-    if ("turnsUsed" in result) {
+    if (fixture.arm === "chat") {
       console.log(`  Turns genutzt: ${result.turnsUsed}`);
     }
 
@@ -158,11 +202,18 @@ async function main(): Promise<void> {
       continue;
     }
 
-    const checks = [
+    const checks: CheckResult[] = [
       checkBlocksPresent(result.text),
       checkReferenceIntegrity(result.text),
       checkNoFilenameLeak(result.text),
     ];
+
+    if (fixture.expectedTopics) {
+      checks.push(...checkExpectedTopics(result.text, fixture.expectedTopics));
+    }
+    if (fixture.arm === "chat" && fixture.forbiddenInIntermediateTurns) {
+      checks.push(...checkForbiddenInIntermediateTurns(result.intermediateTexts, fixture.forbiddenInIntermediateTurns));
+    }
 
     for (const check of checks) {
       const status = check.ok ? "OK  " : "FAIL";

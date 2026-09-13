@@ -50,3 +50,41 @@ export async function sendTelegramMessage(chatId: number, text: string): Promise
     await sendOne(token, chatId, chunk);
   }
 }
+
+/**
+ * Telegrams "tippt…"-Indikator, siehe startTypingIndicator() unten. Bewusst
+ * best-effort/still fehlschlagend (kein throw) - das ist eine reine
+ * UX-Geste, die die eigentliche Antwort niemals verzögern oder verhindern
+ * darf (siehe build/effizienz-plan.md Abschnitt 3: Telegram kann nicht
+ * wie der Web-Chat-Arm streamen, der Tipp-Indikator ist der pragmatische
+ * Ersatz dafür - "es tut sich was" statt stillem Warten bei Brain Fog).
+ */
+async function sendTelegramChatAction(chatId: number): Promise<void> {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) return;
+  try {
+    await fetch(`${TELEGRAM_API_BASE}${token}/sendChatAction`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, action: "typing" }),
+    });
+  } catch {
+    // best-effort - ein Fehlschlag hier darf den eigentlichen Anthropic-Call
+    // (der parallel läuft, siehe app/api/telegram/route.ts) nicht anfassen.
+  }
+}
+
+/**
+ * Hält "tippt…" während einer länger laufenden Operation (dem Anthropic-
+ * Call) am Leben - Telegram zeigt den Indikator nur für ca. 5 Sekunden,
+ * danach muss er erneut gesendet werden. Aufrufer MUSS die zurückgegebene
+ * Stop-Funktion in einem finally aufrufen, sonst läuft der Intervall-Timer
+ * über das Ende des Requests hinaus weiter.
+ */
+export function startTypingIndicator(chatId: number): () => void {
+  void sendTelegramChatAction(chatId);
+  const interval = setInterval(() => {
+    void sendTelegramChatAction(chatId);
+  }, 4000);
+  return () => clearInterval(interval);
+}
