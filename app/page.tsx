@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { splitReferences } from "@/lib/format";
+import { splitStreamError } from "@/lib/streamProtocol";
 import {
   PATIENT_TITLE,
   PATIENT_SUBTITLE,
@@ -20,7 +21,8 @@ import {
 } from "@/lib/bgwLetter";
 import TriageFlow from "./TriageFlow";
 import type { Answers } from "@/lib/triage/types";
-import { answersToContextText } from "@/lib/triage/context";
+import { answersToContextText, triageResultToPromptAnchor } from "@/lib/triage/context";
+import { computeTriage } from "@/lib/triage/scoring";
 
 const STORAGE_NOTICE =
   "Ihre Angaben werden zur Erstellung der Einschätzung an unseren KI-Anbieter (Anthropic) zur Verarbeitung übermittelt. Auf unseren eigenen Servern speichern wir sie nicht darüber hinaus — mit Schließen dieses Fensters sind Ihre Angaben bei uns unwiderruflich weg, planen Sie die gut 15 Minuten möglichst am Stück ein.";
@@ -50,6 +52,7 @@ export default function App() {
   const [turnCount, setTurnCount] = useState(0);
   const [lastHistory, setLastHistory] = useState<Message[] | null>(null);
   const [triageContext, setTriageContext] = useState<string | null>(null);
+  const [triageAnchor, setTriageAnchor] = useState<string | null>(null);
   const [openRefs, setOpenRefs] = useState<Record<number, boolean>>({});
   const [copiedIndex, setCopiedIndex] = useState<number | "all" | null>(null);
   const [copiedAll, setCopiedAll] = useState(false);
@@ -105,6 +108,11 @@ export default function App() {
   async function callChatApi(history: Message[]) {
     setLoading(true);
     setError(null);
+    // Index der neuen Assistent-Nachricht, die gleich inkrementell befüllt
+    // wird - `messages`-State ist zu diesem Zeitpunkt bereits `history`
+    // (siehe handleSend/forceEvaluation, die setMessages(next) VOR
+    // callChatApi(next) aufrufen), also landet sie direkt dahinter.
+    const assistantIndex = history.length;
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -114,26 +122,61 @@ export default function App() {
           diagnosisConfirmed,
           turnCount,
           triageContext,
+          triageAnchor,
         }),
       });
-      let data: { text?: string; error?: string };
-      try {
-        data = await response.json();
-      } catch {
-        // Ein Plattform-Fehler (z.B. Vercel-Timeout) liefert eine eigene,
-        // nicht-JSON-Fehlerseite statt unserer eigenen Fehlerbehandlung -
-        // ohne diesen Fang landet hier ein kryptischer "Unexpected token"-
-        // Parse-Fehler statt einer verständlichen Meldung.
+
+      if (!response.ok) {
+        // Fehler VOR Stream-Start (fehlender API-Key, ungültiger Request) -
+        // kommt als normales JSON zurück (siehe app/api/chat/route.ts).
+        let message = `HTTP ${response.status}`;
+        try {
+          const data: { error?: string } = await response.json();
+          message = data.error || message;
+        } catch {
+          // Ein Plattform-Fehler (z.B. Vercel-Timeout) liefert eine eigene,
+          // nicht-JSON-Fehlerseite statt unserer eigenen Fehlerbehandlung -
+          // ohne diesen Fang landet hier ein kryptischer "Unexpected token"-
+          // Parse-Fehler statt einer verständlichen Meldung.
+        }
         throw new Error(
           response.status === 504
             ? "Zeitüberschreitung bei der Erstellung — die Anfrage war vermutlich sehr umfangreich. Bitte in ein bis zwei Minuten erneut versuchen."
-            : `Der Server hat keine gültige Antwort geliefert (HTTP ${response.status}).`
+            : message
         );
       }
-      if (!response.ok || data.error) {
-        throw new Error(data.error || `HTTP ${response.status}`);
+      if (!response.body) {
+        throw new Error("Der Server hat keine gültige Antwort geliefert.");
       }
-      setMessages((m) => [...m, { role: "assistant", content: data.text ?? "" }]);
+
+      setMessages((m) => [...m, { role: "assistant", content: "" }]);
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        full += decoder.decode(value, { stream: true });
+        const { text } = splitStreamError(full);
+        setMessages((m) => {
+          const copy = [...m];
+          copy[assistantIndex] = { role: "assistant", content: text };
+          return copy;
+        });
+      }
+
+      const { error: streamError } = splitStreamError(full);
+      if (streamError) {
+        // Fehler MITTEN im Stream (z.B. max_tokens-Abbruch) - Teilantwort
+        // verwerfen statt sie stillschweigend als vollständig stehen zu
+        // lassen (gleiches Prinzip wie die max_tokens-Absicherung in
+        // lib/anthropic.ts), damit "Erneut versuchen" nicht auf eine
+        // Historie mit einer kaputten Assistent-Antwort aufsetzt.
+        setMessages((m) => m.slice(0, assistantIndex));
+        throw new Error(streamError);
+      }
+
       setLastHistory(null);
     } catch (e) {
       setError(
@@ -161,6 +204,11 @@ export default function App() {
    */
   function handleTriageComplete(answers: Answers, summaryText: string) {
     setTriageContext(answersToContextText(answers));
+    // Gleiche computeTriage()-Berechnung wie in TriageFlow (dort nur für die
+    // Kurzauswertung genutzt) - hier zusätzlich als Kalibrierungsanker für
+    // Tier 2 aufbereitet, siehe lib/triage/context.ts,
+    // triageResultToPromptAnchor() und build/effizienz-plan.md Abschnitt 6.
+    setTriageAnchor(triageResultToPromptAnchor(computeTriage(answers)));
     setMessages([{ role: "assistant", content: summaryText }]);
     setPhase("triageResult");
   }
@@ -283,11 +331,12 @@ export default function App() {
                     </div>
                   );
                 }
+                const isStreamingPlaceholder = loading && i === messages.length - 1 && m.content === "";
                 const { body, refs } = splitReferences(m.content);
                 const isOpen = !!openRefs[i];
                 return (
                   <div key={i} style={styles.assistantBubble}>
-                    {body}
+                    {isStreamingPlaceholder ? <span style={{ opacity: 0.6 }}>…</span> : body}
                     {refs && (
                       <div style={styles.refsArea}>
                         <button
@@ -381,7 +430,12 @@ export default function App() {
                   </div>
                 );
               })}
-              {loading && (
+              {/* Deckt nur die kurze Lücke ab, bevor die (leere) Assistent-
+                  Platzhalter-Nachricht selbst im Zustand ist (siehe
+                  isStreamingPlaceholder oben) - z.B. Netzwerk-Latenz bis zu
+                  den Response-Headern, noch bevor der erste Stream-Chunk
+                  ankommt. */}
+              {loading && messages[messages.length - 1]?.role === "user" && (
                 <div style={styles.assistantBubble}>
                   <span style={{ opacity: 0.6 }}>…</span>
                 </div>

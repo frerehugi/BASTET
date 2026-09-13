@@ -1,4 +1,4 @@
-import { callClaude, type ChatMessage, type SystemTextBlock } from "./anthropic";
+import { callClaude, streamClaude, type ChatMessage, type SystemTextBlock } from "./anthropic";
 import { getStaticKnowledgeBase, getKnowledgeAddendum } from "./knowledgeBase";
 
 // Cache-Architektur (siehe build/effizienz-plan.md Abschnitt 1): der
@@ -30,7 +30,12 @@ beantwortete, regelbasiert erhobene Tier-1-Angaben vor (siehe Abschnitt
 "BEREITS ERHOBENE STRUKTURIERTE ANGABEN" weiter unten, nach der
 Wissensbasis). Frage die dort behandelten Themen UNTER KEINEN UMSTÄNDEN
 erneut ab, auch nicht umformuliert — nutze sie direkt als gesicherte
-Grundlage für deine Auswertung.`
+Grundlage für deine Auswertung. Im selben Abschnitt findest du ggf.
+zusätzlich eine von Tier 1 bereits regelbasiert berechnete "TIER-1-VORAB-
+EINSCHÄTZUNG" (GdB/MdE/EMR) — nutze sie als Kalibrierungsanker und
+Ausgangspunkt für deine eigene Auswertung, weiche aber ab, wenn die
+Gesprächsdetails aus der Vertiefung das rechtfertigen, und nenne dann
+explizit den Grund für die Abweichung.`
     : "";
 
   return `Du bist ein Informationsassistent für eine KI-gestützte Vorbegutachtung
@@ -256,6 +261,7 @@ function buildDynamicContext(
   diagnosisConfirmed: boolean,
   turnBudgetHint: string,
   triageContext: string | null,
+  triageAnchor: string | null,
   knowledgeAddendum: string
 ): string {
   const parts: string[] = [];
@@ -275,6 +281,13 @@ UMSTÄNDEN erneut ab, auch nicht umformuliert. Nutze sie direkt als gesicherte
 Grundlage für deine Auswertung.`);
   }
 
+  // Getrennt von triageContext (Rohantworten) gehalten, da inhaltlich etwas
+  // anderes: ein bereits fertig berechnetes Ergebnis, kein Rohdatum - siehe
+  // lib/triage/context.ts, triageResultToPromptAnchor().
+  if (triageAnchor) {
+    parts.push(triageAnchor);
+  }
+
   parts.push(`AKTUELLER STAND:\n${turnBudgetHint}`);
 
   if (knowledgeAddendum) {
@@ -289,7 +302,8 @@ Grundlage für deine Auswertung.`);
 async function buildSystemBlocks(
   diagnosisConfirmed: boolean,
   turnBudgetHint: string,
-  triageContext: string | null
+  triageContext: string | null,
+  triageAnchor: string | null
 ): Promise<SystemTextBlock[]> {
   const hasTriageContext = !!triageContext;
   const staticKnowledgeBase = getStaticKnowledgeBase();
@@ -308,23 +322,25 @@ async function buildSystemBlocks(
     },
     {
       type: "text",
-      text: buildDynamicContext(diagnosisConfirmed, turnBudgetHint, triageContext, knowledgeAddendum),
+      text: buildDynamicContext(diagnosisConfirmed, turnBudgetHint, triageContext, triageAnchor, knowledgeAddendum),
     },
   ];
+}
+
+function budgetHintFor(turnCount: number): string {
+  return turnCount >= 5
+    ? "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist."
+    : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
 }
 
 export async function runInterview(
   messages: ChatMessage[],
   diagnosisConfirmed: boolean,
   turnCount: number,
-  triageContext: string | null = null
+  triageContext: string | null = null,
+  triageAnchor: string | null = null
 ): Promise<string> {
-  const budgetHint =
-    turnCount >= 5
-      ? "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist."
-      : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
-
-  const system = await buildSystemBlocks(diagnosisConfirmed, budgetHint, triageContext);
+  const system = await buildSystemBlocks(diagnosisConfirmed, budgetHintFor(turnCount), triageContext, triageAnchor);
   return callClaude(
     system,
     messages,
@@ -335,4 +351,22 @@ export async function runInterview(
     true // cacheMessages - wachsende Interview-Historie über automatisches
     // Top-Level-cache_control mitcachen (siehe lib/anthropic.ts).
   );
+}
+
+/**
+ * Streaming-Variante für den Web-Chat-Arm (siehe app/api/chat/route.ts) -
+ * identischer Prompt-Aufbau wie runInterview(), liefert Text aber
+ * inkrementell über streamClaude() statt erst nach vollständiger Generierung
+ * (siehe build/effizienz-plan.md Abschnitt 3). Telegram/doc-Arm bleiben bei
+ * runInterview()/runDocAssessment() (nicht-streamend).
+ */
+export async function* runInterviewStream(
+  messages: ChatMessage[],
+  diagnosisConfirmed: boolean,
+  turnCount: number,
+  triageContext: string | null = null,
+  triageAnchor: string | null = null
+): AsyncGenerator<string, void, unknown> {
+  const system = await buildSystemBlocks(diagnosisConfirmed, budgetHintFor(turnCount), triageContext, triageAnchor);
+  yield* streamClaude(system, messages, 16000, !!triageContext, true);
 }

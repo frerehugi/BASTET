@@ -32,26 +32,34 @@ interface AnthropicResponse {
   stop_reason?: string;
 }
 
-export async function callClaude(
-  system: SystemPrompt,
-  messages: ChatMessage[],
-  maxTokens: number,
-  enableWebSearch: boolean = false,
-  cacheMessages: boolean = false
-): Promise<string> {
+function getApiKey(): string {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     throw new Error(
       "ANTHROPIC_API_KEY ist auf dem Server nicht gesetzt (Vercel Environment Variables)."
     );
   }
+  return apiKey;
+}
 
+function buildRequestBody(
+  system: SystemPrompt,
+  messages: ChatMessage[],
+  maxTokens: number,
+  enableWebSearch: boolean,
+  cacheMessages: boolean,
+  stream: boolean
+): Record<string, unknown> {
   const body: Record<string, unknown> = {
     model: MODEL,
     max_tokens: maxTokens,
     system,
     messages,
   };
+
+  if (stream) {
+    body.stream = true;
+  }
 
   if (cacheMessages) {
     // Automatischer Top-Level-Breakpoint auf den letzten cachefähigen Block
@@ -75,6 +83,19 @@ export async function callClaude(
     // platform.claude.com/docs/.../web-search-tool).
     body.tools = [{ type: "web_search_20250305", name: "web_search", max_uses: 5 }];
   }
+
+  return body;
+}
+
+export async function callClaude(
+  system: SystemPrompt,
+  messages: ChatMessage[],
+  maxTokens: number,
+  enableWebSearch: boolean = false,
+  cacheMessages: boolean = false
+): Promise<string> {
+  const apiKey = getApiKey();
+  const body = buildRequestBody(system, messages, maxTokens, enableWebSearch, cacheMessages, false);
 
   const response = await fetch(ANTHROPIC_API_URL, {
     method: "POST",
@@ -114,4 +135,131 @@ export async function callClaude(
   }
 
   return text;
+}
+
+interface StreamDelta {
+  type?: string;
+  text?: string;
+  stop_reason?: string | null;
+}
+
+interface StreamEvent {
+  type: string;
+  delta?: StreamDelta;
+  content_block?: { type?: string };
+  error?: { message?: string; type?: string };
+}
+
+/**
+ * Streaming-Variante von callClaude() für den Web-Chat-Arm (siehe
+ * app/api/chat/route.ts) - liefert Text inkrementell statt erst nach
+ * vollständiger Generierung, wichtig für die Zielgruppe (Brain Fog, Warten
+ * ohne Rückmeldung ist besonders belastend, siehe build/effizienz-plan.md
+ * Abschnitt 3). lib/doc.ts und der Telegram-Arm (Telegram kann nicht
+ * streamen) bleiben bewusst bei callClaude().
+ *
+ * Wirft wie callClaude() bei einem Fehler VOR dem ersten Chunk (fehlender
+ * API-Key, HTTP-Fehler vor Stream-Start). Ein Fehler MITTEN im Stream (z.B.
+ * stop_reason: max_tokens, erst nach dem letzten Chunk bekannt, oder ein
+ * Verbindungsabbruch) kann nicht mehr als Exception vor dem ersten Chunk
+ * geworfen werden - der Aufrufer MUSS daher nach Ende der Iteration prüfen,
+ * ob die Generator-Rückgabe (bei `for await` über `.return()`s Ergebnis nicht
+ * sichtbar) einen Fehler enthielt; siehe app/api/chat/route.ts, das dafür statt
+ * dessen einen Marker (lib/streamProtocol.ts) ans Stream-Ende schreibt.
+ */
+export async function* streamClaude(
+  system: SystemPrompt,
+  messages: ChatMessage[],
+  maxTokens: number,
+  enableWebSearch: boolean = false,
+  cacheMessages: boolean = false
+): AsyncGenerator<string, void, unknown> {
+  const apiKey = getApiKey();
+  const body = buildRequestBody(system, messages, maxTokens, enableWebSearch, cacheMessages, true);
+
+  const response = await fetch(ANTHROPIC_API_URL, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-api-key": apiKey,
+      "anthropic-version": ANTHROPIC_VERSION,
+      accept: "text/event-stream",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok || !response.body) {
+    // Ein Fehler VOR Stream-Start (z.B. 400/401) liefert normales JSON, kein
+    // SSE - gleiche Fehlerbehandlung wie callClaude().
+    let detail = `HTTP ${response.status}`;
+    try {
+      const data = (await response.json()) as AnthropicResponse;
+      detail = data.error?.message || data.error?.type || detail;
+    } catch {
+      // Body war kein JSON (z.B. leer) - bei der HTTP-Statuscode-Meldung bleiben.
+    }
+    throw new Error(detail);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let stopReason: string | null | undefined;
+  let midStreamError: string | null = null;
+  let textBlocksSeen = 0;
+  let anyTextEmitted = false;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? ""; // letzte, evtl. unvollständige Zeile zurückstellen
+
+      for (const line of lines) {
+        if (!line.startsWith("data:")) continue;
+        const jsonStr = line.slice(5).trim();
+        if (!jsonStr) continue;
+
+        let event: StreamEvent;
+        try {
+          event = JSON.parse(jsonStr) as StreamEvent;
+        } catch {
+          continue; // unvollständige/kaputte Zeile - überspringen statt abzubrechen
+        }
+
+        if (event.type === "content_block_start" && event.content_block?.type === "text") {
+          textBlocksSeen += 1;
+          // Entspricht dem `.join("\n")` in callClaude() zwischen mehreren
+          // Text-Blöcken (z.B. Text vor/nach einem web_search-Tool-Aufruf).
+          if (textBlocksSeen > 1) yield "\n";
+        } else if (event.type === "content_block_delta" && event.delta?.type === "text_delta" && event.delta.text) {
+          anyTextEmitted = true;
+          yield event.delta.text;
+        } else if (event.type === "message_delta" && event.delta?.stop_reason !== undefined) {
+          stopReason = event.delta.stop_reason;
+        } else if (event.type === "error") {
+          midStreamError = event.error?.message ?? event.error?.type ?? "Unbekannter Stream-Fehler.";
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  if (midStreamError) {
+    throw new Error(midStreamError);
+  }
+  if (!anyTextEmitted) {
+    throw new Error("Antwort war leer (evtl. nur Tool-Aufruf ohne Text).");
+  }
+  // Gleiche harte Absicherung wie callClaude() (siehe dortigen Kommentar) -
+  // hier zwangsläufig erst NACH dem letzten Chunk feststellbar.
+  if (stopReason === "max_tokens") {
+    throw new Error(
+      `Antwort wurde bei ${maxTokens} Tokens abgeschnitten (stop_reason: max_tokens) statt vollständig zu enden.`
+    );
+  }
 }
