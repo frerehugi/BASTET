@@ -9,7 +9,7 @@ import {
   PATIENT_ABOUT_TEXT,
 } from "@/lib/content";
 import { splitReferences, stripStatsBlock } from "@/lib/format";
-import { sendTelegramMessage } from "@/lib/telegram";
+import { sendTelegramMessage, startTypingIndicator } from "@/lib/telegram";
 import { getSession, saveSession, type TelegramSession } from "@/lib/telegramSession";
 
 export const runtime = "nodejs";
@@ -157,6 +157,11 @@ export async function POST(request: Request): Promise<Response> {
     session.messages.push({ role: "user", content: text });
     session.turnCount += 1;
 
+    // Telegram kann - anders als der Web-Chat-Arm (siehe lib/anthropic.ts,
+    // streamClaude) - nicht streamen; "tippt…" ist der pragmatische Ersatz,
+    // damit bei mehreren Sekunden Generierungszeit nicht stillschweigend
+    // gewartet wird (build/effizienz-plan.md Abschnitt 3).
+    const stopTyping = startTypingIndicator(chatId);
     let raw: string;
     try {
       raw = await runInterview(session.messages, session.diagnosisConfirmed, session.turnCount);
@@ -170,6 +175,8 @@ export async function POST(request: Request): Promise<Response> {
         `Technisches Problem: ${message} — Ihre Angaben sind noch da, schreiben Sie einfach weiter oder versuchen Sie es erneut.`
       );
       return ok();
+    } finally {
+      stopTyping();
     }
 
     const cleaned = stripStatsBlock(raw);
