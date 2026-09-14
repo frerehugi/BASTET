@@ -28,6 +28,11 @@ export default function RootLayout({
           <span className="topbar-word">BASTET</span>
         </div>
         {children}
+        <footer className="footer">
+          BASTET is a part of the{" "}
+          <img src="/assets/celo-logo.png" alt="Celo" className="footer-celo-logo" />{" "}
+          world
+        </footer>
       </body>
     </html>
   );
