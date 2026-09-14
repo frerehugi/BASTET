@@ -30,7 +30,9 @@ export default function RootLayout({
         {children}
         <footer className="footer">
           BASTET is a part of the{" "}
-          <img src="/assets/celo-logo.png" alt="Celo" className="footer-celo-logo" />{" "}
+          <a href="https://celo.org" target="_blank" rel="noopener noreferrer">
+            <img src="/assets/celo-logo.png" alt="Celo" className="footer-celo-logo" />
+          </a>{" "}
           world
         </footer>
       </body>
