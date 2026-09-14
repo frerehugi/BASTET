@@ -311,19 +311,20 @@ export default function App() {
               <p style={styles.heroText}>
                 Allein seit 2021 wurden über 450.000 Verdachtsfälle auf eine
                 berufsbedingte COVID-19-Erkrankung bei den Berufsgenossenschaften
-                angezeigt, 98 % davon bei der BGW<sup style={styles.foot}>4</sup>.
-                Seit Pandemiebeginn wurden über 120.000 Fälle als Berufskrankheit
-                (BK 3101) anerkannt<sup style={styles.foot}>5</sup> — das deutet auf
-                eine fünfstellige Zahl an Menschen mit beruflich bedingtem
-                Post-COVID-Syndrom bzw. ME/CFS hin, die im Alltag und Erwerbsleben
-                spürbar eingeschränkt sind.
+                angezeigt<sup style={styles.foot}>4</sup>, rund 75 % davon bei der
+                BGW<sup style={styles.foot}>5</sup>. Allein in den ersten beiden
+                Pandemiejahren 2020 und 2021 wurden bereits über 120.000 Fälle als
+                Berufskrankheit (BK 3101) anerkannt<sup style={styles.foot}>6</sup> —
+                das deutet auf eine fünfstellige Zahl an Menschen mit beruflich
+                bedingtem Post-COVID-Syndrom bzw. ME/CFS hin, die im Alltag und
+                Erwerbsleben spürbar eingeschränkt sind.
               </p>
               <p style={{ ...styles.heroText, marginBottom: 0 }}>
                 Demgegenüber stehen allein 2024 rund 536 neu bewilligte
                 BK-3101-Renten (2025: 603, weiter steigend)
                 <sup style={styles.foot}>4</sup> — die BGW selbst weist auf eine
                 begrenzte Zahl unabhängiger, fachlich versierter Gutachter:innen
-                hin<sup style={styles.foot}>6</sup>. Bei der Rentenversicherung
+                hin<sup style={styles.foot}>7</sup>. Bei der Rentenversicherung
                 (Erwerbsminderung) und den Versorgungsämtern (GdB) zeigt sich ein
                 ähnliches Bild.
               </p>
@@ -336,9 +337,11 @@ export default function App() {
               &bdquo;The rising cost of Long COVID and ME/CFS in Germany&ldquo;,
               Kostenbericht Mai 2025 (Update April 2026). — 4 BGW: Jahresbericht
               2025, Tabellenanhang &bdquo;Auf einen Blick&ldquo;, bgw-online.de. —
-              5 DGUV forum: &bdquo;COVID-19 als Berufskrankheit in den
+              5 DGUV forum: &bdquo;COVID-19-Erkrankungen als Versicherungsfälle der
+              BGW&ldquo; (DGUV Referat Statistik), Ausgabe 1/2024, forum.dguv.de. —
+              6 DGUV forum: &bdquo;COVID-19 als Berufskrankheit in den
               Berichtsjahren 2020 und 2021&ldquo; (DGUV Referat Statistik),
-              Ausgabe 9/2022, forum.dguv.de. — 6 BGW: &bdquo;5 Jahre
+              Ausgabe 9/2022, forum.dguv.de. — 7 BGW: &bdquo;5 Jahre
               Covid-19-Pandemie: Rückblick, Situation, Ausblick&ldquo;,
               bgw-online.de.
             </p>
@@ -358,13 +361,13 @@ export default function App() {
                 nach der altägyptischen Katzengöttin Bastet, Beschützerin von
                 Frauen, Kindern und Familie vor Krankheit und Unheil. Unter den
                 beruflich anerkannten Fällen sind rund 80 % der Betroffenen
-                Frauen<sup style={styles.foot}>7</sup>, da beruflich bedingte
+                Frauen<sup style={styles.foot}>8</sup>, da beruflich bedingte
                 Infektionen überproportional Beschäftigte in Pflege- und
                 Care-Berufen treffen.
               </p>
             </div>
             <p style={styles.citeBlock}>
-              7 DGUV forum: &bdquo;COVID-19 als Berufskrankheit – Update
+              8 DGUV forum: &bdquo;COVID-19 als Berufskrankheit – Update
               2022&ldquo;, Ausgabe 9/2023, forum.dguv.de.
             </p>
 
