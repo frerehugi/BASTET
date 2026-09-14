@@ -27,7 +27,7 @@ export const QUESTIONS: Question[] = [
     options: [
       { value: "sofort", label: "Sofort, noch während der Belastung" },
       { value: "stunden", label: "Nach einigen Stunden" },
-      { value: "1-3-tage", label: "Verzögert, nach 1–3 Tagen (typisch für ME/CFS)" },
+      { value: "1-3-tage", label: "Verzögert, nach 1–3 Tagen" },
     ],
   },
   {

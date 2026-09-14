@@ -19,8 +19,20 @@ function summarizeAngaben(answers: Answers): string {
     parts.push("eine Schlafstörung");
   }
   const schmerz = Array.isArray(answers.schmerz) ? answers.schmerz : [];
-  if (schmerz.some((s) => s !== "keine")) {
-    parts.push("Schmerzen in mehreren Bereichen (u. a. Muskel-/Kopfschmerz)");
+  const schmerzLabels: Record<string, string> = {
+    muskel: "Muskelschmerzen",
+    gelenk: "Gelenkschmerzen",
+    "kopf-neu": "neuartige Kopfschmerzen",
+    hals: "Halsschmerzen",
+    lymphknoten: "druckschmerzhafte Lymphknoten",
+  };
+  const schmerzAktiv = schmerz
+    .filter((s) => s !== "keine")
+    .map((s) => schmerzLabels[s] ?? s);
+  if (schmerzAktiv.length === 1) {
+    parts.push(`Schmerzen (${schmerzAktiv[0]})`);
+  } else if (schmerzAktiv.length > 1) {
+    parts.push(`Schmerzen in mehreren Bereichen (${schmerzAktiv.join(", ")})`);
   }
   const kognitiv = Array.isArray(answers.kognitiv) ? answers.kognitiv : [];
   if (kognitiv.some((s) => s !== "keine")) {
