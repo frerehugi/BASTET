@@ -32,7 +32,7 @@ interface Message {
   role: Role;
   content: string;
 }
-type Phase = "gate" | "warned" | "triage" | "triageResult" | "chat" | "ended";
+type Phase = "landing" | "gate" | "warned" | "triage" | "triageResult" | "chat" | "ended";
 
 function useAutoScroll(dep: number) {
   const ref = useRef<HTMLDivElement>(null);
@@ -43,7 +43,7 @@ function useAutoScroll(dep: number) {
 }
 
 export default function App() {
-  const [phase, setPhase] = useState<Phase>("gate");
+  const [phase, setPhase] = useState<Phase>("landing");
   const [diagnosisConfirmed, setDiagnosisConfirmed] = useState(true);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -277,14 +277,121 @@ export default function App() {
   return (
     <div style={styles.centerWrap}>
       <div style={styles.container}>
-        <header style={styles.header}>
-          <h1 style={styles.title}>{PATIENT_TITLE}</h1>
-          <p style={styles.subtitle}>{PATIENT_SUBTITLE}</p>
-          <button style={styles.aboutLink} onClick={() => setAboutOpen((o) => !o)}>
-            {aboutOpen ? "Über BASTET ausblenden" : "ℹ️ Über BASTET / Rechtliches"}
-          </button>
-          {aboutOpen && <div style={styles.aboutPanel}>{ABOUT_TEXT}</div>}
-        </header>
+        {phase !== "landing" && (
+          <header style={styles.header}>
+            <h1 style={styles.title}>{PATIENT_TITLE}</h1>
+            <p style={styles.subtitle}>{PATIENT_SUBTITLE}</p>
+            <button style={styles.aboutLink} onClick={() => setAboutOpen((o) => !o)}>
+              {aboutOpen ? "Über BASTET ausblenden" : "ℹ️ Über BASTET / Rechtliches"}
+            </button>
+            {aboutOpen && <div style={styles.aboutPanel}>{ABOUT_TEXT}</div>}
+          </header>
+        )}
+
+        {phase === "landing" && (
+          <div style={styles.landingWrap}>
+            <div style={styles.landingLogoRow}>
+              <img src="/assets/bastet-badge.png" alt="BASTET" style={styles.landingLogo} />
+              <div style={styles.landingWordmark}>BASTET</div>
+              <div style={styles.landingTagline}>
+                Beratungsassistent für beruflich bedingtes Post-COVID / ME-CFS
+              </div>
+            </div>
+
+            <div style={styles.heroCard}>
+              <p style={styles.heroText}>
+                Allein 2020 bis 2022 registrierte das RKI in Deutschland über 37
+                Millionen labordiagnostisch bestätigte COVID-19-Infektionen
+                <sup style={styles.foot}>1</sup>. Laut RKI entwickeln 10–15 % der
+                Infizierten Beschwerden, die auch nach 12 Wochen anhalten
+                <sup style={styles.foot}>2</sup> — insgesamt geht man von über 1,4
+                Millionen Menschen mit Long-COVID oder ME/CFS in Deutschland aus
+                <sup style={styles.foot}>3</sup>.
+              </p>
+              <p style={styles.heroText}>
+                Allein seit 2021 wurden über 450.000 Verdachtsfälle auf eine
+                berufsbedingte COVID-19-Erkrankung bei den Berufsgenossenschaften
+                angezeigt, 98 % davon bei der BGW<sup style={styles.foot}>4</sup>.
+                Seit Pandemiebeginn wurden über 120.000 Fälle als Berufskrankheit
+                (BK 3101) anerkannt<sup style={styles.foot}>5</sup> — das deutet auf
+                eine fünfstellige Zahl an Menschen mit beruflich bedingtem
+                Post-COVID-Syndrom bzw. ME/CFS hin, die im Alltag und Erwerbsleben
+                spürbar eingeschränkt sind.
+              </p>
+              <p style={{ ...styles.heroText, marginBottom: 0 }}>
+                Demgegenüber stehen allein 2024 rund 536 neu bewilligte
+                BK-3101-Renten (2025: 603, weiter steigend)
+                <sup style={styles.foot}>4</sup> — die BGW selbst weist auf eine
+                begrenzte Zahl unabhängiger, fachlich versierter Gutachter:innen
+                hin<sup style={styles.foot}>6</sup>. Bei der Rentenversicherung
+                (Erwerbsminderung) und den Versorgungsämtern (GdB) zeigt sich ein
+                ähnliches Bild.
+              </p>
+            </div>
+            <p style={styles.citeBlock}>
+              1 Robert Koch-Institut: FAQ zur COVID-19-Pandemie, rki.de (Stand der
+              zitierten Zahl: 2020–2022). — 2 Robert Koch-Institut: &bdquo;Long
+              COVID bei Erwachsenen&ldquo;, Journal of Health Monitoring
+              2026;11:02. — 3 ME/CFS Research Foundation &amp; Risklayer:
+              &bdquo;The rising cost of Long COVID and ME/CFS in Germany&ldquo;,
+              Kostenbericht Mai 2025 (Update April 2026). — 4 BGW: Jahresbericht
+              2025, Tabellenanhang &bdquo;Auf einen Blick&ldquo;, bgw-online.de. —
+              5 DGUV forum: &bdquo;COVID-19 als Berufskrankheit in den
+              Berichtsjahren 2020 und 2021&ldquo; (DGUV Referat Statistik),
+              Ausgabe 9/2022, forum.dguv.de. — 6 BGW: &bdquo;5 Jahre
+              Covid-19-Pandemie: Rückblick, Situation, Ausblick&ldquo;,
+              bgw-online.de.
+            </p>
+
+            <div style={styles.heroCard}>
+              <p style={styles.heroText}>
+                Hier setzt BASTET an: ein KI-gestütztes, quellenbasiertes
+                Hilfsmittel für Betroffene und Entscheidungsträger:innen
+                gleichermaßen — um Post-COVID-/ME-CFS-Symptome zu erkennen,
+                einzuordnen und nach den Maßstäben der gesetzlichen
+                Unfallversicherung mit bestehenden MdE- und GdB-Entscheidungen
+                abzugleichen.
+              </p>
+              <p style={{ ...styles.heroSubText, marginBottom: 0 }}>
+                Der Name steht für „Beratungsassistent zur Einschätzung von
+                beruflich bedingten Post-COVID-Syndromen und ME/CFS" — benannt
+                nach der altägyptischen Katzengöttin Bastet, Beschützerin von
+                Frauen, Kindern und Familie vor Krankheit und Unheil. Unter den
+                beruflich anerkannten Fällen sind rund 80 % der Betroffenen
+                Frauen<sup style={styles.foot}>7</sup>, da beruflich bedingte
+                Infektionen überproportional Beschäftigte in Pflege- und
+                Care-Berufen treffen.
+              </p>
+            </div>
+            <p style={styles.citeBlock}>
+              7 DGUV forum: &bdquo;COVID-19 als Berufskrankheit – Update
+              2022&ldquo;, Ausgabe 9/2023, forum.dguv.de.
+            </p>
+
+            <div style={styles.heroCard}>
+              <p style={styles.heroText}>
+                BASTET besteht aus zwei Teilen: einem einfachen Fragenkatalog zum
+                Anklicken und einem kurzen Dialog mit der BASTET-KI in eigenen
+                Worten. Stichpunkte reichen — je mehr Sie schildern, desto
+                genauer die Einschätzung.
+              </p>
+              <p style={{ ...styles.warningText, marginBottom: 0 }}>
+                BASTET speichert Ihren Gesprächsverlauf nicht. Einmal geschlossen
+                oder neu gestartet, ist er unwiderruflich weg.
+              </p>
+            </div>
+
+            <div style={styles.landingButtonCol}>
+              <button style={styles.landingPrimaryButton} onClick={() => setPhase("gate")}>
+                Starte BASTET
+              </button>
+              <button style={styles.landingSecondaryButton} onClick={() => setAboutOpen((o) => !o)}>
+                {aboutOpen ? "Infos ausblenden" : "Mehr Infos zu BASTET"}
+              </button>
+            </div>
+            {aboutOpen && <div style={styles.aboutPanel}>{ABOUT_TEXT}</div>}
+          </div>
+        )}
 
         {phase === "gate" && (
           <div style={styles.gateCard}>
@@ -578,6 +685,81 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.6,
     color: "var(--text-muted)",
     whiteSpace: "pre-wrap",
+  },
+  landingWrap: { display: "flex", flexDirection: "column" },
+  landingLogoRow: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textAlign: "center",
+    marginBottom: 22,
+  },
+  landingLogo: {
+    width: 120,
+    height: 120,
+    borderRadius: 20,
+    border: "1px solid var(--border-gold)",
+    boxShadow: "0 8px 28px rgba(0,0,0,.5)",
+    display: "block",
+    marginBottom: 10,
+  },
+  landingWordmark: {
+    fontFamily: "Cambria, Georgia, serif",
+    fontWeight: 700,
+    fontSize: 30,
+    letterSpacing: "2px",
+    color: "var(--gold)",
+    textShadow: "0 0 24px rgba(201,168,76,.3)",
+  },
+  landingTagline: { fontSize: 13, color: "var(--text-muted)", marginTop: 4 },
+  heroCard: {
+    background: "var(--card)",
+    backdropFilter: "blur(20px)",
+    border: "1px solid var(--border-gold)",
+    borderRadius: 16,
+    padding: "18px 16px",
+    marginBottom: 6,
+  },
+  heroText: { fontSize: 14.5, lineHeight: 1.65, color: "var(--text)", margin: "0 0 10px" },
+  heroSubText: { fontSize: 13, lineHeight: 1.6, color: "var(--text-muted)", margin: 0 },
+  foot: { color: "var(--gold)" },
+  citeBlock: {
+    fontSize: 10.5,
+    lineHeight: 1.55,
+    color: "var(--text-faint)",
+    margin: "0 0 14px",
+    padding: "0 4px",
+  },
+  landingButtonCol: { display: "flex", flexDirection: "column", gap: 10, marginTop: 18 },
+  // Eigene Varianten statt primaryButton/secondaryButton direkt zu nutzen:
+  // deren flex: "1 1 200px" ist für eine Zeile (buttonRow) gedacht - in
+  // einer Spalte (landingButtonCol, flexDirection: column) wird die 200px-
+  // Flex-Basis stattdessen als HÖHE interpretiert und bläht den Button auf
+  // (derselbe Bug, den footerPrimaryButton weiter unten schon einmal für
+  // footerRow behoben hat). width: "100%" statt Flex-Basis vermeidet das.
+  landingPrimaryButton: {
+    width: "100%",
+    background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
+    color: "var(--dark2)",
+    border: "none",
+    borderRadius: 999,
+    padding: "12px 20px",
+    fontSize: 15.5,
+    fontWeight: 700,
+    cursor: "pointer",
+    textAlign: "center",
+  },
+  landingSecondaryButton: {
+    width: "100%",
+    background: "rgba(255,255,255,.05)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 999,
+    padding: "12px 20px",
+    fontSize: 15.5,
+    fontWeight: 600,
+    cursor: "pointer",
+    textAlign: "center",
   },
   gateCard: {
     background: "var(--card)",
