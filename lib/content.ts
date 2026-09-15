@@ -26,6 +26,6 @@ Soweit gesetzlich zulässig, ist eine Haftung für Schäden aus der Nutzung von 
 
 © Schmitz & Hugenberg, Osnabrück. Alle Rechte vorbehalten — an Name, Marke, Quellcode und den redaktionell erstellten Inhalten (u. a. die kuratierte Wissensbasis). Das Repository ist öffentlich einsehbar, insbesondere für die Teilnahme an Hackathons; öffentliche Einsehbarkeit bedeutet nicht automatisch eine Open-Source-Lizenzierung. "Open Source" bezieht sich auf die zugrunde liegenden Quellen und Daten (u. a. VersMedV als amtliches Werk gemäß § 5 UrhG, Kanadische Konsenskriterien, veröffentlichte Sozialgerichtsentscheidungen) — deren Auswahl und Verknüpfung innerhalb von BASTET ist eine eigenständige redaktionelle Leistung.
 
-BASTET ist als KI-Agent unter der ERC-8004-Identität Nr. 9817 auf Celo registriert (einsehbar unter 8004scan.io/agents/celo/9817) und verfügt über eine x402-fähige Wallet für optionale künftige Unterstützungszahlungen — der Patient:innen- und Ärzte-Arm bleiben davon unberührt und vollständig kostenfrei.
+BASTET ist als KI-Agent zweifach unter der ERC-8004-Identität auf Celo registriert — Nr. 9817 und Nr. 9818 (einsehbar unter 8004scan.io/agents/celo/9817 bzw. .../9818), damit sich der Ärzte-Arm bei Bedarf später als eigenständiger Dienst ausgliedern lässt. Beide verfügen über eine x402-fähige Wallet für optionale künftige Unterstützungszahlungen — der Patient:innen- und Ärzte-Arm bleiben davon unberührt und vollständig kostenfrei.
 
 BASTET ist ein Forschungsprojekt im Aufbau — Funktionsumfang und Wissensbasis entwickeln sich fortlaufend weiter.`;
