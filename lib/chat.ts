@@ -114,14 +114,39 @@ ${
   3. Individuelle Besonderheiten des Verlaufs, plus gezielte Rückfrage zu
      Punkten, die aus den Tier-1-Angaben noch unklar blieben (z.B. "unklar"-
      oder "nicht getestet"-Antworten aus Tier 1).
-  Erst NACH diesen drei Themen (oder einem expliziten Wunsch der Person, direkt
-  auszuwerten, oder erkennbarer Erschöpfung — siehe unten) zur Auswertung
-  übergehen. Nutze für Themen 2 und 3 bei Bedarf web_search, um die kuratierte
-  Wissensbasis zu ergänzen (z.B. aktuellere Gerichtsentscheidungen oder
-  Normfassungen als die dort hinterlegten) — die Wissensbasis hat aber
-  Vorrang, wo sie eine Aussage bereits abdeckt; web_search ergänzt, ersetzt
-  sie nicht. Jede web-recherchierte Aussage braucht eine eigene REFERENZ nach
-  demselben Belegprinzip wie Wissensbasis-Aussagen (siehe ZITIERWEISE unten).`
+  AUSWAHL-CHECKPOINT: Erst NACH diesen drei Themen (oder einem expliziten
+  Wunsch der Person, direkt auszuwerten, oder erkennbarer Erschöpfung - siehe
+  unten, dann sofort zur Auswertung, KEIN Checkpoint) stellst du GENAU diese
+  eine Nachricht, ohne jeden weiteren Inhalt davor oder danach:
+
+  Möchten Sie jetzt eine Auswertung, oder sollen wir noch genauer analysieren?
+
+  AUSWAHL:
+
+  Die Zeile "AUSWAHL:" ist ein reines technisches Signal für die Oberfläche
+  (zeigt zwei Buttons) - schreibe NICHTS dahinter. Die Person antwortet dann
+  entweder klickend (Web) oder in eigenen Worten (Telegram/Doc) - in beiden
+  Fällen erkennst du die Absicht sinngemäß aus der nächsten Nachricht:
+  - Wunsch nach Auswertung ("Auswertung", "das reicht", "weiter" im Sinne von
+    "zur Auswertung"): sofort die vollständige Auswertung erstellen, wie
+    gewohnt.
+  - Wunsch nach Vertiefung ("weitere Fragen", "genauer analysieren", "mehr
+    Fragen"): kündige das kurz, höflich und wertschätzend an (z.B. "Gerne,
+    dann schauen wir uns das genauer an.") und stelle dann bis zu 5 weitere
+    vertiefende Fragen - weiterhin GENAU EIN Thema pro Nachricht, freundlicher
+    und wertschätzender Ton durchgehend. Der aktuelle Stand dieser
+    zusätzlichen Runde steht ggf. unten im Abschnitt "AKTUELLER STAND" als
+    eigener Hinweis. Nach Erreichen von 5 zusätzlichen Frage-Antwort-Dialogen
+    (oder früher, falls die Person "das reicht" sagt oder erschöpft wirkt)
+    gehst du OHNE erneuten Auswahl-Checkpoint direkt zur vollständigen
+    Auswertung über - der Checkpoint wird nur einmal gestellt, nicht wiederholt.
+  Nutze für Themen 2 und 3 sowie für die zusätzliche Vertiefungsrunde bei
+  Bedarf web_search, um die kuratierte Wissensbasis zu ergänzen (z.B.
+  aktuellere Gerichtsentscheidungen oder Normfassungen als die dort
+  hinterlegten) — die Wissensbasis hat aber Vorrang, wo sie eine Aussage
+  bereits abdeckt; web_search ergänzt, ersetzt sie nicht. Jede web-recherchierte
+  Aussage braucht eine eigene REFERENZ nach demselben Belegprinzip wie
+  Wissensbasis-Aussagen (siehe ZITIERWEISE unten).`
     : `- Themen in dieser Reihenfolge, jedes eine eigene Nachricht:
   1. Ist PEM (verzögerte Verschlechterung nach Belastung) vorhanden? Falls ja:
      Latenz bis zur Verschlechterung und übliche Erholungsdauer.
@@ -257,12 +282,37 @@ in der Quellen-Übersicht) — fehlende Angaben (Verlag, Jahr, Seite, Auflage) N
 erfinden, sondern weglassen.`;
 }
 
+function budgetHintFor(turnCount: number): string {
+  return turnCount >= 5
+    ? "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist."
+    : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
+}
+
+/**
+ * Zweiter, unabhängiger Budget-Hinweis für die im AUSWAHL-CHECKPOINT (siehe
+ * buildRulesBlock) beschriebene optionale Vertiefungsrunde - nur relevant,
+ * wenn die Person nach dem Checkpoint "weitere Fragen" gewählt hat. null
+ * bedeutet: keine aktive Vertiefungsrunde, Textblock bleibt weg.
+ */
+function extraBudgetHintFor(extraTurnCount: number | null): string | null {
+  if (extraTurnCount === null) return null;
+  return extraTurnCount >= 5
+    ? "ZUSÄTZLICHE VERTIEFUNGSRUNDE: Das Maximum von 5 zusätzlichen Frage-" +
+        "Antwort-Dialogen ist erreicht — gehe JETZT ohne erneuten Auswahl-" +
+        "Checkpoint direkt zur vollständigen Auswertung über."
+    : `ZUSÄTZLICHE VERTIEFUNGSRUNDE (auf Wunsch der Person nach dem Auswahl-` +
+        `Checkpoint): bisher ${extraTurnCount} von maximal 5 weiteren Frage-` +
+        `Antwort-Dialogen genutzt. Weiterhin ein Thema pro Nachricht, höflich ` +
+        `und wertschätzend.`;
+}
+
 function buildDynamicContext(
   diagnosisConfirmed: boolean,
   turnBudgetHint: string,
   triageContext: string | null,
   triageAnchor: string | null,
-  knowledgeAddendum: string
+  knowledgeAddendum: string,
+  extraBudgetHint: string | null
 ): string {
   const parts: string[] = [];
 
@@ -290,6 +340,10 @@ Grundlage für deine Auswertung.`);
 
   parts.push(`AKTUELLER STAND:\n${turnBudgetHint}`);
 
+  if (extraBudgetHint) {
+    parts.push(extraBudgetHint);
+  }
+
   if (knowledgeAddendum) {
     parts.push(
       `AKTUALISIERUNGEN DER WISSENSBASIS (nach menschlicher Freigabe, siehe Update-Pipeline):\n\n${knowledgeAddendum}`
@@ -304,7 +358,8 @@ async function buildSystemBlocks(
   turnBudgetHint: string,
   triageContext: string | null,
   triageAnchor: string | null,
-  beruflicherKontextNein: boolean
+  beruflicherKontextNein: boolean,
+  extraTurnCount: number | null
 ): Promise<SystemTextBlock[]> {
   const hasTriageContext = !!triageContext;
   // Konservative Selektion (build/effizienz-plan.md Abschnitt 2): die reinen
@@ -334,15 +389,16 @@ async function buildSystemBlocks(
     },
     {
       type: "text",
-      text: buildDynamicContext(diagnosisConfirmed, turnBudgetHint, triageContext, triageAnchor, knowledgeAddendum),
+      text: buildDynamicContext(
+        diagnosisConfirmed,
+        turnBudgetHint,
+        triageContext,
+        triageAnchor,
+        knowledgeAddendum,
+        extraBudgetHintFor(extraTurnCount)
+      ),
     },
   ];
-}
-
-function budgetHintFor(turnCount: number): string {
-  return turnCount >= 5
-    ? "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist."
-    : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
 }
 
 export async function runInterview(
@@ -351,14 +407,16 @@ export async function runInterview(
   turnCount: number,
   triageContext: string | null = null,
   triageAnchor: string | null = null,
-  beruflicherKontextNein: boolean = false
+  beruflicherKontextNein: boolean = false,
+  extraTurnCount: number | null = null
 ): Promise<string> {
   const system = await buildSystemBlocks(
     diagnosisConfirmed,
     budgetHintFor(turnCount),
     triageContext,
     triageAnchor,
-    beruflicherKontextNein
+    beruflicherKontextNein,
+    extraTurnCount
   );
   return callClaude(
     system,
@@ -385,14 +443,128 @@ export async function* runInterviewStream(
   turnCount: number,
   triageContext: string | null = null,
   triageAnchor: string | null = null,
-  beruflicherKontextNein: boolean = false
+  beruflicherKontextNein: boolean = false,
+  extraTurnCount: number | null = null
 ): AsyncGenerator<string, void, unknown> {
   const system = await buildSystemBlocks(
     diagnosisConfirmed,
     budgetHintFor(turnCount),
     triageContext,
     triageAnchor,
-    beruflicherKontextNein
+    beruflicherKontextNein,
+    extraTurnCount
   );
   yield* streamClaude(system, messages, 16000, !!triageContext, true);
+}
+
+// ---------------------------------------------------------------------------
+// BG-Verfahren-Hilfe: separater, schlankerer Chat-Modus (siehe "Fragen zum
+// BG-Verfahren?"-Button in app/page.tsx, nach einer MdE-einschlägigen
+// Auswertung). Anders als runInterview() kein geführtes Interview mit
+// Themenliste/Turn-Budget/AUSWERTUNGS-FORMAT - freies Frage-Antwort-Gespräch
+// mit Schwerpunkt BG-Verfahren, Recht und Zuständigkeiten. Nutzt dieselbe
+// Wissensbasis und dieselbe Cache-Architektur (Block A/B/C, siehe oben), rein
+// inhaltlich verschiedener Block A (RULES), daher eigene, aber genauso
+// gecachte Prompt-Variante - kein Konflikt mit dem Interview-Cache-Eintrag.
+// ---------------------------------------------------------------------------
+
+function buildBgHelpRulesBlock(): string {
+  return `Du bist ein Informationsassistent für Fragen rund um das Verfahren der
+gesetzlichen Unfallversicherung (BG-Verfahren) bei Post-COVID/ME-CFS - nicht
+für die GdB-/MdE-/EMR-Bewertung selbst (die ist bereits erfolgt, siehe unten
+im Abschnitt "BEREITS ERSTELLTE AUSWERTUNG"). Du sprichst Deutsch, direkt und
+warm, niemals bürokratisch-kalt.
+
+SCHWERPUNKT: BG-Verfahren, Recht und Zuständigkeiten. Dein wichtigstes Ziel in
+jeder Antwort: der Person so konkret wie möglich sagen, WANN sie sich an WEN
+bzw. welche Institution wenden kann/soll (BGW direkt, Krankenkasse während des
+Feststellungsverfahrens, Versorgungsamt für GdB, Deutsche Rentenversicherung
+für EMR, Sozialverband wie VdK/SoVD, Fachanwalt/-anwältin für Sozialrecht,
+EUTB als unabhängige Beratungsstelle). Nutze dafür aktiv bg-kontaktdaten.md
+und bg-behandlung-abrechnung.md aus der Wissensbasis.
+
+GRUNDREGELN (nicht verhandelbar, wie im Hauptbereich):
+- Keine Diagnosen, keine Rechtsberatung - du gibst Orientierung, keine
+  verbindliche Auskunft. Bei konkreten Rechtsfragen aktiv auf Fachanwalt/-
+  anwältin für Sozialrecht oder einen Sozialverband verweisen.
+- Bei jedem Hinweis auf akute Verzweiflung, Suizidgedanken oder Krise: brich
+  ab, reagiere unterstützend, nenne die Telefonseelsorge (0800 111 0 111 oder
+  0800 111 0 222, kostenlos, anonym), kehre erst danach und nur auf Wunsch der
+  Person zum Thema zurück.
+- Zur Datenverarbeitung (falls gefragt): dieselbe wahrheitsgemäße Erklärung
+  wie im Hauptbereich - Eingaben werden zur Verarbeitung an Anthropic
+  übermittelt, über die Web-Oberfläche sonst nichts auf eigenen Servern
+  gespeichert, über Telegram 60 Minuten Inaktivitäts-Cache. Niemals pauschal
+  "nichts wird gespeichert" behaupten.
+
+GESPRÄCHSFÜHRUNG:
+- Kein geführtes Interview, kein festes Turn-Budget - die Person stellt
+  Fragen, du beantwortest sie. Trotzdem Rücksicht auf Brain Fog: Antworten
+  möglichst knapp und konkret halten, nicht mit Zusatzinformationen
+  überladen, die nicht gefragt wurden.
+- Belege rechtliche Aussagen mit einer knappen Angabe direkt im Fließtext
+  (z.B. "(§ 34 Abs. 1 SGB VII)" oder "(§ 45 Vertrag Ärzte/UV-Träger)") - KEIN
+  starres REFERENZEN-Block-Format wie im Hauptbereich nötig, das ist für die
+  formale Auswertung gedacht, hier wirkt es wie ein zweites Gutachten statt
+  wie ein Gespräch.
+- Falls nach der GdB-/MdE-/EMR-Bewertung selbst gefragt wird: kurz erklären,
+  dass diese bereits im Hauptbereich erstellt wurde, und bei Bedarf auf
+  Basis der "BEREITS ERSTELLTEN AUSWERTUNG" unten inhaltlich einordnen -
+  aber keine neue Bewertung in diesem Modus erstellen.
+- Falls die Frage den Rahmen (BG-Verfahren/Recht/Zuständigkeiten) klar
+  verlässt (z.B. medizinische Detailfragen ohne Verfahrensbezug): freundlich
+  einordnen, dass das eher eine Frage für die Fachärztin/den Facharzt ist,
+  statt zu raten.`;
+}
+
+async function buildBgHelpSystemBlocks(evaluationContext: string | null): Promise<SystemTextBlock[]> {
+  const staticKnowledgeBase = getStaticKnowledgeBase(true); // immer voller Bestand -
+  // BG-Verfahrensfragen können jede Fachrichtung/jeden Kontext betreffen,
+  // die konservative Selektion aus runInterview() passt hier nicht.
+  const knowledgeAddendum = await getKnowledgeAddendum();
+
+  const dynamicParts: string[] = [];
+  if (evaluationContext) {
+    dynamicParts.push(
+      `BEREITS ERSTELLTE AUSWERTUNG (aus dem Hauptbereich, als Kontext - nicht neu\nbewerten, nur bei Bedarf darauf Bezug nehmen):\n${evaluationContext}`
+    );
+  }
+  if (knowledgeAddendum) {
+    dynamicParts.push(
+      `AKTUALISIERUNGEN DER WISSENSBASIS (nach menschlicher Freigabe, siehe Update-Pipeline):\n\n${knowledgeAddendum}`
+    );
+  }
+
+  return [
+    {
+      type: "text",
+      text: buildBgHelpRulesBlock(),
+      cache_control: { type: "ephemeral", ttl: "1h" },
+    },
+    {
+      type: "text",
+      text: `WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):\n${staticKnowledgeBase}`,
+      cache_control: { type: "ephemeral", ttl: "1h" },
+    },
+    {
+      type: "text",
+      text: dynamicParts.join("\n\n") || "Kein zusätzlicher Kontext.",
+    },
+  ];
+}
+
+/**
+ * Streaming-Variante für "Fragen zum BG-Verfahren?" (siehe
+ * app/api/bg-help/route.ts). evaluationContext ist die bereits erstellte
+ * GdB-/MdE-/EMR-Auswertung (reiner Anzeigetext, ohne REFERENZEN-Block -
+ * app/page.tsx übergibt splitReferences(...).body), damit die Antworten auf
+ * den konkreten Fall bezogen sein können, ohne dass die Person alles
+ * wiederholen muss.
+ */
+export async function* runBgHelpStream(
+  messages: ChatMessage[],
+  evaluationContext: string | null
+): AsyncGenerator<string, void, unknown> {
+  const system = await buildBgHelpSystemBlocks(evaluationContext);
+  yield* streamClaude(system, messages, 16000, true, true);
 }

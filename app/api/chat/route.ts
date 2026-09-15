@@ -23,6 +23,10 @@ interface ChatRequestBody {
    *  build/effizienz-plan.md Abschnitt 2). Optional, Default false (voller
    *  Bestand, unverändertes Verhalten). */
   beruflicherKontextNein?: boolean;
+  /** Zähler für die optionale Vertiefungsrunde nach dem AUSWAHL-CHECKPOINT
+   *  (siehe lib/chat.ts) - null/fehlend, solange keine aktive
+   *  Vertiefungsrunde läuft (unverändertes Verhalten). */
+  extraTurnCount?: number | null;
 }
 
 export async function POST(request: Request) {
@@ -43,7 +47,8 @@ export async function POST(request: Request) {
     typeof body.turnCount === "number" ? body.turnCount : 0,
     typeof body.triageContext === "string" ? body.triageContext : null,
     typeof body.triageAnchor === "string" ? body.triageAnchor : null,
-    !!body.beruflicherKontextNein
+    !!body.beruflicherKontextNein,
+    typeof body.extraTurnCount === "number" ? body.extraTurnCount : null
   );
 
   // Erstes Chunk manuell abrufen, BEVOR die Response erstellt wird: ein

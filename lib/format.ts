@@ -51,6 +51,26 @@ export function splitReferences(content: string): ParsedAssessment {
 const STATS_MARKER = "STATS:";
 
 /**
+ * Erkennt die Entscheidungsfrage nach der Detailanalyse (siehe
+ * "AUSWAHL-CHECKPOINT" in lib/chat.ts): das Modell hängt an die Frage
+ * "Möchten Sie jetzt eine Auswertung, oder sollen wir noch genauer
+ * analysieren?" eine eigene Zeile "AUSWAHL:" als reines Sentinel an (kein
+ * Inhalt danach nötig - die zwei Optionen sind der Oberfläche bereits
+ * bekannt). Wird von Web- und Telegram-Arm gleichermaßen genutzt: Web zeigt
+ * dafür zwei Buttons statt der Person das Tippen zu überlassen, Telegram
+ * zeigt nur die reine Frage (die Person antwortet frei in Textform - das
+ * bestehende "sinngemäß"-Verständnis des Modells deckt das ab, siehe
+ * AUSWAHL-CHECKPOINT in lib/chat.ts).
+ */
+export function extractAuswahlPrompt(content: string): { body: string; isAuswahlPrompt: boolean } {
+  const marker = "AUSWAHL:";
+  const idx = content.indexOf(marker);
+  if (idx === -1) return { body: content, isAuswahlPrompt: false };
+  const body = content.slice(0, idx).trim();
+  return { body, isAuswahlPrompt: true };
+}
+
+/**
  * Entfernt einen maschinenlesbaren STATS:-Trailer (siehe Phase 7 im Buildplan),
  * falls das Modell einen anhängt. Aktuell instruieren die System-Prompts das
  * Modell nicht dazu, einen solchen Block zu erzeugen — diese Funktion ist reine

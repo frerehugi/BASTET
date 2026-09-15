@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { splitReferences } from "@/lib/format";
+import { splitReferences, extractAuswahlPrompt } from "@/lib/format";
 import { splitStreamError } from "@/lib/streamProtocol";
 import {
   PATIENT_TITLE,
@@ -62,6 +62,109 @@ export default function App() {
   const [letterFields, setLetterFields] = useState<Record<number, LetterFields>>({});
   const [generatedLetter, setGeneratedLetter] = useState<Record<number, string>>({});
   const [letterCopiedIndex, setLetterCopiedIndex] = useState<number | null>(null);
+  // Auswahl-Checkpoint nach der Detailanalyse (siehe AUSWAHL-CHECKPOINT in
+  // lib/chat.ts): extraTurnCount ist null, solange keine Vertiefungsrunde
+  // aktiv ist (unverändertes Verhalten) - erst mit "weitere Fragen" gesetzt.
+  const [extraQuestionsMode, setExtraQuestionsMode] = useState(false);
+  const [extraTurnCount, setExtraTurnCount] = useState(0);
+  // "Fragen zum BG-Verfahren?" - eigener Mini-Chat pro Auswertungsnachricht
+  // (Index i), analog zum letterOpen/generatedLetter-Muster oben.
+  const [bgHelpOpen, setBgHelpOpen] = useState<Record<number, boolean>>({});
+  const [bgHelpMessages, setBgHelpMessages] = useState<Record<number, Message[]>>({});
+  const [bgHelpInput, setBgHelpInput] = useState<Record<number, string>>({});
+  const [bgHelpLoading, setBgHelpLoading] = useState<Record<number, boolean>>({});
+  const [bgHelpError, setBgHelpError] = useState<Record<number, string | null>>({});
+
+  const BG_HELP_GREETING =
+    "BG-Verfahren können bürokratisch und aufwändig sein. Fragen Sie mich einfach, was Sie wissen möchten, und ich versuche Ihnen eine möglichst präzise Antwort zu geben.";
+
+  function openBgHelp(i: number, evaluationBody: string) {
+    setBgHelpOpen((o) => ({ ...o, [i]: true }));
+    if (!bgHelpMessages[i]) {
+      setBgHelpMessages((m) => ({
+        ...m,
+        [i]: [{ role: "assistant", content: BG_HELP_GREETING }],
+      }));
+    }
+    // evaluationBody wird erst beim ersten tatsächlichen Senden gebraucht
+    // (siehe sendBgHelpMessage) - hier nur das Panel öffnen und begrüßen,
+    // kein API-Call.
+    void evaluationBody;
+  }
+
+  async function sendBgHelpMessage(i: number, evaluationBody: string) {
+    const text = (bgHelpInput[i] ?? "").trim();
+    if (!text || bgHelpLoading[i]) return;
+    const history = bgHelpMessages[i] ?? [{ role: "assistant", content: BG_HELP_GREETING }];
+    const next: Message[] = [...history, { role: "user", content: text }];
+    setBgHelpMessages((m) => ({ ...m, [i]: next }));
+    setBgHelpInput((inp) => ({ ...inp, [i]: "" }));
+    setBgHelpError((e) => ({ ...e, [i]: null }));
+    setBgHelpLoading((l) => ({ ...l, [i]: true }));
+
+    // Die lokal erzeugte Begrüßungsnachricht (oben) kam nie vom Modell und
+    // darf wie bei der Tier-1-Kurzauswertung im Hauptchat nicht als erste
+    // Nachricht an die API gehen (die verlangt zwingend role "user" zuerst) -
+    // gleiche Begründung wie in callChatApi() oben.
+    const firstUserIdx = next.findIndex((m) => m.role === "user");
+    const apiMessages = firstUserIdx === -1 ? [] : next.slice(firstUserIdx);
+    const assistantIndex = next.length;
+
+    try {
+      const response = await fetch("/api/bg-help", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages: apiMessages, evaluationContext: evaluationBody }),
+      });
+
+      if (!response.ok) {
+        let message = `HTTP ${response.status}`;
+        try {
+          const data: { error?: string } = await response.json();
+          message = data.error || message;
+        } catch {
+          // siehe callChatApi oben - Plattform-Fehlerseiten sind kein JSON
+        }
+        throw new Error(
+          response.status === 504
+            ? "Zeitüberschreitung — bitte in ein bis zwei Minuten erneut versuchen."
+            : message
+        );
+      }
+      if (!response.body) throw new Error("Der Server hat keine gültige Antwort geliefert.");
+
+      setBgHelpMessages((m) => ({ ...m, [i]: [...next, { role: "assistant", content: "" }] }));
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        full += decoder.decode(value, { stream: true });
+        const { text: chunkText } = splitStreamError(full);
+        setBgHelpMessages((m) => {
+          const copy = [...(m[i] ?? [])];
+          copy[assistantIndex] = { role: "assistant", content: chunkText };
+          return { ...m, [i]: copy };
+        });
+      }
+
+      const { error: streamError } = splitStreamError(full);
+      if (streamError) {
+        setBgHelpMessages((m) => ({ ...m, [i]: (m[i] ?? []).slice(0, assistantIndex) }));
+        throw new Error(streamError);
+      }
+    } catch (e) {
+      setBgHelpError((err) => ({
+        ...err,
+        [i]: "Technisches Problem: " + (e instanceof Error ? e.message : "unbekannter Fehler"),
+      }));
+    } finally {
+      setBgHelpLoading((l) => ({ ...l, [i]: false }));
+    }
+  }
+
 
   function getLetterFields(i: number): LetterFields {
     return letterFields[i] ?? { name: "", address: "", date: formatDateDe(new Date()) };
@@ -106,7 +209,7 @@ export default function App() {
   }
   const scrollRef = useAutoScroll(messages.length);
 
-  async function callChatApi(history: Message[]) {
+  async function callChatApi(history: Message[], extraTurnCountOverride?: number | null) {
     setLoading(true);
     setError(null);
     // Index der neuen Assistent-Nachricht, die gleich inkrementell befüllt
@@ -137,6 +240,12 @@ export default function App() {
           triageContext,
           triageAnchor,
           beruflicherKontextNein,
+          extraTurnCount:
+            extraTurnCountOverride !== undefined
+              ? extraTurnCountOverride
+              : extraQuestionsMode
+                ? extraTurnCount
+                : null,
         }),
       });
 
@@ -259,6 +368,7 @@ export default function App() {
     setMessages(next);
     setInput("");
     setTurnCount((c) => c + 1);
+    if (extraQuestionsMode) setExtraTurnCount((c) => c + 1);
     callChatApi(next);
   }
 
@@ -272,6 +382,45 @@ export default function App() {
     const next = [...messages, directive];
     setMessages(next);
     callChatApi(next);
+  }
+
+  /**
+   * Antwort auf den AUSWAHL-CHECKPOINT (siehe lib/chat.ts): Person möchte
+   * jetzt die Auswertung. Inhaltlich dasselbe wie forceEvaluation() (eigene
+   * Funktion trotzdem, damit beide Aufrufstellen unabhängig bleiben, falls
+   * sich einer der beiden Texte künftig unterscheiden soll).
+   */
+  function chooseAuswertung() {
+    if (loading) return;
+    const directive: Message = {
+      role: "user",
+      content: "Auswertung",
+    };
+    const next = [...messages, directive];
+    setMessages(next);
+    callChatApi(next, null);
+  }
+
+  /** Antwort auf den AUSWAHL-CHECKPOINT: Person möchte weitere Fragen -
+   *  startet die auf 5 Austausche begrenzte Vertiefungsrunde (siehe
+   *  ZUSÄTZLICHE VERTIEFUNGSRUNDE in lib/chat.ts). */
+  function chooseWeitereFragen() {
+    if (loading) return;
+    setExtraQuestionsMode(true);
+    setExtraTurnCount(0);
+    const directive: Message = {
+      role: "user",
+      content: "weitere Fragen",
+    };
+    const next = [...messages, directive];
+    setMessages(next);
+    // extraQuestionsMode ist an dieser Stelle im Closure noch false (React
+    // aktualisiert State asynchron) - ohne den expliziten Override würde der
+    // erste Request der Vertiefungsrunde extraTurnCount:null statt 0 senden
+    // und den dynamischen Budget-Hinweis für genau diese eine Nachricht
+    // verlieren (die statische AUSWAHL-CHECKPOINT-Regel im Prompt greift
+    // trotzdem, aber sauberer ist es so).
+    callChatApi(next, 0);
   }
 
   return (
@@ -469,10 +618,23 @@ export default function App() {
                 }
                 const isStreamingPlaceholder = loading && i === messages.length - 1 && m.content === "";
                 const { body, refs } = splitReferences(m.content);
+                const auswahl = extractAuswahlPrompt(body);
+                const displayBody = auswahl.isAuswahlPrompt ? auswahl.body : body;
                 const isOpen = !!openRefs[i];
+                const isLastMessage = i === messages.length - 1;
                 return (
                   <div key={i} style={styles.assistantBubble}>
-                    {isStreamingPlaceholder ? <span style={{ opacity: 0.6 }}>…</span> : body}
+                    {isStreamingPlaceholder ? <span style={{ opacity: 0.6 }}>…</span> : displayBody}
+                    {auswahl.isAuswahlPrompt && isLastMessage && !loading && (
+                      <div style={styles.buttonRow}>
+                        <button style={styles.primaryButton} onClick={chooseAuswertung}>
+                          Auswertung
+                        </button>
+                        <button style={styles.secondaryButton} onClick={chooseWeitereFragen}>
+                          weitere Fragen
+                        </button>
+                      </div>
+                    )}
                     {refs && (
                       <div style={styles.refsArea}>
                         <button
@@ -563,6 +725,54 @@ export default function App() {
                           )}
                         </div>
                       ))}
+                    {refs && isMdeEinschlaegig(body) && (
+                      <div style={styles.bgHelpArea}>
+                        {!bgHelpOpen[i] && (
+                          <button style={styles.refsButton} onClick={() => openBgHelp(i, body)}>
+                            Fragen zum BG-Verfahren?
+                          </button>
+                        )}
+                        {bgHelpOpen[i] && (
+                          <div style={styles.bgHelpPanel}>
+                            {(bgHelpMessages[i] ?? []).map((bm, j) => (
+                              <div
+                                key={j}
+                                style={bm.role === "user" ? styles.bgHelpUserBubble : styles.bgHelpAssistantBubble}
+                              >
+                                {bm.content === "" && bgHelpLoading[i] && j === (bgHelpMessages[i]?.length ?? 0) - 1 ? (
+                                  <span style={{ opacity: 0.6 }}>…</span>
+                                ) : (
+                                  bm.content
+                                )}
+                              </div>
+                            ))}
+                            {bgHelpError[i] && <div style={styles.errorBox}>{bgHelpError[i]}</div>}
+                            <div style={styles.bgHelpInputRow}>
+                              <input
+                                style={styles.bgHelpInput}
+                                value={bgHelpInput[i] ?? ""}
+                                onChange={(e) => setBgHelpInput((inp) => ({ ...inp, [i]: e.target.value }))}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    sendBgHelpMessage(i, body);
+                                  }
+                                }}
+                                placeholder="Ihre Frage zum BG-Verfahren…"
+                                disabled={!!bgHelpLoading[i]}
+                              />
+                              <button
+                                style={styles.footerPrimaryButton}
+                                onClick={() => sendBgHelpMessage(i, body)}
+                                disabled={!!bgHelpLoading[i] || !(bgHelpInput[i] ?? "").trim()}
+                              >
+                                Senden
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -887,6 +1097,53 @@ const styles: Record<string, React.CSSProperties> = {
   refsList: { marginTop: 8, paddingLeft: 18, fontSize: 14, lineHeight: 1.55, color: "var(--text-muted)", width: "100%" },
   refsListItem: { marginBottom: 4 },
   letterArea: { marginTop: 10, width: "100%" },
+  bgHelpArea: { marginTop: 10, width: "100%" },
+  bgHelpPanel: {
+    marginTop: 8,
+    display: "flex",
+    flexDirection: "column",
+    gap: 8,
+    background: "rgba(255,255,255,.03)",
+    border: "1px solid var(--border)",
+    borderRadius: 12,
+    padding: 12,
+  },
+  bgHelpAssistantBubble: {
+    alignSelf: "flex-start",
+    maxWidth: "92%",
+    background: "rgba(255,255,255,.04)",
+    border: "1px solid var(--border)",
+    borderRadius: "5px 12px 12px 12px",
+    padding: "8px 11px",
+    fontSize: 14.5,
+    lineHeight: 1.55,
+    whiteSpace: "pre-wrap",
+    color: "var(--text)",
+  },
+  bgHelpUserBubble: {
+    alignSelf: "flex-end",
+    maxWidth: "92%",
+    background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
+    color: "var(--dark2)",
+    borderRadius: "12px 5px 12px 12px",
+    padding: "8px 11px",
+    fontSize: 14.5,
+    fontWeight: 600,
+    lineHeight: 1.5,
+    whiteSpace: "pre-wrap",
+  },
+  bgHelpInputRow: { display: "flex", gap: 8, marginTop: 4 },
+  bgHelpInput: {
+    flex: 1,
+    background: "rgba(255,255,255,.05)",
+    border: "1px solid var(--border)",
+    borderRadius: 8,
+    padding: "8px 10px",
+    fontSize: 14,
+    fontFamily: "inherit",
+    fontWeight: 400,
+    color: "var(--text)",
+  },
   letterOtherSectorNotice: {
     marginTop: 10,
     fontSize: 13,
