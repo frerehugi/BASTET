@@ -80,7 +80,7 @@ Ein wöchentlicher Vercel Cron (`vercel.json`, Montag 06:00 UTC) prüft fünf Qu
 
 **Bekannte Einschränkung**: Die Quellen-URLs für DGUV und AWMF wurden nur auf Erreichbarkeit (HTTP 200) geprüft, nicht auf die exakt richtige Unterseite — ihre RSS-Verfügbarkeit bzw. Datumsfeld-Struktur ließ sich nicht automatisiert verifizieren (SPA-Rendering bzw. keine robots-freundliche Struktur). Ein Hash-Treffer erkennt zuverlässig *irgendeine* Änderung der Seite, auch rein kosmetische — das ist die in der Planung benannte Einschränkung dieses Fallback-Verfahrens. Nach dem ersten echten Fund prüfen, ob die URLs noch die richtigen sind.
 
-Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phase 4/6, sowie `build/phase7-mcp-zugang.md`): x402-Premium-Endpoint, Celo-Builders-Submission, MCP-Zugang (Phase 7, reines Konzept). Die ERC-8004-Registrierung (Phase 3) ist erledigt — zwei Agent-Identitäten auf Celo (Nr. 9817, 9818, siehe `lib/content.ts`).
+Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phase 4/6, sowie `build/phase7-mcp-zugang.md` und `build/phase8-selbstverbesserung.md`): x402-Premium-Endpoint, Celo-Builders-Submission, MCP-Zugang (Phase 7) und die erweiterte Selbstverbesserungs-Pipeline (Phase 8) — beide reines Konzept. Die ERC-8004-Registrierung (Phase 3) ist erledigt — zwei Agent-Identitäten auf Celo (Nr. 9817, 9818, siehe `lib/content.ts`). Die *bestehende* Update-Pipeline (5 fest beobachtete Quellen, Review-Queue, Telegram-Freigabe — siehe `lib/updateSources.ts`, `lib/reviewQueue.ts`) läuft bereits produktiv und wird von Phase 8 nur erweitert, nicht neu gebaut.
 
 ## Ordnerübersicht
 
@@ -102,6 +102,7 @@ Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phase 4/6, sowie `
 - **`claude-code-buildplan.md`** — der zentrale Umsetzungsplan, so an Claude Code übergebbar: Repo-Struktur, Phasen 1–6 (Worker-Fundament, Web-Frontends, ERC-8004, x402, Telegram, Celo-Builders-Submission), Markenbild-Integration (Favicon, PWA-Manifest)
 - **`hackathon-listing-plan.md`** — Detailplan zur Celo-"Agents at Work"-Hackathon-Teilnahme
 - **`phase7-mcp-zugang.md`** — Konzeptdokument (keine Umsetzung) für einen MCP-Server, über den fremde KI-Agenten BASTET direkt aufrufen können; kommt nach Phase 3 (ERC-8004, erledigt) und vermutlich nach Phase 4 (x402)
+- **`phase8-selbstverbesserung.md`** — Konzeptdokument (keine Umsetzung) für eine erweiterte Selbstverbesserungs-Pipeline: Live-Lückenerkennung aus Nutzeranfragen (anonymisiert) und regelmäßige aktive Websuche nach harten wissenschaftlichen Kriterien, beide als neue Signalquellen für die bestehende Update-Review-Queue, plus ein zweites Speicher-Level (Graduierung vom Redis-Addendum in die git-versionierte Wissensbasis)
 
 ### `recht/`
 - **`bastet-haftungsausschluss-urheberrecht.md`** — vollständiger Haftungsausschluss und Urheberrechtshinweis, als Volltext für Repo (`NOTICE.md`) und App-Footer gedacht
