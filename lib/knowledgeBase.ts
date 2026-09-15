@@ -35,6 +35,7 @@ const FILES = [
   "unfallversicherung-gutachter-befangenheit.md",
   "sgb-verfahrensrecht-begutachtung.md",
   "bg-pflichten-mitwirkung.md",
+  "bg-behandlung-abrechnung.md",
   "quellen.md",
   "sgb-index-alle-buecher.md",
 ];
