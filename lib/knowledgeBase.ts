@@ -36,6 +36,7 @@ const FILES = [
   "sgb-verfahrensrecht-begutachtung.md",
   "bg-pflichten-mitwirkung.md",
   "bg-behandlung-abrechnung.md",
+  "haltung-mecfs-stellungnahme.md",
   "quellen.md",
   "sgb-index-alle-buecher.md",
 ];
