@@ -26,6 +26,44 @@ Diese Datei dreht die bisherige Perspektive bewusst um: Bislang lag der Fokus au
 
 **Rechtlicher Hintergrund**: "Mit allen geeigneten Mitteln" ist bewusst eine **offene, nicht abschließende Formel** — der Leistungskatalog in §§ 27 ff. SGB VII ist nur eine beispielhafte Aufzählung regelmäßig zu erbringender Leistungen. Der Unfallversicherungsträger kann und **muss im Einzelfall weitere Leistungen bewilligen**, wenn das zum Behandlungsziel erforderlich ist (Kommentarliteratur, Haufe/Jung SGB VII § 27). Diese Formel gilt seit der RVO-Vorgängervorschrift (§ 556 Abs. 1 RVO für Heilbehandlung, § 546 Abs. 1 RVO für Prävention) und ist damit seit über 100 Jahren fester Bestandteil des Unfallversicherungsrechts.
 
+## 2a. Wer koordiniert die fachärztliche Behandlung? — das "Ärzte-Pingpong"-Problem bei Berufskrankheiten
+
+Ein in der Praxis besonders häufiges Muster, gerade bei Post-COVID/ME-CFS als BK-3101-Fall: Nach Anerkennung der Berufskrankheit verweisen sich Hausarzt, D-Arzt, Fachärzte und die BG wechselseitig die Zuständigkeit zu, ohne dass jemand aktiv die fachärztliche Anbindung organisiert. Diese Frage — **wer hat die Aufgabe, das zu koordinieren** — ist präziser zu beantworten, als der allgemeine Verweis auf § 26 Abs. 2 SGB VII (Abschnitt 2) es leistet.
+
+### Die konkretere Rechtsgrundlage: § 34 SGB VII, nicht nur § 26 Abs. 2
+
+**§ 34 Abs. 1 SGB VII**: *"Die Unfallversicherungsträger haben alle Maßnahmen zu treffen, durch die eine möglichst frühzeitig nach dem Versicherungsfall einsetzende und sachgemäße Heilbehandlung und, soweit erforderlich, besondere unfallmedizinische oder **Berufskrankheiten-Behandlung** gewährleistet wird."*
+
+**§ 34 Abs. 2 SGB VII**: *"Die Unfallversicherungsträger haben an der Durchführung der besonderen [...] Behandlung die Ärzte und Krankenhäuser zu **beteiligen**, die den [...] Anforderungen entsprechen."*
+
+Anders als § 26 Abs. 2 (allgemeiner Programmsatz/Generalauftrag) ist § 34 eine konkrete **Durchführungsnorm**, die ausdrücklich auch Berufskrankheiten-Behandlung einschließt und die Benennung/Beteiligung geeigneter Ärzte explizit dem Unfallversicherungsträger zuweist — **nicht** den Betroffenen, dem Hausarzt oder dem D-Arzt. Das operative "beteiligte Ärzte finden und zuweisen" ist Trägeraufgabe.
+
+### Warum das strukturell trotzdem so oft scheitert
+
+Das Netz "beteiligter Ärzte" (geregelt im Vertrag Ärzte/Unfallversicherungsträger nach § 34 Abs. 3 SGB VII zwischen DGUV und KBV) ist historisch auf **Unfallchirurgie/Orthopädie** ausgerichtet — das D-Arzt-/Verletzungsartenverfahren ist für traumatische Verletzungen konzipiert. Für **Berufskrankheiten mit internistisch/neurologisch/immunologisch komplexem Bild** (BK 3101, Infektionskrankheiten) existiert kein vergleichbar dichtes, etabliertes Netz "beteiligter Internisten/Neurologen/Immunologen". Das erklärt ein typisches, wiederkehrendes Antwortmuster:
+
+| Angesprochene Stelle | Typische Antwort | Einordnung |
+|---|---|---|
+| Hausarzt | "Wir behandeln keine BG-Fälle" | Teils Ausrede (allgemeine Heilbehandlung durch Hausärzte ist im BG-System grundsätzlich vorgesehen), teils Vermeidung des administrativen BG-Abrechnungswegs |
+| D-Arzt | "Damit kennen wir uns nicht aus, gehen Sie zum Internisten" | **Sachlich korrekt** — D-Ärzte sind fachlich Unfallchirurgen/Orthopäden, kein Analogon zu einem "D-Internisten" existiert |
+| Facharzt (z. B. Internist) | "Wir haben keine BG-Zulassung" | **Auch korrekt** — Kern des strukturellen Defizits, siehe oben |
+| BG | "Wenden Sie sich an die behandelnden Ärzte" | **Das ist die eigentliche Pflichtverletzung** — die BG delegiert die ihr durch § 34 Abs. 1/2 zugewiesene Aufgabe zurück an Stellen, die selbst gerade ihre Nichtzuständigkeit erklärt haben |
+
+Für BASTET wichtig: Die ersten drei Antworten sind meist zutreffend und kein Fehlverhalten der jeweiligen Praxis — das eigentliche Systemversagen liegt bei der vierten Antwort.
+
+### Ergänzender Hebel: Ansprechstellen-/Fallmanagement-Pflicht nach § 12 SGB IX
+
+**§ 12 Abs. 1 SGB IX**: Rehabilitationsträger müssen durch geeignete Maßnahmen sicherstellen, dass ein Rehabilitationsbedarf **frühzeitig erkannt** wird, und darauf **hinwirken**, dass Betroffene einen Antrag stellen — dafür müssen sie **Ansprechstellen mit Fallmanagement** benennen. Laut Gesetzesbegründung zum BTHG (BT-Drs. 18/9522, S. 231) bezieht sich diese Hinwirkungspflicht ausdrücklich auf den **Einzelfall**, nicht nur auf allgemeine Informationsangebote. Das ist ein zusätzlicher, eigenständiger Ansatzpunkt neben § 34 SGB VII, insbesondere wenn ein Bedarf erkennbar ist, aber die BG nicht aktiv wird.
+
+### Was Betroffene konkret tun können, wenn die BG auf "wenden Sie sich an die behandelnden Ärzte" verweist
+
+1. **Schriftlicher Antrag mit konkretem Verweis auf § 34 Abs. 1/2 SGB VII** statt einer allgemeinen Bitte um Zuständigkeitsklärung — die ausdrückliche Bitte um Benennung eines konkret beteiligten Facharztes ist schwerer pauschal abzuweisen als eine offene Anfrage.
+2. **EUTB — Ergänzende unabhängige Teilhabeberatung** (§ 32 SGB IX): von den Trägern unabhängige Beratungsstelle, explizit für Situationen wie diese gedacht, bundesweite Anlaufstellen unter ansprechstellen.de/teilhabeberatung.de.
+3. **Bei fortgesetzter Untätigkeit: Untätigkeitsklage nach § 88 SGG** — zulässig frühestens 6 Monate nach einem unbeschiedenen Antrag bzw. 3 Monate nach einem unbeschiedenen Widerspruch. Prüft nicht die materielle Berechtigung, sondern verpflichtet die Behörde lediglich, überhaupt zu entscheiden — schon das kann in einer festgefahrenen Pingpong-Situation den nötigen Druck erzeugen.
+4. **Sozialrechtlicher Herstellungsanspruch** (richterrechtlich entwickelt, nicht kodifiziert): Wenn die BG ihre Beratungs-/Koordinationspflicht nachweislich verletzt und dem Betroffenen dadurch ein konkreter Nachteil entsteht (z. B. verzögerte Diagnostik/Behandlung), kann verlangt werden, so gestellt zu werden, wie bei pflichtgemäßem Verhalten der BG — rechtlich anspruchsvoller als die ersten drei Schritte, aber als Hintergrundwissen relevant.
+
+**Wichtig für die BASTET-Auswertung**: Punkt 1 (der Antrag mit § 34-Verweis) ist die niedrigschwelligste, am ehesten in einen automatisch generierten Brief integrierbare Maßnahme — eine sinnvolle Schärfung für `standardbrief-bgw.md`, wo aktuell nur allgemein auf § 20 SGB X (Ermittlungspflicht) verwiesen wird, nicht auf die konkretere Vermittlungspflicht aus § 34.
+
 ## 3. Aufklärungspflicht gegenüber Versicherten — "aus Betroffenen Beteiligte machen"
 
 **§ 9 Abs. 4 Satz 2 SGB VII** (eingeführt zum 01.01.2021 im Zuge der Weiterentwicklung des Berufskrankheitenrechts): statuiert eine **besondere Aufklärungspflicht** der Unfallversicherungsträger gegenüber Versicherten über die mit ihrer beruflichen Tätigkeit verbundenen Gefahren und mögliche Schutzmaßnahmen — ausdrücklich mit dem Ziel, Versicherte aktiv einzubinden statt sie nur passiv zu behandeln ("aus Betroffenen Beteiligte machen", DGUV Forum 10/2022).
@@ -94,8 +132,13 @@ Für die BASTET-Auswertung heißt das: Die Begründung einer GdB/MdE-Einschätzu
 ## Quellen
 - § 20 SGB X (Untersuchungsgrundsatz), gesetze-im-internet.de
 - § 103 SGG (gerichtliche Entsprechung des Untersuchungsgrundsatzes)
+- § 88 SGG (Untätigkeitsklage, Fristen)
 - §§ 1, 9 Abs. 2/4/8, 26, 34 SGB VII, gesetze-im-internet.de / dejure.org
+- § 34 SGB VII (Durchführung der Heilbehandlung), Vertrag Ärzte/Unfallversicherungsträger gem. § 34 Abs. 3 SGB VII
 - § 3 Abs. 1 BKV
+- §§ 12, 32 SGB IX (Ansprechstellen/Fallmanagement, Ergänzende unabhängige Teilhabeberatung)
+- BT-Drs. 18/9522, S. 231 (Gesetzesbegründung BTHG zu § 12 SGB IX)
+- ansprechstellen.de / teilhabeberatung.de (EUTB-Anlaufstellen)
 - §§ 60–66, 14 SGB I, gesetze-im-internet.de
 - Haufe/Jung, Kommentierung zu § 27 SGB VII (Umfang der Heilbehandlung)
 - DGUV: "Forschung der gesetzlichen Unfallversicherung zu Berufskrankheiten", dguv.de/de/mediencenter/hintergrund/berufskrankheiten/forschung

@@ -34,5 +34,11 @@
 - Charlton BT, Slaghekke A, Appelman B, et al.: "Skeletal muscle properties in long COVID and ME/CFS differ from those induced by bed rest", Nature Communications 17, 9125 (veröffentlicht 28.07.2026); Preprint-Fassung (medRxiv, Mai 2025, frei zugänglich, inhaltlich mit der finalen Version konsistent): https://www.medrxiv.org/content/10.1101/2025.05.02.25326885.full.pdf — Einzelstudie (n=25-26/Gruppe), Ergebnisse laut Autor:innen nicht direkt auf bettlägerige/hausgebundene Patient:innen übertragbar (Selektionsbias hin zu mobilen, milder Betroffenen)
 - Maffitt NJ, Germann M, Baker AME, Baker MR, Baker SN, Soteropoulos DS: "Recovery of neurophysiological measures in post-COVID fatigue: a 12-month longitudinal follow-up study", Scientific Reports 14, 8874 (17.04.2024), Newcastle University, DOI 10.1038/s41598-024-59232-y: https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11024107/ — Kohorte ohne CCC/PEM-Bestätigung (WHO-Falldefinition post-COVID fatigue), n=18 von 37 komplettierten alle drei Zeitpunkte, Einzelzentrum
 
+## Behandlungs-/Abrechnungswege der gesetzlichen Unfallversicherung
+- Deutsches Ärzteblatt: "Gesetzliche Unfallversicherung: Jeder Vertragsarzt darf abrechnen"
+- Vertrag Ärzte/Unfallversicherungsträger (KBV/DGUV): § 34 (Abrechnungsgrundsätze), § 45 (Mitteilungspflicht der BG bei BK-Anerkennung), § 52 (Ständige Gebührenkommission)
+- UV-GOÄ 2026 (Stand 01.07.2026) und Gebührenverzeichnis Psychotherapeutenverfahren der DGUV, Stand 01.07.2026
+- BG Klinik für Berufskrankheiten Bad Reichenhall/Falkenstein — siehe `bg-behandlung-abrechnung.md` für die dortige Einschränkung (nur Atemwege/Haut/Psychotraumatologie, nicht die ME/CFS-relevanten Domänen)
+
 ## Stand dieser Wissensbasis
 Recherchiert und zusammengestellt: September 2026. Die VersMedV wird regelmäßig novelliert (zuletzt Teil A grundlegend zum 3. Oktober 2025) — bei wichtigen Entscheidungen aktuelle Fassung über die Links oben prüfen bzw. gezielt nachsuchen.
