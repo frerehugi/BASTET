@@ -9,11 +9,15 @@ export const maxDuration = 150;
 interface BgHelpRequestBody {
   messages: ChatMessage[];
   /** Reiner Anzeigetext der bereits erstellten Auswertung (ohne
-   *  REFERENZEN-Block, siehe app/page.tsx sendBgHelpMessage), als Kontext
-   *  für die Antworten - optional, falls z.B. noch keine Auswertung vorliegt. */
+   *  REFERENZEN-Block - siehe splitReferences() in lib/format.ts), damit
+   *  Antworten sich auf den konkreten Fall beziehen können. Optional, falls
+   *  der Button ohne vorherigen Auswertungskontext erreicht wird. */
   evaluationContext?: string | null;
 }
 
+// Struktur bewusst identisch zu app/api/chat/route.ts gehalten (gleiches
+// Stream-Fehlerprotokoll, gleiche Vorab-Chunk-Prüfung) - siehe dortige
+// Kommentare für die Begründung der einzelnen Schritte.
 export async function POST(request: Request) {
   let body: BgHelpRequestBody;
   try {
@@ -31,10 +35,6 @@ export async function POST(request: Request) {
     typeof body.evaluationContext === "string" ? body.evaluationContext : null
   );
 
-  // Gleiches Muster wie app/api/chat/route.ts: erstes Chunk manuell abrufen,
-  // BEVOR die Response erstellt wird, damit ein Fehler VOR Stream-Start
-  // (fehlender ANTHROPIC_API_KEY, ungültiger Request) noch als regulärer
-  // JSON-Fehler-Response mit Statuscode ausgeliefert werden kann.
   let first: IteratorResult<string, void>;
   try {
     first = await generator.next();
@@ -54,9 +54,6 @@ export async function POST(request: Request) {
           }
         }
       } catch (error) {
-        // Fehler MITTEN im Stream - HTTP-Status ist längst 200, daher als
-        // Marker ans Stream-Ende angehängt statt als eigener Fehler-Response
-        // (siehe app/api/chat/route.ts, app/page.tsx trennt ihn wieder heraus).
         const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
         controller.enqueue(encoder.encode(STREAM_ERROR_MARKER + message));
       } finally {
