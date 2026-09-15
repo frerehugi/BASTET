@@ -294,7 +294,7 @@ export default function App() {
               <img src="/assets/bastet-badge.png" alt="BASTET" style={styles.landingLogo} />
               <div style={styles.landingWordmark}>BASTET</div>
               <div style={styles.landingTagline}>
-                Beratungsassistent für beruflich bedingtes Post-COVID / ME-CFS
+                Beratungsassistent zur systematischen Evaluation von Post-COVID Syndromen
               </div>
             </div>
 
@@ -356,8 +356,8 @@ export default function App() {
                 abzugleichen.
               </p>
               <p style={{ ...styles.heroSubText, marginBottom: 0 }}>
-                Der Name steht für „Beratungsassistent zur Einschätzung von
-                beruflich bedingten Post-COVID-Syndromen und ME/CFS" — benannt
+                Der Name steht für „Beratungsassistent zur systematischen
+                Evaluation von Post-COVID Syndromen" — benannt
                 nach der altägyptischen Katzengöttin Bastet, Beschützerin von
                 Frauen, Kindern und Familie vor Krankheit und Unheil. Unter den
                 beruflich anerkannten Fällen sind rund 80 % der Betroffenen
