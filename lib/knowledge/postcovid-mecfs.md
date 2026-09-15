@@ -75,6 +75,17 @@ Das Institute of Medicine (heute National Academy of Medicine) schlug 2015 unter
 - **FUNCAP55**: Fragebogen zur Funktionskapazität und Symptomschwere anhand von 55 Fragen — von der Schweizerischen Gesellschaft für ME/CFS als interaktive Online-Version bereitgestellt; empfohlen zur Selbsteinschätzung/Antragsvorbereitung durch Betroffene.
 - Klinisch-physikalische Untersuchung plus die genannten Fragebögen (CCC-Checkliste, DSQ-PEM) sind laut D-A-CH-Konsensusstatement die Grundlage für Gutachter:innen — nicht ein einzelner Laborwert oder Score.
 
+## 4a. Terminologie, Pacing und Aktivierung — häufige Fehlerquellen (fachlich breit kritisiert)
+
+Grundlage: Stellungnahme von über 140 selbst betroffenen Ärzt:innen/Psychotherapeut:innen zu methodischen Fehlern in einem aktuellen Fachpublikations-Kapitel zu ME/CFS (siehe `kritik-cfs-psychologisierung-vt-manual.md` für Volltext und Referenzen). Relevant, weil genau diese Fehler in Auswertungen/Gesprächen vermieden werden müssen:
+
+- **Terminologie/Kodierung**: Immer „ME/CFS“, nicht „CFS“ allein. Korrekte ICD-10-Kodierung bleibt **G93.3x** (neurologisch) — niemals mit Neurasthenie (F48.0), somatoformer Störung (F45.x) oder Fibromyalgie (M79.7) gleichsetzen; die ICD-10 schließt F48.0 bei G93.3x/R53.0/1 explizit aus.
+- **Pacing ≠ „langsame Aktivierung“**: Pacing ist Aktivitätsmanagement innerhalb der individuellen Belastungsgrenze zur Vermeidung von PEM, kein psychotherapeutisches Verfahren und keine Aktivierungsform. Ziel ist Stabilisierung/Erhalt der Funktionsfähigkeit, nicht kurzfristige Aktivitätssteigerung.
+- **Graded Exercise Therapy (GET) ist bei PEM-positivem ME/CFS kontraindiziert**, nicht evidenzbasiert: NICE hat die GET-Empfehlung 2021 zurückgezogen (NG206); IQWiG stuft die Evidenz 2023 als unsicher ein und warnt vor schwerwiegenden Nebenwirkungen; der Cochrane-Review (Larun et al. 2024) beruht auf veralteten Studien (Einschluss bis 2011) mit unspezifischen, PEM nicht zwingend erfassenden Kriterien; die vielzitierte PACE-Studie gilt nach unabhängiger Rohdatenanalyse (Wilshire et al. 2018, nachträglich abgesenkte Erfolgsschwellen) als methodisch widerlegt.
+- **Auch strukturierte Reha ist nicht automatisch sicher**: Eine ME/CFS-adaptierte Reha-Studie der Charité Berlin/Rehaklinik Kreischa (Kedor et al. 2026, Preprint) beobachtete trotz optimaler Bedingungen bei rund 45 % der Teilnehmenden eine Verschlechterung — relevant für die Heilungsbewährungs-Einschätzung in Abschnitt 5: eine geplante Reha ist bei ME/CFS kein verlässlicher Hinweis auf bevorstehende Besserung, eher im Gegenteil ein Risikofaktor, über den aufzuklären ist.
+- **KVT-Evidenz bei ME/CFS ist meist nicht auf ME/CFS übertragbar**: Die zugrunde liegenden Studien untersuchten überwiegend unscharfe Fatigue- oder Post-COVID-Kollektive ohne systematische PEM-Erfassung. Psychotherapie kann unterstützend/begleitend sinnvoll sein (Grande et al. 2023), ersetzt aber keine somatische Behandlung.
+- **Sprache/Haltung**: Patient:innenverhalten (Pacing, sozialer Rückzug, erhöhte Selbstbeobachtung) darf nicht pauschal als „dysfunktional“, „hypochondrisch“ oder Ausdruck einer „kämpferisch-vorwürflichen“ Haltung gerahmt werden — siehe `haltung-mecfs-stellungnahme.md`.
+
 ## 5. GdB/GdS-Einordnung (Schwerbehindertenrecht/VersMedV)
 
 - Es gibt **keinen eigenen VersMedV-Punkt** für ME/CFS oder Post-/Long-COVID. Maßgeblich ist **VersMedV Teil B, Nr. 18.4**: "Fibromyalgie und Chronisches Fatigue-Syndrom (CFS) und ähnliche Syndrome sind jeweils im Einzelfall entsprechend der funktionellen Auswirkungen **analog** zu beurteilen."
@@ -101,6 +112,7 @@ Das Institute of Medicine (heute National Academy of Medicine) schlug 2015 unter
 | Diagnosekriterien ME/CFS | Kanadische Konsenskriterien (CCC), PEM zwingend, DSQ-PEM zur Objektivierung |
 | Diagnosekriterien Long/Post-COVID | AWMF S1-Leitlinie (Stand 05/2024), klinische Diagnose, kein Laborausschluss möglich |
 | Gegenargument zu "nur Schonverhalten" | Charlton et al. 2026 (Nature Communications): Muskelbefunde bei ME/CFS/Long COVID unterscheiden sich von reiner Bettruhe-Dekonditionierung (Abschnitt 2) |
+| Pacing korrekt erklären, GET/KVT-Evidenz einordnen | Abschnitt 4a: Pacing ≠ Aktivierung, GET kontraindiziert (NICE 2021, IQWiG 2023, PACE widerlegt), Reha-Risiko (Kedor et al. 2026: ~45 % Verschlechterung) |
 | Erholungsprognose Fatigue ohne PEM | Maffitt et al. 2024: deutliche Besserung über 12 Monate bei post-COVID fatigue ohne PEM-Nachweis — relevant für Heilungsbewährung (Abschnitt 3, Abschnitt 5) |
 | Schweregrad-Einschätzung | Bell-Score (0–100, kein direktes GdB-Äquivalent), FUNCAP55 (55 Fragen) |
 | GdB/GdS-Rechtsgrundlage | VersMedV Teil B Nr. 18.4 (analoge Beurteilung) → Anwendung von 3.7 |

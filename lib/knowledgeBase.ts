@@ -37,6 +37,7 @@ const FILES = [
   "bg-pflichten-mitwirkung.md",
   "bg-behandlung-abrechnung.md",
   "haltung-mecfs-stellungnahme.md",
+  "kritik-cfs-psychologisierung-vt-manual.md",
   "quellen.md",
   "sgb-index-alle-buecher.md",
 ];
