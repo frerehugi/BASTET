@@ -74,7 +74,7 @@ Wie bei Kategorie 11: im Gespräch erfassen, aber ohne eigenständigen GdB-Beitr
 
 | Symptomkategorie | Eigene GdB-Kalibrierung? | Fundstelle |
 |---|---|---|
-| Fatigue/PEM | Ja (über 18.4/3.7) | `postcovid-mecfs.md`, jetzt gestützt durch SG Speyer 2025 |
+| Fatigue/PEM | Ja (über 18.4/3.7) | `postcovid-mecfs.md`, jetzt gestützt durch SG Speyer 2025 und LSG Niedersachsen-Bremen, Urt. v. 28.04.2022 – L 10 SB 50/19 (bestätigt 18.4 i. V. m. 3.7 als Analogiegrundlage) |
 | Kognitiv/Brain Fog | Ja | `neurologie-vergleichsfaelle.md` |
 | Geruchs-/Geschmacksverlust | Ja, aber niedrig (10–15) | neu in dieser Datei |
 | Schwindel/Tinnitus (ohne Organbefund) | Ja, niedrig (≤10) | `schlaf-schwindel-kognitiv-faelle.md` |
