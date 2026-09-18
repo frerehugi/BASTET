@@ -1,4 +1,4 @@
-import { callClaude, type SystemTextBlock } from "./anthropic";
+import { callClaude, type ContentBlock, type SystemTextBlock } from "./anthropic";
 import { getStaticKnowledgeBase, getKnowledgeAddendum } from "./knowledgeBase";
 
 // Gleiche Cache-Architektur wie lib/chat.ts (siehe dortigen Kommentar und
@@ -37,6 +37,13 @@ GRUNDREGELN (nicht verhandelbar):
   Gehstrecke, Handkraftmessung/Dynamometrie, neuropsychologische Testung),
   erwähne sie explizit als objektivierende Evidenz - sie stärken die
   Einschätzung deutlich gegenüber reinen Selbstangaben.
+- Falls Bilder oder Dokumente beigefügt sind (Befunde, Laborwerte, Bildgebung,
+  Screenshots): beziehe sie aktiv in die Einschätzung ein und benenne konkret,
+  welche Angabe daraus die Begründung stützt (z.B. "laut beigefügtem
+  Laborbefund..."). Enthält ein Bild erkennbar Namen, Geburtsdatum oder andere
+  identifizierende Angaben, weise kurz darauf hin, dass das vor der Nutzung
+  entfernt werden sollte - werte den restlichen Inhalt trotzdem aus, verweigere
+  die Einschätzung nicht deswegen.
 - Belege JEDE Einschätzung mit einer konkreten Referenznummer [n], die im
   REFERENZEN-Block am Ende aufgelöst wird.
 - Nutze die volle Wissensbasis aktiv, nicht nur die knappste Regel: Wo passend,
@@ -167,7 +174,24 @@ async function buildSystemBlocks(): Promise<SystemTextBlock[]> {
   return blocks;
 }
 
-export async function runDocAssessment(userInput: string): Promise<string> {
+/** Ein hochgeladenes Bild/Dokument - base64 ohne "data:..."-Prefix, wie vom
+ *  Client aus einer FileReader-dataURL herausgeschnitten (siehe
+ *  app/doc/page.tsx). Wird NIRGENDS gespeichert, nur direkt in den
+ *  API-Request eingebettet (gleiches No-Storage-Prinzip wie Freitext). */
+export interface UploadedFile {
+  mediaType: string;
+  data: string;
+}
+
+export async function runDocAssessment(userInput: string, files: UploadedFile[] = []): Promise<string> {
   const system = await buildSystemBlocks();
-  return callClaude(system, [{ role: "user", content: userInput }], 16000);
+  const content: ContentBlock[] = [{ type: "text", text: userInput }];
+  for (const file of files) {
+    content.push(
+      file.mediaType === "application/pdf"
+        ? { type: "document", source: { type: "base64", media_type: file.mediaType, data: file.data } }
+        : { type: "image", source: { type: "base64", media_type: file.mediaType, data: file.data } }
+    );
+  }
+  return callClaude(system, [{ role: "user", content }], 16000);
 }

@@ -2,9 +2,20 @@ const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
 const MODEL = "claude-sonnet-5";
 
+// Ein einzelner Inhaltsblock innerhalb einer Nachricht - neben reinem Text
+// auch Bilder und Dokumente (PDF), siehe lib/doc.ts (Datei-Upload im
+// Ärzte-Arm "weitere Befunde"). base64 ohne "data:..."-Prefix, media_type
+// separat (Anthropic-API-Konvention).
+export type ContentBlock =
+  | { type: "text"; text: string }
+  | { type: "image"; source: { type: "base64"; media_type: string; data: string } }
+  | { type: "document"; source: { type: "base64"; media_type: string; data: string } };
+
 export interface ChatMessage {
   role: "user" | "assistant";
-  content: string;
+  // string bleibt der Normalfall (Web-Chat, Telegram, BG-Hilfe) - ContentBlock[]
+  // nur dort, wo tatsächlich Bilder/Dokumente mitgeschickt werden (Doc-Arm).
+  content: string | ContentBlock[];
 }
 
 // Ein System-Prompt-Block mit optionalem Cache-Breakpoint. `system` kann
