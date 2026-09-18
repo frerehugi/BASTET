@@ -40,6 +40,8 @@ Träger der GUV verwenden weitgehend einheitliche Formulargutachten. Typischer i
 5. MdE-Einschätzung (ggf. mit Vorschlag für vorläufige vs. Dauer-MdE)
 6. Empfehlungen zu weiteren medizinischen/beruflichen Reha-Maßnahmen
 
+Konkretes Formularbeispiel für die **erstmalige** Rentenfeststellung (nach Ablauf der oben genannten 26-Wochen-Frist, § 56 Abs. 1 SGB VII): DGUV-Formtext **A 4200 "Erstes Rentengutachten"** (https://www.dguv.de/medien/formtexte/aerzte/a_4200/a4200.pdf) — folgt derselben Gliederung wie oben skizziert. Abzugrenzen vom Melde-/Verdachtsanzeigeformular für die Berufskrankheit selbst (F 6000 bzw. BGW-Fassung K 4050, siehe Meldepflicht-Hinweis im Doc-Arm): A 4200 betrifft die spätere Rentenbegutachtung nach bereits erfolgter BK-Anerkennung, nicht die Verdachtsanzeige.
+
 Wichtige Abgrenzung bei Auftragsannahme: prüfen, ob der jeweilige Rechtsbereich (GUV/BVG/SVG/ZDG/BSeuchG u. a.) und damit der richtige Bewertungsmaßstab (MdE vs. GdS vs. GdB) überhaupt vorliegt, bevor das Gutachten erstellt wird — Verwechslungen sind laut Fachliteratur ein häufiger Fehler.
 
 ## Berufskrankheiten
