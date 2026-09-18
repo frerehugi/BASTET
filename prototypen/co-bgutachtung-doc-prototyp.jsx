@@ -354,7 +354,7 @@ ${cccLines}`;
           </span>
           <a
             style={styles.dutyLink}
-            href="https://www.dguv.de/medien/formtexte/aerzte/f_6000/f6000_ausfuellbar.pdf"
+            href="https://www.dguv.de/medien/formtexte/aerzte/f_6000/f6000.pdf"
             target="_blank"
             rel="noreferrer"
           >
