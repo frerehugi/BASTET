@@ -354,11 +354,11 @@ ${cccLines}`;
           </span>
           <a
             style={styles.dutyLink}
-            href="https://www.dguv.de/medien/formtexte/aerzte/f_6000/f6000.pdf"
+            href="https://www.bgw-online.de/resource/blob/19848/43d953397aba7f893f63c119ae1472cb/K4050-Aerztliche-Anzeige-bei-Verdacht-auf-eine-Berufskrankheit-mit-Erlaeuterung.pdf"
             target="_blank"
             rel="noreferrer"
           >
-            Zum Meldeformular (F 6000)
+            Zum Meldeformular (BGW, K 4050)
           </a>
         </div>
 
