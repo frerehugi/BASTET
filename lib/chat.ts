@@ -248,13 +248,22 @@ Zeile pro Eintrag im Format "[n] Text". Nur die Auswertungsnachricht enthält
 diesen Block — normale Interviewfragen nicht.
 
 NIEMALS einen internen Dateinamen der Wissensbasis (jede Zeichenkette, die auf
-".md" endet, z.B. "postcovid-mecfs.md") irgendwo im REFERENZEN-Block schreiben
-— auch NICHT als zusätzlicher Hinweis/Anhang/Fundstelle hinter einer sonst
-korrekten Quellenangabe (z.B. NICHT "... – postcovid-mecfs.md" oder "(siehe
-unfallversicherung-mde.md)"). Eine Referenz endet mit der eigentlichen
+".md" endet, z.B. "postcovid-mecfs.md") IRGENDWO IN DER GESAMTEN AUSGABE
+schreiben — nicht nur nicht im REFERENZEN-Block, sondern auch NICHT als
+Inline-Verweis mitten im Fließtext (z.B. NICHT "[Referenz postcovid-mecfs.md,
+dort dokumentierter Fall]" oder "laut unfallversicherung-mde.md"), auch NICHT
+als zusätzlicher Hinweis/Anhang/Fundstelle hinter einer sonst korrekten
+Quellenangabe (z.B. NICHT "... – postcovid-mecfs.md" oder "(siehe
+unfallversicherung-mde.md)"). Jede Referenz — egal ob im Fließtext als [n]
+oder im REFERENZEN-Block aufgelöst — endet mit der eigentlichen
 Quellenangabe selbst, ohne jeden Dateinamens-Zusatz. Der Dateiname ist nur eine
 interne Gruppierung, keine für Nutzer:innen nachvollziehbare Quelle, und wird
-in Telegram sogar fälschlich als anklickbarer Link dargestellt.
+in Telegram sogar fälschlich als anklickbarer Link dargestellt. Falls die
+Wissensbasis zu einem Punkt keine vollständig zitierfähige Quelle (Gericht +
+Aktenzeichen + Datum, oder vollständige Publikationsangabe) enthält, zitiere
+NICHT die interne Wissensbasis-Fundstelle (den Dateinamen) selbst ersatzweise,
+sondern formuliere den Punkt ohne Referenznummer als eigene fachliche
+Einschätzung oder lasse ihn weg.
 
 ZITIERWEISE: Formatiere jede Referenz im in Deutschland für medizinische
 Fachartikel/Gutachten üblichen Stil, je nach Quellentyp:
@@ -514,7 +523,14 @@ GESPRÄCHSFÜHRUNG:
 - Falls die Frage den Rahmen (BG-Verfahren/Recht/Zuständigkeiten) klar
   verlässt (z.B. medizinische Detailfragen ohne Verfahrensbezug): freundlich
   einordnen, dass das eher eine Frage für die Fachärztin/den Facharzt ist,
-  statt zu raten.`;
+  statt zu raten.
+
+NIEMALS einen internen Dateinamen der Wissensbasis (jede Zeichenkette, die auf
+".md" endet, z.B. "bg-kontaktdaten.md") irgendwo in der Antwort erwähnen, auch
+nicht als beiläufige Fundstellenangabe im Fließtext (z.B. NICHT "laut
+bg-behandlung-abrechnung.md"). Der Dateiname ist nur eine interne Gruppierung,
+keine für Nutzer:innen nachvollziehbare Quelle - belege stattdessen wie oben
+beschrieben mit der eigentlichen Rechtsgrundlage/Fundstelle selbst.`;
 }
 
 async function buildBgHelpSystemBlocks(evaluationContext: string | null): Promise<SystemTextBlock[]> {
