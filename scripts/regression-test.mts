@@ -34,6 +34,7 @@
 
 import type { ChatMessage } from "../lib/anthropic.ts";
 import { splitReferences } from "../lib/format.ts";
+import { splitStreamError } from "../lib/streamProtocol.ts";
 import { FIXTURES, type ChatFixture, type DocFixture, type TopicCheck } from "./regression/fixtures.mts";
 
 const BASE_URL = process.env.BASTET_TEST_BASE_URL ?? "http://localhost:3000";
@@ -57,17 +58,50 @@ interface CheckResult {
   detail?: string;
 }
 
+/**
+ * Beide Routen (/api/chat, /api/doc) liefern seit der Streaming-Umstellung
+ * (siehe lib/chat.ts runInterviewStream/lib/doc.ts runDocAssessmentStream)
+ * einen ReadableStream statt eines einzelnen JSON-Objekts - ein Fehler VOR
+ * Stream-Start kommt weiterhin als normales JSON mit Fehler-Status, ein
+ * Fehler MITTEN im Stream als STREAM_ERROR_MARKER-Suffix (siehe
+ * lib/streamProtocol.ts). Dieser Helfer bündelt beide Fälle zu einem
+ * einzigen, vollständigen Text - analog zum Konsum-Muster in
+ * app/page.tsx/app/doc/page.tsx, nur ohne inkrementelles Rendering, das der
+ * Regressionstest nicht braucht.
+ */
 async function postJson(path: string, payload: unknown): Promise<ApiResult> {
   const response = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(payload),
   });
-  const data = (await response.json()) as { text?: string; error?: string };
-  if (!response.ok || data.error) {
-    return { error: data.error ?? `HTTP ${response.status}` };
+
+  if (!response.ok) {
+    let message = `HTTP ${response.status}`;
+    try {
+      const data = (await response.json()) as { error?: string };
+      message = data.error ?? message;
+    } catch {
+      // Kein JSON-Body - bei der HTTP-Statuscode-Meldung bleiben.
+    }
+    return { error: message };
   }
-  return { text: data.text };
+  if (!response.body) {
+    return { error: "Keine Response-Body erhalten." };
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let full = "";
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    full += decoder.decode(value, { stream: true });
+  }
+
+  const { text, error } = splitStreamError(full);
+  if (error) return { error };
+  return { text };
 }
 
 async function runChatFixture(fixture: ChatFixture): Promise<ChatRunResult> {
@@ -151,11 +185,12 @@ function checkReferenceIntegrity(text: string): CheckResult {
 }
 
 function checkNoFilenameLeak(text: string): CheckResult {
-  const marker = "REFERENZEN:";
-  const idx = text.indexOf(marker);
-  const refsBlock = idx === -1 ? "" : text.slice(idx);
-  const leaked = /[a-z0-9][a-z0-9-]*\.md\b/gi.test(refsBlock);
-  return { name: "Kein interner Dateiname (*.md) im REFERENZEN-Block", ok: !leaked };
+  // Bewusst über den GESAMTEN Text, nicht nur den REFERENZEN-Block: ein Leck
+  // wurde real auch als Inline-Verweis mitten im Fließtext beobachtet (z.B.
+  // "[Referenz postcovid-mecfs.md, dort dokumentierter Fall]"), siehe
+  // lib/format.ts stripKnowledgeFilenames()-Kommentar.
+  const leaked = /[a-z0-9][a-z0-9-]*\.md\b/gi.test(text);
+  return { name: "Kein interner Dateiname (*.md) irgendwo in der Ausgabe", ok: !leaked };
 }
 
 function checkExpectedTopics(text: string, topics: TopicCheck[]): CheckResult[] {

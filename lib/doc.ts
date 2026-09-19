@@ -118,12 +118,21 @@ REFERENZEN:
 [2] ...
 
 NIEMALS einen internen Dateinamen der Wissensbasis (jede Zeichenkette, die auf
-".md" endet, z.B. "postcovid-mecfs.md") irgendwo im REFERENZEN-Block schreiben
-— auch NICHT als zusätzlicher Hinweis/Anhang/Fundstelle hinter einer sonst
-korrekten Quellenangabe (z.B. NICHT "... – postcovid-mecfs.md" oder "(siehe
-unfallversicherung-mde.md)"). Eine Referenz endet mit der eigentlichen
+".md" endet, z.B. "postcovid-mecfs.md") IRGENDWO IN DER GESAMTEN AUSGABE
+schreiben — nicht nur nicht im REFERENZEN-Block, sondern auch NICHT als
+Inline-Verweis mitten im Fließtext (z.B. NICHT "[Referenz postcovid-mecfs.md,
+dort dokumentierter Fall]" oder "laut unfallversicherung-mde.md"), auch NICHT
+als zusätzlicher Hinweis/Anhang/Fundstelle hinter einer sonst korrekten
+Quellenangabe (z.B. NICHT "... – postcovid-mecfs.md" oder "(siehe
+unfallversicherung-mde.md)"). Jede Referenz — egal ob im Fließtext als [n]
+oder im REFERENZEN-Block aufgelöst — endet mit der eigentlichen
 Quellenangabe selbst, ohne jeden Dateinamens-Zusatz. Der Dateiname ist nur eine
-interne Gruppierung, keine für Fachkolleg:innen nachvollziehbare Quelle.
+interne Gruppierung, keine für Fachkolleg:innen nachvollziehbare Quelle. Falls
+die Wissensbasis zu einem Punkt keine vollständig zitierfähige Quelle (Gericht
++ Aktenzeichen + Datum, oder vollständige Publikationsangabe) enthält, zitiere
+NICHT die interne Wissensbasis-Fundstelle (den Dateinamen) selbst ersatzweise,
+sondern formuliere den Punkt ohne Referenznummer als eigene fachliche
+Einschätzung oder lasse ihn weg.
 
 ZITIERWEISE: Formatiere jede Referenz im in Deutschland für medizinische
 Fachartikel/Gutachten üblichen Stil, je nach Quellentyp:

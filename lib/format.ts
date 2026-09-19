@@ -16,6 +16,7 @@ const MD_FILENAME_PATTERN = /[a-z0-9][a-z0-9-]*\.md\b/gi;
  */
 export function stripKnowledgeFilenames(text: string): string {
   return text
+    .replace(/\s*\[[^[\]]*\.md[^[\]]*\]/gi, "") // "[Referenz X.md, dort dokumentierter Fall]" - ganze eckige Klammer, z.B. ein Inline-Verweis mitten im Fließtext
     .replace(/\s*\([^()]*\.md\)/gi, "") // "(siehe X.md)", "(vgl. X.md)" - ganze Klammer
     // Verbindungswort/Gedankenstrich + Dateiname + optionales Komma, z.B.
     // " – X.md", " i.V.m. X.md,", " vgl. X.md" - als ganzer Ausdruck entfernen,
@@ -32,19 +33,27 @@ export function stripKnowledgeFilenames(text: string): string {
  * vom übrigen Antworttext ab. Gemeinsam genutzt von Web-Arm (app/page.tsx,
  * app/doc/page.tsx) und Telegram-Arm (app/api/telegram/route.ts), damit es nur
  * eine Stelle gibt, die das Format kennt.
+ *
+ * stripKnowledgeFilenames() läuft bewusst auch über `body`, nicht nur über die
+ * refs-Einträge: ein internes Dateinamens-Leck wurde nicht nur im
+ * REFERENZEN-Block beobachtet, sondern auch als Inline-Verweis mitten im
+ * Fließtext (z.B. "[Referenz postcovid-mecfs.md, dort dokumentierter Fall]")
+ * - die reine Prompt-Anweisung (siehe lib/chat.ts/lib/doc.ts) deckt diesen
+ * Fall zwar inzwischen ebenfalls ab, aber genau wie beim REFERENZEN-Block ist
+ * reine Prompt-Befolgung nicht zuverlässig genug (siehe build/testfaelle.md).
  */
 export function splitReferences(content: string): ParsedAssessment {
   const marker = "REFERENZEN:";
   const idx = content.indexOf(marker);
-  if (idx === -1) return { body: content, refs: null };
-  const body = content.slice(0, idx).trim();
+  if (idx === -1) return { body: stripKnowledgeFilenames(content), refs: null };
+  const body = stripKnowledgeFilenames(content.slice(0, idx).trim());
   const refsBlock = content.slice(idx + marker.length).trim();
   const refs = refsBlock
     .split("\n")
     .map((l) => l.trim())
     .filter((l) => /^\[\d+\]/.test(l))
     .map(stripKnowledgeFilenames);
-  if (refs.length === 0) return { body: content, refs: null };
+  if (refs.length === 0) return { body: stripKnowledgeFilenames(content), refs: null };
   return { body, refs };
 }
 
