@@ -138,6 +138,59 @@ interface CccGroup {
   freeLabel?: string;
 }
 
+// Deutsche Fassung des Bell-Score (Charité Fatigue Centrum), als Nachschlagehilfe
+// direkt neben dem Bell-Score-Freitextfeld (siehe CCC_GROUPS, Gruppe "fatigue")
+// - reine Referenzanzeige, keine Auswahl/Eingabe. Quelle: David S. Bell, "The
+// Doctor's Guide to Chronic Fatigue Syndrome", S. 122 f., Addison-Wesley
+// Publishing Company, Reading, MA; deutsche Fassung Charité Fatigue Centrum,
+// Bell-Score 1995, https://www.mecfs.de/wp-content/uploads/2025/07/Bell-Score-Charite.pdf
+const BELL_SCORE_DE: { score: number; text: string }[] = [
+  {
+    score: 100,
+    text: "Keine Symptome in Ruhe; keine Symptome in Ruhe und bei körperlicher Belastung; insgesamt ein normales Aktivitätsniveau; ohne Schwierigkeiten in der Lage, Vollzeit zu arbeiten",
+  },
+  {
+    score: 90,
+    text: "Keine Symptome in Ruhe; leichte Symptome bei körperlicher und geistiger Belastung; insgesamt ein normales Aktivitätsniveau; ohne Schwierigkeiten in der Lage, Vollzeit zu arbeiten",
+  },
+  {
+    score: 80,
+    text: "Leichte Symptome in Ruhe; die Symptome verstärken sich durch Belastung; nur bei Tätigkeiten, die anstrengend sind, ist eine geringfügige Leistungseinschränkung spürbar; mit Schwierigkeiten in der Lage, an Arbeitsplätzen, die Kraftanstrengungen erfordern, Vollzeit zu arbeiten",
+  },
+  {
+    score: 70,
+    text: "Leichte Symptome in Ruhe; deutliche Begrenzungen in den täglichen Aktivitäten spürbar; der funktionelle Zustand beträgt insgesamt etwa 90 % der Norm – mit Ausnahme von Tätigkeiten, die einer Kraftanstrengung bedürfen; mit Schwierigkeiten in der Lage, Vollzeit zu arbeiten",
+  },
+  {
+    score: 60,
+    text: "Leichte Symptome in Ruhe; deutliche Begrenzungen in den täglichen Aktivitäten spürbar; der funktionelle Zustand beträgt insgesamt etwa 70–90 % der Norm; unfähig, einer Vollzeitbeschäftigung nachzugehen, wenn dort körperliche Arbeit gefordert wird; aber in der Lage, Vollzeit zu arbeiten, wenn es um leichte Arbeiten geht und die Arbeitszeit flexibel gehandhabt werden kann",
+  },
+  {
+    score: 50,
+    text: "Mittelschwere Symptome in Ruhe; mittelschwere bis schwere Symptome bei körperlicher Belastung oder Aktivität; der funktionelle Zustand ist auf 70 % der Norm reduziert; unfähig, anstrengende Arbeiten durchzuführen, aber in der Lage, leichte Arbeiten oder Schreibtischarbeit für 4–5 Stunden täglich durchzuführen, wobei Ruhepausen benötigt werden",
+  },
+  {
+    score: 40,
+    text: "Mittelschwere Symptome in Ruhe; mittelschwere bis schwere Symptome bei Belastung oder Aktivität; der funktionelle Zustand ist auf 50–70 % der Norm reduziert; unfähig, anstrengende Arbeiten durchzuführen, aber in der Lage, leichte Arbeiten oder Schreibtischarbeit für 3–4 Stunden täglich durchzuführen, wobei Ruhepausen benötigt werden",
+  },
+  {
+    score: 30,
+    text: "Mittelschwere bis schwere Symptome in Ruhe; schwere Symptome bei jeglicher Belastung oder Aktivität; der funktionelle Zustand ist auf 50 % der Norm reduziert; in der Regel ans Haus gefesselt; unfähig, anstrengende Arbeiten durchzuführen, aber in der Lage, leichte Arbeiten oder Schreibtischarbeit für 2–3 Stunden täglich durchzuführen, wobei Ruhepausen benötigt werden",
+  },
+  {
+    score: 20,
+    text: "Mittelschwere bis schwere Symptome in Ruhe; schwere Symptome bei jeglicher Belastung oder Aktivität; der funktionelle Zustand ist auf 30–50 % der Norm reduziert; bis auf seltene Ausnahmen unfähig, das Haus zu verlassen; den größten Teil des Tages ans Bett gefesselt; unfähig, sich mehr als eine Stunde am Tag zu konzentrieren",
+  },
+  {
+    score: 10,
+    text: "Schwere Symptome in Ruhe; die meiste Zeit bettlägerig; ein Verlassen des Hauses ist nicht möglich; deutliche kognitive Symptome, die eine Konzentration verhindern",
+  },
+  {
+    score: 0,
+    text: "Ständig schwere Symptome; immer ans Bett gefesselt; unfähig zu einfachsten Pflegemaßnahmen",
+  },
+];
+
 const CCC_GROUPS: CccGroup[] = [
   {
     key: "pem",
@@ -246,6 +299,7 @@ export default function DocApp() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [bellScoreOpen, setBellScoreOpen] = useState(false);
 
   function isChipSelected(field: CccField, opt: string): boolean {
     const current = ccc[field.key] || "";
@@ -566,6 +620,40 @@ ${cccLines}`;
                   onChange={(e) => setCcc((c) => ({ ...c, [g.freeKey as string]: e.target.value }))}
                 />
               )}
+              {g.key === "fatigue" && (
+                <>
+                  <button
+                    type="button"
+                    style={styles.bellScoreLink}
+                    onClick={() => setBellScoreOpen((o) => !o)}
+                  >
+                    {bellScoreOpen ? "Bell-Score – Deutsch ausblenden" : "Bell-Score – Deutsch"}
+                  </button>
+                  {bellScoreOpen && (
+                    <div style={styles.bellScorePanel}>
+                      {BELL_SCORE_DE.map((row) => (
+                        <div key={row.score} style={styles.bellScoreRow}>
+                          <span style={styles.bellScoreValue}>{row.score}</span>
+                          <span style={styles.bellScoreText}>{row.text}</span>
+                        </div>
+                      ))}
+                      <p style={styles.bellScoreSource}>
+                        Quelle: David S. Bell, <em>The Doctor&apos;s Guide to Chronic Fatigue Syndrome</em>, S. 122 f.,
+                        Addison-Wesley Publishing Company, Reading, MA — deutsche Fassung: Charité Fatigue Centrum,
+                        Bell-Score 1995 (
+                        <a
+                          href="https://www.mecfs.de/wp-content/uploads/2025/07/Bell-Score-Charite.pdf"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          PDF
+                        </a>
+                        ).
+                      </p>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           ))}
 
@@ -786,6 +874,29 @@ const styles: Record<string, React.CSSProperties> = {
     color: "var(--text)",
     marginTop: 4,
   },
+  bellScoreLink: {
+    marginTop: 6,
+    background: "none",
+    border: "none",
+    color: "var(--text-faint)",
+    fontSize: 11.5,
+    textDecoration: "underline",
+    cursor: "pointer",
+    padding: 0,
+    display: "block",
+  },
+  bellScorePanel: {
+    marginTop: 6,
+    background: "var(--card)",
+    backdropFilter: "blur(20px)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    padding: "10px 12px",
+  },
+  bellScoreRow: { display: "flex", gap: 10, padding: "4px 0", borderBottom: "1px solid var(--border)" },
+  bellScoreValue: { flex: "0 0 28px", fontWeight: 700, fontSize: 12.5, color: "var(--gold-light)" },
+  bellScoreText: { fontSize: 11.5, lineHeight: 1.5, color: "var(--text-muted)" },
+  bellScoreSource: { marginTop: 8, fontSize: 10.5, lineHeight: 1.5, color: "var(--text-faint)" },
   uploadArea: { marginTop: 8 },
   uploadButton: {
     display: "inline-block",
