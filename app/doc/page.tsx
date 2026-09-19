@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { splitReferences } from "@/lib/format";
+import { splitStreamError } from "@/lib/streamProtocol";
 
 const ABOUT_TEXT = `BASTET ist ein Orientierungs- und Hilfsangebot, keine verbindliche Begutachtung, keine medizinische Diagnose und keine Rechtsberatung. Es ersetzt weder eine ärztliche Untersuchung noch anwaltliche Beratung und bindet keine Behörde, kein Gericht und keinen Versicherungsträger.
 
@@ -358,24 +359,50 @@ ${cccLines}`;
           files: attachedFiles.map((f) => ({ mediaType: f.mediaType, data: f.data })),
         }),
       });
-      let data: { text?: string; error?: string };
-      try {
-        data = await response.json();
-      } catch {
-        // Ein Plattform-Fehler (z.B. Vercel-Timeout) liefert eine eigene,
-        // nicht-JSON-Fehlerseite statt unserer eigenen Fehlerbehandlung -
-        // ohne diesen Fang landet hier ein kryptischer "Unexpected token"-
-        // Parse-Fehler statt einer verständlichen Meldung.
+
+      if (!response.ok) {
+        // Fehler VOR Stream-Start (fehlender API-Key, ungültiger Request) -
+        // kommt als normales JSON zurück (siehe app/api/doc/route.ts).
+        let message = `HTTP ${response.status}`;
+        try {
+          const data: { error?: string } = await response.json();
+          message = data.error || message;
+        } catch {
+          // Ein Plattform-Fehler (z.B. Vercel-Timeout) liefert eine eigene,
+          // nicht-JSON-Fehlerseite statt unserer eigenen Fehlerbehandlung -
+          // ohne diesen Fang landet hier ein kryptischer "Unexpected token"-
+          // Parse-Fehler statt einer verständlichen Meldung.
+        }
         throw new Error(
           response.status === 504
             ? "Zeitüberschreitung bei der Erstellung — die Anfrage war vermutlich sehr umfangreich. Bitte in ein bis zwei Minuten erneut versuchen."
-            : `Der Server hat keine gültige Antwort geliefert (HTTP ${response.status}).`
+            : message
         );
       }
-      if (!response.ok || data.error) {
-        throw new Error(data.error || `HTTP ${response.status}`);
+      if (!response.body) {
+        throw new Error("Der Server hat keine gültige Antwort geliefert.");
       }
-      setResult(data.text ?? "");
+
+      setResult("");
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let full = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        full += decoder.decode(value, { stream: true });
+        const { text } = splitStreamError(full);
+        setResult(text);
+      }
+
+      const { error: streamError } = splitStreamError(full);
+      if (streamError) {
+        // Fehler MITTEN im Stream (z.B. max_tokens-Abbruch) - Teilantwort
+        // verwerfen statt sie stillschweigend als vollständig stehen zu
+        // lassen (gleiches Prinzip wie im Web-Chat-Arm).
+        setResult(null);
+        throw new Error(streamError);
+      }
     } catch (e) {
       setError(
         "Technisches Problem: " +
@@ -576,6 +603,12 @@ ${cccLines}`;
               Zurücksetzen
             </button>
           </div>
+          {loading && (
+            <span style={styles.loadingHint}>
+              Die Einschätzung wird laufend angezeigt, sobald der Text eintrifft — bei umfangreichen Angaben kann die
+              Erstellung insgesamt bis zu 2 Minuten dauern.
+            </span>
+          )}
 
           {error && <div style={styles.errorBox}>{error}</div>}
         </div>
@@ -799,6 +832,7 @@ const styles: Record<string, React.CSSProperties> = {
   },
   uploadPrivacyNote: { marginTop: 8, fontSize: 11.5, lineHeight: 1.5, color: "var(--gold-light)" },
   buttonRow: { display: "flex", gap: 10, marginTop: 4 },
+  loadingHint: { display: "block", marginTop: 8, fontSize: 12.5, color: "var(--text-faint)", lineHeight: 1.5 },
   primaryButton: {
     background: "linear-gradient(135deg, var(--gold), var(--gold-light))",
     color: "var(--dark2)",

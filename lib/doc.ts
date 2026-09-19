@@ -1,4 +1,4 @@
-import { callClaude, type ContentBlock, type SystemTextBlock } from "./anthropic";
+import { streamClaude, type ContentBlock, type SystemTextBlock } from "./anthropic";
 import { getStaticKnowledgeBase, getKnowledgeAddendum } from "./knowledgeBase";
 
 // Gleiche Cache-Architektur wie lib/chat.ts (siehe dortigen Kommentar und
@@ -183,7 +183,19 @@ export interface UploadedFile {
   data: string;
 }
 
-export async function runDocAssessment(userInput: string, files: UploadedFile[] = []): Promise<string> {
+/**
+ * Streaming-Variante des Doc-Arm-Einzelaufrufs (siehe app/api/doc/route.ts) -
+ * liefert Text inkrementell statt erst nach vollständiger Generierung, analog
+ * zu runInterviewStream() in lib/chat.ts. Anders als dort kein Multi-Turn
+ * (kein Top-Level-cache_control auf der Message-Historie nötig, siehe
+ * streamClaude()-Parameter unten) - die beiden System-Blöcke aus
+ * buildSystemBlocks() tragen aber weiterhin je einen eigenen
+ * cache_control-Breakpoint.
+ */
+export async function* runDocAssessmentStream(
+  userInput: string,
+  files: UploadedFile[] = []
+): AsyncGenerator<string, void, unknown> {
   const system = await buildSystemBlocks();
   const content: ContentBlock[] = [{ type: "text", text: userInput }];
   for (const file of files) {
@@ -193,5 +205,5 @@ export async function runDocAssessment(userInput: string, files: UploadedFile[] 
         : { type: "image", source: { type: "base64", media_type: file.mediaType, data: file.data } }
     );
   }
-  return callClaude(system, [{ role: "user", content }], 16000);
+  yield* streamClaude(system, [{ role: "user", content }], 16000);
 }
