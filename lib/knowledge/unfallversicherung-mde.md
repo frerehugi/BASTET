@@ -40,6 +40,22 @@ Träger der GUV verwenden weitgehend einheitliche Formulargutachten. Typischer i
 5. MdE-Einschätzung (ggf. mit Vorschlag für vorläufige vs. Dauer-MdE)
 6. Empfehlungen zu weiteren medizinischen/beruflichen Reha-Maßnahmen
 
+Konkrete Formularbeispiele der DGUV für die verschiedenen Stadien der Rentenbegutachtung (alle folgen derselben Gliederung wie oben skizziert):
+
+| Formular | Bezeichnung | Verwendung |
+|---|---|---|
+| A 4200 | Erstes Rentengutachten | erstmalige Rentenfeststellung nach Ablauf der 26-Wochen-Frist (§ 56 Abs. 1 SGB VII, siehe oben) |
+| A 4500 | Zweites Rentengutachten | Folgebegutachtung nach dem ersten Rentengutachten, typischerweise vor Umwandlung einer vorläufigen in eine Dauerrente |
+| A 4510 | Gutachten Nachprüfung MdE | Nachprüfung bei behaupteter/vermuteter wesentlicher Änderung — unmittelbar der oben beschriebene § 73 Abs. 3 SGB VII/§ 48 SGB X-Fall |
+| A 4520 | Gutachten Rente nach Gesamtvergütung | Begutachtung bei Abfindung der Rente durch Gesamtvergütung (Einmalzahlung) statt laufender Rentenzahlung |
+
+PDFs: https://www.dguv.de/medien/formtexte/aerzte/a_4200/a4200.pdf,
+https://www.dguv.de/medien/formtexte/aerzte/a_4500/a4500.pdf,
+https://www.dguv.de/medien/formtexte/aerzte/a_4510/a4510.pdf,
+https://www.dguv.de/medien/formtexte/aerzte/a_4520/a4520.pdf
+
+Abzugrenzen vom Melde-/Verdachtsanzeigeformular für die Berufskrankheit selbst (F 6000 bzw. BGW-Fassung K 4050, siehe Meldepflicht-Hinweis im Doc-Arm): Diese vier A-4xxx-Formulare betreffen ausnahmslos die Rentenbegutachtung nach bereits erfolgter BK-/Unfall-Anerkennung, nicht die Verdachtsanzeige selbst.
+
 Wichtige Abgrenzung bei Auftragsannahme: prüfen, ob der jeweilige Rechtsbereich (GUV/BVG/SVG/ZDG/BSeuchG u. a.) und damit der richtige Bewertungsmaßstab (MdE vs. GdS vs. GdB) überhaupt vorliegt, bevor das Gutachten erstellt wird — Verwechslungen sind laut Fachliteratur ein häufiger Fehler.
 
 ## Berufskrankheiten
