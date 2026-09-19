@@ -41,6 +41,7 @@ const FILES = [
   "behandlungsfehler-gutachterkommissionen.md",
   "haltung-mecfs-stellungnahme.md",
   "kritik-cfs-psychologisierung-vt-manual.md",
+  "mecfs-krankheitslast-versorgungssituation.md",
   "quellen.md",
   "sgb-index-alle-buecher.md",
 ];

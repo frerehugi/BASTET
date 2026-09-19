@@ -49,6 +49,9 @@
 - König RS, et al. (2024): "Identifying the mental health burden in ME/CFS patients in Switzerland", Heliyon 10(5) — Suizidgedanken-Risiko durch Stigmatisierung/Fehlbehandlung: https://doi.org/10.1016/j.heliyon.2024.e27031
 - Weitere Primärquellen zur somatischen Genese (endotheliale Dysfunktion, Neuroinflammation, gestörter Energiestoffwechsel, Muskelpathologie nach Belastung) mit vollständigen Angaben: siehe Quellenliste in `kritik-cfs-psychologisierung-vt-manual.md`.
 
+## Krankheitslast, Versorgungssituation und Unterversorgung (ME/CFS)
+- Vollständige Quellenliste (Mirin et al. 2020, Tschopp et al. 2023, Falk Hvidberg et al. 2015, Bateman et al. 2021, Cullinan et al. 2021, Wormgoor/Rodenburg 2023, Seton et al. 2024, UN-Nelson-Mandela-Regeln 2015): siehe `mecfs-krankheitslast-versorgungssituation.md`.
+
 ## Behandlungs-/Abrechnungswege der gesetzlichen Unfallversicherung
 - Deutsches Ärzteblatt: "Gesetzliche Unfallversicherung: Jeder Vertragsarzt darf abrechnen"
 - Vertrag Ärzte/Unfallversicherungsträger (KBV/DGUV): § 34 (Abrechnungsgrundsätze), § 45 (Mitteilungspflicht der BG bei BK-Anerkennung), § 52 (Ständige Gebührenkommission)
