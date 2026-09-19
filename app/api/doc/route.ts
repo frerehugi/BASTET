@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { runDocAssessment, type UploadedFile } from "@/lib/doc";
+import { runDocAssessmentStream, type UploadedFile } from "@/lib/doc";
+import { STREAM_ERROR_MARKER } from "@/lib/streamProtocol";
 
 export const runtime = "nodejs";
 export const maxDuration = 150;
@@ -68,11 +69,47 @@ export async function POST(request: Request) {
     }
   }
 
+  const generator = runDocAssessmentStream(body.userInput, files);
+
+  // Erstes Chunk manuell abrufen, BEVOR die Response erstellt wird: ein
+  // Fehler VOR Stream-Start (fehlender ANTHROPIC_API_KEY, ungültiger
+  // Request) kann so noch als regulärer JSON-Fehler-Response mit Statuscode
+  // ausgeliefert werden, wie im bisherigen nicht-streamenden Verhalten -
+  // sobald die Response einmal zurückgegeben ist, sind Status/Header fix.
+  // Gleiches Muster wie app/api/chat/route.ts.
+  let first: IteratorResult<string, void>;
   try {
-    const text = await runDocAssessment(body.userInput, files);
-    return NextResponse.json({ text });
+    first = await generator.next();
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
+
+  const encoder = new TextEncoder();
+  const stream = new ReadableStream<Uint8Array>({
+    async start(controller) {
+      try {
+        if (!first.done) {
+          controller.enqueue(encoder.encode(first.value));
+          for await (const chunk of generator) {
+            controller.enqueue(encoder.encode(chunk));
+          }
+        }
+      } catch (error) {
+        // Fehler MITTEN im Stream (z.B. stop_reason: max_tokens) - HTTP-Status
+        // ist längst 200, daher als Marker ans Stream-Ende angehängt statt
+        // als eigener Fehler-Response. app/doc/page.tsx trennt ihn wieder
+        // heraus (siehe lib/streamProtocol.ts, gleiches Muster wie im
+        // Web-Chat-Arm).
+        const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
+        controller.enqueue(encoder.encode(STREAM_ERROR_MARKER + message));
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, {
+    headers: { "content-type": "text/plain; charset=utf-8" },
+  });
 }
