@@ -38,6 +38,7 @@ const FILES = [
   "sgb-verfahrensrecht-begutachtung.md",
   "bg-pflichten-mitwirkung.md",
   "bg-behandlung-abrechnung.md",
+  "gba-longcov-richtlinie-sapv-palliativversorgung.md",
   "behandlungsfehler-gutachterkommissionen.md",
   "haltung-mecfs-stellungnahme.md",
   "kritik-cfs-psychologisierung-vt-manual.md",
