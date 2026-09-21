@@ -127,6 +127,7 @@ Das Emblem (rundes Katzen-Medaillon, Grün/Gold) ist im Gesamtordner unter `asse
 12. `app/api/premium/route.ts`: ein Endpoint "PDF-Zusammenfassung mit vollständigen Referenzen", 402-Response mit Preis-Objekt (USDC, 6 Dezimalstellen, `0xcebA9300f2b948710d2653dD7B07f33A8B32118C`), Verifikation/Settlement über den gehosteten Facilitator — funktionsfähig und nachweisbar, aber bewusst nicht beworben oder in den UI-Flow gedrängt
 13. `payTo` = die in Phase 3 registrierte Agent-Wallet-Adresse
 14. API-Key vom x402-Dashboard als Vercel Environment Variable hinterlegen (`vercel env add X402_API_KEY` oder im Dashboard)
+15. **Vor dem UI-Design für einen menschlichen Zahler:** `lib/reference/paymentRequestQr.ts` (21.09.2026 als Kandidat abgelegt, aus CeloDesk portiert — siehe `lib/reference/README.md`) prüfen, ob ein EIP-681-QR-Fallback für einen Browser-Nutzer (Arzt/Ärztin ohne x402-fähigen Client) neben dem Facilitator-Flow sinnvoll ist. Erst nach dem Live-Abruf von `x402.celo.org/SKILL.md` (Punkt 11) entscheiden — falls der Facilitator selbst schon eine menschentaugliche Zahl-UI mitbringt, bleibt das Modul ungenutzt, wie bei OSIRIS/Sterntaler/Clock-it auch.
 
 ### Phase 5 — Telegram
 15. Webhook setzen: `https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://bastet-covid.org/api/telegram`

@@ -82,6 +82,8 @@ Ein wöchentlicher Vercel Cron (`vercel.json`, Montag 06:00 UTC) prüft fünf Qu
 
 Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phase 4/6, sowie `build/phase7-mcp-zugang.md` und `build/phase8-selbstverbesserung.md`): x402-Premium-Endpoint, Celo-Builders-Submission, MCP-Zugang (Phase 7) und die erweiterte Selbstverbesserungs-Pipeline (Phase 8) — beide reines Konzept. Die ERC-8004-Registrierung (Phase 3) ist erledigt — zwei Agent-Identitäten auf Celo (Nr. 9817, 9818, siehe `lib/content.ts`). Die *bestehende* Update-Pipeline (5 fest beobachtete Quellen, Review-Queue, Telegram-Freigabe — siehe `lib/updateSources.ts`, `lib/reviewQueue.ts`) läuft bereits produktiv und wird von Phase 8 nur erweitert, nicht neu gebaut.
 
+`lib/reference/` (neu, 21.09.2026) hält externe Implementierungen, die für ein späteres Feature geprüft, aber noch nicht verdrahtet sind — analog zu `src/reference/` im Schwesterprojekt OSIRIS. Aktuell ein Kandidat für den x402-Premium-Endpoint aus Phase 4 (`paymentRequestQr.ts`, EIP-681-QR-Zahlungsanforderung) — als spekulativ markiert, siehe `lib/reference/README.md` für die offene Frage, die vor einer Aktivierung erst zu klären ist.
+
 ## Ordnerübersicht
 
 ### `skill/`
