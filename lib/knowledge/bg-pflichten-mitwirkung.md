@@ -86,6 +86,24 @@ Für BASTET wichtig: Die ersten drei Antworten sind meist zutreffend und kein Fe
 
 **Einordnung für BASTET/Post-COVID**: Post-COVID/ME-CFS als mögliche Berufskrankheitenfolge fällt exakt in den Bereich, den § 9 Abs. 8 SGB VII adressiert — die Unfallversicherungsträger sind nicht nur berechtigt, sondern **gesetzlich verpflichtet**, an der Erforschung mitzuwirken, wie und ob ein Ursachenzusammenhang zwischen beruflicher Exposition und Post-COVID/ME-CFS-Erkrankungshäufigkeiten besteht. Das stützt die bereits in `unfallversicherung-mde.md` diskutierte These, dass die aktuelle Nachlaufwelle (steigende BK-Renten) auch eine Forschungs- und Aufklärungsverantwortung der Träger selbst berührt, nicht nur eine Bearbeitungsfrage im Einzelfall.
 
+**Konkreter Beleg statt nur abstrakter Pflicht — DGUV, "Forschung zu Berufskrankheiten – Bericht 2024"** (Webcode p022811, Ausgabe Okt. 2025, vom Nutzer als PDF bereitgestellt; erfüllt exakt die oben beschriebene Berichtspflicht): 2024 wurden GUV-weit 131 Projekte zur Berufskrankheitenforschung durchgeführt/finanziert (Gesamtmittel über alle Jahre: 100.944.371 €, davon 5.607.205 € im Berichtsjahr 2024; 50 Projekte abgeschlossen, 21 neu begonnen). BK-Nr. 3101 (Infektionskrankheiten, darunter COVID-19) wird im Bericht explizit als einer der Themenschwerpunkte benannt, neben BK-Nr. 1315, 4301, 4302 und 5101. Konkrete, aktuell laufende oder kürzlich abgeschlossene Post-COVID/Long-COVID-Forschungsprojekte der GUV (Auswahl, mit Projekt-Nr., Status, Fördersumme über die gesamte Laufzeit):
+
+| Projekt-Nr. | Status | Thema | Forschungseinrichtung |
+|---|---|---|---|
+| FB-0326 | abgeschlossen (05.2021–01.2024) | Auswirkungen von COVID-19 als BK-Nr. 3101 oder anerkannter Arbeitsunfall auf körperliche Belastbarkeit, psychische Gesundheit und Arbeitsfähigkeit — Beitrag zur Handlungssicherheit im Reha-Management (426.155 €) | TU Chemnitz |
+| 1531 | laufend (10.2020–04.2025) | COVID-19 bei Versicherten der BGW — Nachverfolgung der Erkrankungsverläufe (Long-COVID), Längsschnittuntersuchung (271.000 €) | UKE Hamburg |
+| 1549 | laufend (07.2021–12.2025) | Neurologisches Register zur Erfassung von Patient:innen mit anhaltenden Gesundheitsstörungen (Langzeitfolgen COVID) im beruflichen Kontext — AG Neurotrauma der BG Kliniken (908.000 €) | BG Kliniken |
+| IPA-198-Digihero | laufend (01.2024–12.2027) | Langfristige Effekte der COVID-19-Pandemie auf die Gesundheit der Erwerbsbevölkerung (246.000 €) | DGUV/IPA |
+| IPA-199-LongCOVID Dyspnoe | abgeschlossen (08.2023–07.2024) | Beeinträchtigung der Atemmuskulatur nach SARS-CoV-2-Infektion — Machbarkeitsstudie (77.680 €) | DGUV/IPA |
+| IPA-188-LongCOVID | abgeschlossen (06.2021–12.2024) | Post-COVID-19 und Immunstatus — Monitoring von Entzündungsmarkern und SARS-CoV-Antikörpern | DGUV/IPA |
+| 1605 | abgeschlossen (03.2023–03.2025) | Systemische Defekte in der Immunantwort zirkulierender Immunzellen bei Long-COVID (79.200 €) | BG Kliniken/Uniklinikum Bergmannsheil Bochum |
+| 1609 | abgeschlossen (07.2023–06.2024) | Evaluation der Wirksamkeit von Telerehabilitation bei Long/Post-COVID-Syndrom (79.200 €) | Sportmedizin Uni Mainz |
+| 1625 | laufend (03.2023–06.2025) | Studie zu Auswirkungen der COVID-19-Pandemie auf Arbeits-/Gesundheitssituation von BGW-Versicherten (78.000 €) | UKE Hamburg |
+| 1642 | abgeschlossen (03.2024–02.2025) | Einflussfaktoren auf Long- und Post-COVID bei BGW-Versicherten (78.000 €) | CVcare |
+| 1651 | laufend (06.2024–05.2025) | Post-COVID — Analyse der Befunde im MRT des Kopfes bei Teilnehmer:innen des Post-COVID-Checks (74.000 €) | CVcare |
+
+Direkt nutzbar in Gesprächen/Auswertungen als Beleg dafür, dass die GUV Post-COVID/ME-CFS **aktiv erforscht**, nicht nur verwaltet — konkret mit Projekt-Nr. benennbar, falls Betroffene nach dem Stand der Forschung fragen. Einordnung im Kontext des Gesamtgeschehens: 2024 ging die Zahl neu anerkannter Berufskrankheiten GUV-weit gegenüber 2023 um 63,1 % zurück ("Abklingen der COVID-19-Pandemie" laut DGUV), während die Zahl neuer BK-**Renten** um 8,1 % **stieg** — passend zur bereits an anderer Stelle beschriebenen Nachlaufwelle bei Post-COVID/ME-CFS-Chronifizierungen. Gesamtkosten aller Berufskrankheiten 2024: knapp 1,9 Mrd. €; rund 247.000 Menschen erhielten 2024 eine Reha-/Renten-Leistung wegen einer Berufskrankheit.
+
 ## 5. Mitwirkungspflichten der Betroffenen — das Gegenstück
 
 **§§ 60–64 SGB I**, die allgemeinen Mitwirkungspflichten (gelten auch im Erstattungsverfahren, ergänzen den Amtsermittlungsgrundsatz, heben ihn aber nicht auf):
@@ -143,6 +161,7 @@ Für die BASTET-Auswertung heißt das: Die Begründung einer GdB/MdE-Einschätzu
 - Haufe/Jung, Kommentierung zu § 27 SGB VII (Umfang der Heilbehandlung)
 - DGUV: "Forschung der gesetzlichen Unfallversicherung zu Berufskrankheiten", dguv.de/de/mediencenter/hintergrund/berufskrankheiten/forschung
 - DGUV: Jahresberichte "Forschung zu Berufskrankheiten" 2022/2023, publikationen.dguv.de
+- DGUV: "Forschung zu Berufskrankheiten – Bericht 2024" (Webcode p022811, Ausgabe Okt. 2025) — vom Nutzer als PDF bereitgestellt, Quelle für die konkrete Post-COVID/Long-COVID-Projektliste und die 2024er-Gesamtstatistik oben.
 - DGUV Rundschreiben 0319/2022, 0394/2023, 0358/2024 (Berichtspflicht § 9 Abs. 8 SGB VII)
 - DGUV Forum 10/2022: "Aus Betroffenen Beteiligte machen – der neue § 9 Abs. 4 SGB VII" (Wouterse/Staufenberger/Klinkert)
 - Positionspapier für die Forschung der Träger der gesetzlichen Unfallversicherung, DGUV 2018
