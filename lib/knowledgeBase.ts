@@ -34,6 +34,7 @@ const FILES = [
   "schlaf-schwindel-kognitiv-faelle.md",
   "gutachten-stilvorlage-neuropsychiatrisch.md",
   "unfallversicherung-mde.md",
+  "unfallversicherung-psychische-stoerungen-dguv-leitfaden.md",
   "unfallversicherung-gutachter-befangenheit.md",
   "sgb-verfahrensrecht-begutachtung.md",
   "bg-pflichten-mitwirkung.md",

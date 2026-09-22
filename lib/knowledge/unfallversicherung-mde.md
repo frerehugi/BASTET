@@ -10,7 +10,10 @@
 
 - Rente setzt voraus: Erwerbsfähigkeit ist infolge eines oder mehrerer Versicherungsfälle **über die 26. Woche** nach dem Versicherungsfall hinaus um **mindestens 20 %** gemindert (§ 56 Abs. 1 SGB VII).
 - Bei MdE < 20 % aus nur einem Versicherungsfall: kein eigener Rentenanspruch, außer über einen **Stützrententatbestand** — wenn aus einem weiteren Versicherungsfall bereits eine Teil-MdE (auch < 10 %, aber i. d. R. ≥ 10 %) besteht, sodass die Summe ≥ 20 % ergibt (§ 56 Abs. 1 Satz 2 SGB VII).
-- Bei individueller Vor-Erwerbsfähigkeit unter 100 % (z. B. Vorschäden) wird trotzdem von 100 % ausgegangen, die unfallbedingte Einbuße wird relativ dazu ausgedrückt (ständige BSG-Rechtsprechung).
+- Bei individueller Vor-Erwerbsfähigkeit unter 100 % (z. B. Vorschäden) wird trotzdem von 100 % ausgegangen, die unfallbedingte Einbuße wird relativ dazu ausgedrückt (ständige BSG-Rechtsprechung). **Einzige Ausnahme**: Bestand zum Unfallzeitpunkt bereits eine dauernde **völlige** Erwerbsunfähigkeit (sehr viel strengere Anforderung als der Rentenversicherungs-Begriff — Betroffene:r war nicht mehr in der Lage, im gesamten Wirtschaftsleben noch irgendeinen nennenswerten Verdienst zu erzielen), kann durch den weiteren Unfall keine zusätzliche Minderung mehr eintreten (Quelle: DGUV, "Grundlagen der Begutachtung von Arbeitsunfällen", Abschnitt 8.4).
+- **Vorschäden können die MdE sowohl erhöhen als auch senken**, je nachdem, ob sie mit den Unfallfolgen in "funktioneller Wechselwirkung" stehen (nicht nur bei paarigen Organen — auch z. B. wenn eine vorbestehende Gangstörung Gehstützen erfordert und deren Nutzung durch eine unfallbedingte Handfunktionsstörung beeinträchtigt wird). *Beispiel erhöhend*: Unfallbedingter Verlust eines Auges (isoliert MdE 25 %) rechtfertigt MdE 100 %, wenn dadurch wegen bereits vorbestehendem Verlust des anderen Auges vollständige Erblindung eintritt. *Beispiel senkend*: Verlust einer bereits vorher weitgehend gebrauchsunfähigen Hand. Entscheidend ist immer der Einzelfall — Erfahrungswerte dürfen bei relevanter Wechselwirkung nicht "eins zu eins" angewendet werden, sondern es ist eine individuelle Gesamtschau gefordert.
+- **Nachschäden** (nach dem Unfallereignis eingetretene, unfallunabhängige Gesundheitsschäden) wirken sich dagegen **weder positiv noch negativ** auf die bereits festgestellte MdE aus — auch nicht, wenn die Erwerbsfähigkeit dadurch (z. B. durch einen weiteren, unfallunabhängigen Verlust des zweiten Auges) vollständig entfällt. Solange sich die Unfallfolgen selbst nicht ändern, bleibt die MdE gleich.
+- **Sonderregel für Schüler:innen/Studierende, Nicht-Erwerbstätige und ehrenamtlich Tätige**: Da bei ihnen keine Arbeitsunfähigkeit im üblichen Sinn eintreten kann, wird die MdE bereits ab dem Tag nach dem Unfallereignis eingeschätzt (nicht erst ab Wiedereintritt der Arbeitsfähigkeit). Der Grundsatz "MdE ≥ 20 % über die 26. Woche hinaus" (siehe oben) gilt unverändert.
 - Vollrente = 2/3 des Jahresarbeitsverdienstes (JAV), bei MdE < 100 % anteilige Teilrente entsprechend dem MdE-Grad.
 
 ## Wesentliche Änderung / Neufeststellung
@@ -29,6 +32,40 @@ Referenzwerte aus veröffentlichten Gerichtsentscheidungen (beispielhaft, keine 
 - Beinverlust über Oberschenkelmitte: MdE 80 % (GUV)
 
 → Systematische Unterschiede zwischen MdE (GUV) und GdS/GdB (Schwerbehindertenrecht/Entschädigungsrecht) für den gleichen Körperschaden sind die Regel, nicht die Ausnahme — siehe `references/gdb-mde-systematik.md`.
+
+## Gesamt-MdE-Bildung bei mehreren gleichzeitigen Funktionsstörungen
+
+Quelle: DGUV, "Grundlagen der Begutachtung von Arbeitsunfällen — Erläuterungen für
+Sachverständige" (Ausgabe Okt. 2018, geänderte Neuauflage Sept. 2021), Abschnitt 8.3.
+Zentral relevant für Post-COVID/ME-CFS, da dort regelmäßig **mehrere** Funktionsbereiche
+gleichzeitig betroffen sind (PEM/Fatigue, kognitiv, kardiovaskulär/autonom, psychisch) —
+genau die Konstellation, für die dieser Abschnitt gilt:
+
+- Sind durch den Versicherungsfall mehrere Körperteile/Organe bzw. Funktionsbereiche
+  geschädigt, ist eine **Addition der einzelnen MdE-Sätze grundsätzlich unzulässig**.
+  Stattdessen ist eine **Gesamt-MdE** zu bilden, die in der Regel **niedriger** ist als die Summe
+  der Einzelwerte.
+- Die Gesamt-MdE wird **nicht errechnet, sondern "integrierend" ermittelt** — orientiert an den
+  komplexen Auswirkungen auf die Erwerbsfähigkeit insgesamt, nicht an einer bloßen
+  Aufsummierung isolierter Einzel-MdE-Werte. Wie sie gebildet wurde, muss im Gutachten
+  transparent gemacht/begründet werden — eigenständiger Bestandteil des Gutachtens.
+- **Faustregel**: Je höher eine Einzel-MdE in einem Funktionsbereich ist, desto sorgfältiger ist
+  zu prüfen, ob Funktionsstörungen aus anderen Bereichen mit niedrigeren Einzel-MdE-Sätzen
+  sich überhaupt noch **zusätzlich** auf die verbliebenen Erwerbsmöglichkeiten auswirken —
+  sie können bereits durch die hohe MdE aus dem dominanten Bereich mit abgedeckt sein.
+  Umgekehrt: Stehen auf dem allgemeinen Arbeitsmarkt wegen eines dominanten
+  Funktionsbereichs (z. B. schwere kognitive Einschränkung) ohnehin nur noch Tätigkeiten
+  offen, die andere Anforderungen stellen (weniger kognitive, dafür körperliche
+  Belastbarkeit), können zusätzliche Folgen in genau diesem verbliebenen Bereich (z. B.
+  Fatigue/PEM-bedingte körperliche Belastungseinschränkung) die Arbeitsmöglichkeiten
+  weiter begrenzen und müssen dann **erhöhend** in die Gesamt-MdE eingehen.
+- Bei Post-COVID/ME-CFS mit interdisziplinärer Begutachtung (Haupt- plus
+  Zusatzgutachten verschiedener Fachgebiete) obliegt die Gesamt-MdE-Bildung dem/der
+  Hauptgutachter:in, der/die die Einzel-MdE-Vorschläge der anderen Fachgebiete kritisch zu
+  prüfen hat (Verständlichkeit, Plausibilität, Unfallzusammenhang) und bei Zweifeln
+  intervenieren/nachfragen muss.
+- Orientierungshilfen: Vergleich mit MdE-Werten für ähnlich komplexe Funktionsausfälle
+  (z. B. Querschnittlähmung als Vergleichsmaßstab für komplexe Mehrfach-Funktionsstörungen).
 
 ## Formulargutachten der Berufsgenossenschaften/Unfallkassen
 
@@ -56,6 +93,15 @@ https://www.dguv.de/medien/formtexte/aerzte/a_4520/a4520.pdf
 
 Abzugrenzen vom Melde-/Verdachtsanzeigeformular für die Berufskrankheit selbst (F 6000 bzw. BGW-Fassung K 4050, siehe Meldepflicht-Hinweis im Doc-Arm): Diese vier A-4xxx-Formulare betreffen ausnahmslos die Rentenbegutachtung nach bereits erfolgter BK-/Unfall-Anerkennung, nicht die Verdachtsanzeige selbst.
 
+**Wichtige Klarstellung zum Fachgebiet**: Laut DGUV, "Grundlagen der Begutachtung von
+Arbeitsunfällen" (Abschnitt 4.1), sind A 4200/A 4500/A 4510/A 4520 ausdrücklich die
+Formulare für das **orthopädisch-unfallchirurgische** Fachgebiet. Für **psychische**
+Unfallfolgen (bei ME/CFS z. B. reaktive Depression, PTBS-Verdacht als BK-3101-Folgeschaden)
+existiert eine eigene, inhaltlich analoge Formularserie mit eigenen Nummern — A 2202
+(Zusammenhangsgutachten), A 2210 (Rente auf unbestimmte Zeit), A 2208 (Nachprüfung MdE)
+— siehe `unfallversicherung-psychische-stoerungen-dguv-leitfaden.md` für den vollständigen
+Begutachtungsaufbau dieser Serie.
+
 Wichtige Abgrenzung bei Auftragsannahme: prüfen, ob der jeweilige Rechtsbereich (GUV/BVG/SVG/ZDG/BSeuchG u. a.) und damit der richtige Bewertungsmaßstab (MdE vs. GdS vs. GdB) überhaupt vorliegt, bevor das Gutachten erstellt wird — Verwechslungen sind laut Fachliteratur ein häufiger Fehler.
 
 ## Berufskrankheiten
@@ -82,3 +128,36 @@ Prüfungsstruktur nach ständiger BSG-Rechtsprechung (vgl. Vortrag Dr. Dirk Bier
 **Kein Automatismus — reale Gegenentscheidung als Kalibrierung**: LSG-Rechtsprechung zu einem strukturell vergleichbaren Fall (BK Nr. 3102, Q-Fieber-Infektion → geltend gemachtes chronisches Fatigue-Syndrom als Folgeschaden) zeigt, dass der abgesenkte Beweismaßstab kein Selbstläufer ist — die Vorinstanz (SG) hatte die Anerkennung bejaht, das LSG hob dies auf: die haftungsausfüllende Kausalität wurde als nicht hinreichend wahrscheinlich belegt angesehen. Eine lückenhafte oder unspezifische Symptomdarstellung reicht nicht; die Kette muss in sich stimmig sein.
 
 **Einordnung für Post-COVID speziell (anders als bei seltenen BKn wie Q-Fieber)**: Bei einer im Vergleich sehr hohen Fallzahl (BK-3101-Anerkennungen im hohen fünfstelligen bis sechsstelligen Bereich, siehe `postcovid-mecfs.md`) entsteht zwangsläufig eine deutlich dichtere sozialgerichtliche Fallpraxis als bei einer Rarität wie Q-Fieber (wenige Fälle/Jahr) — dort kann eine einzelne restriktive Entscheidung faktisch unwidersprochen stehen bleiben, bei Post-COVID ist eine konsistentere Linie über viele Verfahren hinweg wahrscheinlicher. Zusätzlich ist das Thema politisch sichtbar (Bundestags-Ausschussbefassung, BMFTR-Forschungsdekade "Nationale Dekade gegen Postinfektiöse Erkrankungen", 500 Mio. € 2026–2036) — eine sichtbare systematische Ablehnungspraxis wäre für einen Träger politisch riskant. Der wahrscheinlichere institutionelle Reflex bei Kostendruck ist eher Bearbeitungs-Reibung (hohe Dokumentationsanforderungen, lange Bearbeitungszeiten) als offene Ablehnung.
+
+## Überblick über weitere Geldleistungen der GUV (neben der Verletztenrente)
+
+Quelle: DGUV, "Grundlagen der Begutachtung von Arbeitsunfällen", Abschnitt 9. Ergänzt die
+bisherige Fokussierung auf die Verletztenrente um die übrigen Geldleistungen, die im Vorfeld
+bzw. parallel relevant werden können — nützlich, wenn Betroffene nach dem Ablauf/den
+Leistungen während des Verfahrens fragen, nicht nur nach der späteren Rente.
+
+- **Verletztengeld** (§ 45 SGB VII): bei unfallbedingter Arbeitsunfähigkeit, grundsätzlich ab
+  ärztlicher Feststellung (sofern kein Anspruch auf Entgeltfortzahlung durch Arbeitgeber:in
+  besteht). Höhe: 80 % des letzten Bruttoentgelts, begrenzt auf das entgangene
+  Nettoarbeitsentgelt. Endet mit Wiedereintritt der Arbeitsfähigkeit, mit Beginn des
+  Übergangsgeldes, oder spätestens mit Ablauf der 78. Woche (§ 46 Abs. 3 SGB VII), sofern die
+  stationäre Behandlung bis dahin beendet ist.
+- **Übergangsgeld** (§ 46 SGB IX): während Maßnahmen der beruflichen Rehabilitation. Höhe:
+  75 % des Verletztengeldes bei mind. einem Kind, sonst 68 %.
+- **Pflegegeld/Pflegeleistungen** (§ 44 SGB VII): bei unfallbedingter Hilflosigkeit in
+  erheblichem Umfang — wahlweise Pflegegeld, Pflegekraft, Haus-/Heimpflege oder
+  Kombination. Höhe richtet sich nach Umfang der Hilflosigkeit sowie Art/Schwere des
+  Gesundheitsschadens; "Anhaltspunkte zur Pflegegeldfeststellung nach § 44 SGB VII" als
+  Orientierungshilfe.
+- **Verletztenrente** (§§ 62 Abs. 1/2 SGB VII): siehe oben — Voraussetzung MdE ≥ 20 % über die
+  26. Woche hinaus (bzw. Stütz-MdE), Ausnahme selbstständig Landwirtschaftstätige: MdE ≥ 30 %
+  (§ 80a Abs. 1 SGB VII). Höhe nach MdE-Grad und Jahresarbeitsverdienst (JAV); Vollrente
+  (MdE 100 %) = 2/3 des JAV.
+- **Abfindung statt laufender Rente**: möglich auf Antrag, wenn keine wesentliche Besserung
+  mehr zu erwarten ist. Bei MdE < 40 % **endgültige** Abfindung. Bei MdE ≥ 40 % nur **bis zur
+  Hälfte** der Rente und nur für **zehn Jahre** abfindbar — die andere Hälfte wird weiter
+  monatlich ausgezahlt, nach zehn Jahren wieder die volle Rente. Heilbehandlung/Teilhabe/
+  Pflege bleiben von einer Abfindung unberührt (Vorrang der Sach-/Dienstleistungen,
+  § 26 Abs. 3 SGB VII).
+- Grundsatz "Alles aus einer Hand": Leistungen zur medizinischen, beruflichen und sozialen
+  Rehabilitation haben **Vorrang** vor Rentenleistungen (§ 26 Abs. 1–3 SGB VII).

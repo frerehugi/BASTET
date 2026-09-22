@@ -16,6 +16,8 @@
 ## Fachgesellschaften / Leitlinien
 - **Sektion Begutachtung der Deutschen Gesellschaft für Orthopädie und Unfallchirurgie (DGOU)**, in Zusammenarbeit mit DGNB — Bemessungsempfehlungen für Verletzungsfolgen (auch in der Privaten Unfallversicherung relevant)
 - DGUV-Kursunterlagen "Die Begutachtung in der gesetzlichen Unfallversicherung" — Formulargutachten-Übersicht
+- DGUV: "Grundlagen der Begutachtung von Arbeitsunfällen — Erläuterungen für Sachverständige" (Ausgabe Okt. 2018, geänderte Neuauflage Sept. 2021, ISBN 978-3-948657-36-9) — vom Nutzer als PDF bereitgestellt, Grundlage für Gesamt-MdE-Bildung, Vorschaden/Nachschaden-Feinregeln und die GUV-Leistungsübersicht in `unfallversicherung-mde.md`.
+- DGUV: "Grundlagen der Begutachtung psychischer Störungen in der gesetzlichen Unfallversicherung — Erläuterungen für Sachverständige" (Ausgabe Juli 2026, Webcode p22878) — vom Nutzer als PDF bereitgestellt, vollständig verarbeitet in `unfallversicherung-psychische-stoerungen-dguv-leitfaden.md`. Kernquellen (AWMF 051-029, Foerster et al. 2007, Philipp 2015, BSG B 2 U 8/18 R) per WebSearch stichprobenhaft unabhängig verifiziert.
 
 ## Standardliteratur (urheberrechtlich geschützt, nicht reproduziert)
 - **Schönberger/Mehrtens/Valentin: "Arbeitsunfall und Berufskrankheit"** — das Standardwerk für MdE-Erfahrungswerte in der GUV. Bei konkreten Fällen dieses Werk konsultieren, nicht aus dieser Skill-Datenbank zitieren.
