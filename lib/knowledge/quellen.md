@@ -57,6 +57,9 @@
 ## Krankheitslast, Versorgungssituation und Unterversorgung (ME/CFS)
 - Vollständige Quellenliste (Mirin et al. 2020, Tschopp et al. 2023, Falk Hvidberg et al. 2015, Bateman et al. 2021, Cullinan et al. 2021, Wormgoor/Rodenburg 2023, Seton et al. 2024, UN-Nelson-Mandela-Regeln 2015): siehe `mecfs-krankheitslast-versorgungssituation.md`.
 
+## GUV-Forschung zu Berufskrankheiten/Post-COVID (amtlicher Statusbericht)
+- DGUV: "Forschung zu Berufskrankheiten – Bericht 2024" (Webcode p022811, Ausgabe Okt. 2025) — amtlicher Bericht nach § 9 Abs. 8 SGB VII, konkrete Post-COVID/Long-COVID-Projektliste und 2024er-Gesamtstatistik: siehe `bg-pflichten-mitwirkung.md` Abschnitt 4.
+
 ## Behandlungs-/Abrechnungswege der gesetzlichen Unfallversicherung
 - Deutsches Ärzteblatt: "Gesetzliche Unfallversicherung: Jeder Vertragsarzt darf abrechnen"
 - Vertrag Ärzte/Unfallversicherungsträger (KBV/DGUV): § 34 (Abrechnungsgrundsätze), § 45 (Mitteilungspflicht der BG bei BK-Anerkennung), § 52 (Ständige Gebührenkommission)
