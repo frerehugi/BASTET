@@ -67,7 +67,7 @@ export function decimalToAtomic(value: string | number, decimals: number): bigin
   }
   const [whole, fraction = ""] = normalized.split(".");
   const padded = (fraction + "0".repeat(decimals)).slice(0, decimals);
-  return BigInt(whole) * 10n ** BigInt(decimals) + BigInt(padded || "0");
+  return BigInt(whole) * BigInt(10) ** BigInt(decimals) + BigInt(padded || "0");
 }
 
 export interface Eip681PaymentRequestParams {
