@@ -151,10 +151,17 @@ Die Leitlinie listet in ihrem Anhang weitere einschlägige Begutachtungsleitlini
 relevantesten, aber bislang **nicht** inhaltlich ausgewertet:
 
 - **AWMF 051-029** "Begutachtung psychischer und psychosomatischer Störungen" (DGPM/DGPPN/DGNB,
-  2. Aktualisierung 2019) — unmittelbar relevant für die psychiatrische Seite der
+  S2k, Stand 15.12.2019, dreiteilig: Teil I gutachtliche Untersuchung, Teil II Kriterien
+  beruflicher Leistungsfähigkeit nach Rechtsgebiet, Teil III Kausalitätsfragen bei
+  Traumafolgestörungen) — unmittelbar relevant für die psychiatrische Seite der
   ME/CFS-Begutachtung, da sie ausdrücklich klarstellt, dass sie **nicht** Patient:innen im Sinne
   der Heilbehandlung betrifft, sondern Antragsteller:innen auf Versicherungs-/
-  Entschädigungsleistungen.
+  Entschädigungsleistungen. **Update**: per WebSearch als real existierend bestätigt und durch
+  den offiziellen DGUV-Leitfaden zur psychiatrischen GUV-Begutachtung (Juli 2026) als aktiv
+  genutzte, praxisrelevante Leitlinie bestätigt (Teil III explizit als Fundstelle für die
+  MdE-Tabellen-Vorschläge von Foerster et al. 2007 und Philipp 2015 zitiert) — siehe
+  `unfallversicherung-psychische-stoerungen-dguv-leitfaden.md`. Der volle Leitlinientext selbst
+  ist weiterhin **nicht** im Detail ausgewertet, nur über diese Sekundärquelle bestätigt.
 - **AWMF 187-006** "Leitlinie für die ärztliche Begutachtung von Menschen mit chronischen
   Schmerzen" (5. Version 2023, DGOU/DGPM/DGNB u. a.) — Nachfolgeversion der bereits als
   Fibromyalgie-Referenzfall in `schmerz-neuro-kardio-erweiterung.md` verwendeten Systematik.
