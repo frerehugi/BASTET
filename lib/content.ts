@@ -1,7 +1,8 @@
 /**
- * Text, das Web- und Telegram-Arm des Betroffenen-Zweigs identisch zeigen
- * sollen — Titel/Untertitel, Rechtliches/Über-BASTET und der Krisenhinweis.
- * An einer Stelle gepflegt, damit beide Kanäle nicht auseinanderlaufen.
+ * Text, den mehrere Arme identisch zeigen sollen, an einer Stelle gepflegt,
+ * damit sie nicht auseinanderlaufen: PATIENT_TITLE/-SUBTITLE und CRISIS_NOTE
+ * für Web- und Telegram-Arm des Betroffenen-Zweigs, PATIENT_ABOUT_TEXT
+ * (Rechtliches/Über-BASTET) zusätzlich auch für den Ärzte-Arm (app/doc/page.tsx).
  */
 
 // Ohne "BASTET —"-Präfix, da der Web-Arm den Wordmark schon in der Kopfzeile
