@@ -19,6 +19,12 @@ export const DIAGNOSIS_WARNING =
 export const CRISIS_NOTE =
   "Falls Sie sich gerade in einer Krise befinden oder daran denken, sich etwas anzutun: Die Telefonseelsorge erreichen Sie kostenlos und anonym unter 0800 111 0 111 oder 0800 111 0 222, rund um die Uhr.";
 
+// Separat exportiert (statt nur inline in PATIENT_ABOUT_TEXT), damit die
+// Web-Arme (app/page.tsx, app/doc/page.tsx) die Adresse für den
+// Kopieren-Button referenzieren können, ohne sie ein zweites Mal
+// abzutippen — Telegram zeigt weiterhin nur den vollen Fließtext.
+export const BASTET_WALLET_ADDRESS = "0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608";
+
 export const PATIENT_ABOUT_TEXT = `BASTET ist ein Orientierungs- und Hilfsangebot und liefert keine verbindliche Begutachtung, keine medizinische Diagnose und keine Rechtsberatung. Es ersetzt weder eine ärztliche Untersuchung noch anwaltliche Beratungen und bindet keine Behörde, kein Gericht und keinen Versicherungsträger.
 
 BASTET basiert auf großen Sprachmodellen (LLMs) und einer kuratierten Wissensbasis. Aktuell nutzt BASTET die Claude API von Anthropic. Diese Technologie befindet sich in aktiver Forschung und Entwicklung, ist experimentell, und fehlerhafte oder unvollständige Ausgaben sind nicht auszuschließen, Funktionsumfang und Wissensbasis entwickeln sich fortlaufend weiter. Für Vollständigkeit, Richtigkeit und Aktualität der Inhalte wird keine Gewähr übernommen. Alle Ausgaben dienen ausschließlich der fachlichen Orientierung — die eigene fachliche Beurteilung bleibt maßgeblich.
@@ -29,6 +35,6 @@ BASTET ist ein Open Source Projekt, "Open Source" bezieht sich hierbei auf die z
 
 BASTET ist ein privates Community-Projekt von und für Post-COVID/MECFS Betroffene, die Kosten für die Nutzung der Anthropic-Dienste sowie des Webhostings werden aktuell vollständig privat getragen. Über die IDs 9817 und 9818 ist BASTET als ERC-8004 Bot über CELO mit eigener Wallet gelistet, wer das Projekt unterstützen möchte, der kann dies über die nachfolgenden Netzwerke tun.
 
-BASTET Ethereum Wallet (ETH, CELO, BASE etc): 0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608
+BASTET Ethereum Wallet (ETH, CELO, BASE etc): ${BASTET_WALLET_ADDRESS}
 
 Für Fragen und Anregungen benutzen Sie bitte diesen Telegram Kanal: https://t.me/bastet_covid`;

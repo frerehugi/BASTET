@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { splitReferences, extractAuswahlPrompt } from "@/lib/format";
 import { splitStreamError } from "@/lib/streamProtocol";
+import { AboutPanel } from "@/components/AboutPanel";
 import {
   PATIENT_TITLE,
   PATIENT_SUBTITLE,
@@ -433,7 +434,14 @@ export default function App() {
             <button style={styles.aboutLink} onClick={() => setAboutOpen((o) => !o)}>
               {aboutOpen ? "Über BASTET ausblenden" : "ℹ️ Über BASTET / Rechtliches"}
             </button>
-            {aboutOpen && <div style={styles.aboutPanel}>{ABOUT_TEXT}</div>}
+            {aboutOpen && (
+              <AboutPanel
+                text={ABOUT_TEXT}
+                panelStyle={styles.aboutPanel}
+                addressStyle={styles.aboutAddress}
+                copyButtonStyle={styles.aboutCopyButton}
+              />
+            )}
           </header>
         )}
 
@@ -541,7 +549,14 @@ export default function App() {
                 {aboutOpen ? "Infos ausblenden" : "Mehr Infos zu BASTET"}
               </button>
             </div>
-            {aboutOpen && <div style={styles.aboutPanel}>{ABOUT_TEXT}</div>}
+            {aboutOpen && (
+              <AboutPanel
+                text={ABOUT_TEXT}
+                panelStyle={styles.aboutPanel}
+                addressStyle={styles.aboutAddress}
+                copyButtonStyle={styles.aboutCopyButton}
+              />
+            )}
           </div>
         )}
 
@@ -898,6 +913,22 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.6,
     color: "var(--text-muted)",
     whiteSpace: "pre-wrap",
+  },
+  aboutAddress: {
+    fontFamily: "monospace",
+    fontSize: 11.5,
+    color: "var(--text)",
+  },
+  aboutCopyButton: {
+    marginLeft: 8,
+    background: "var(--gold-dim)",
+    border: "1px solid var(--border-gold)",
+    color: "var(--gold-light)",
+    borderRadius: 999,
+    padding: "2px 10px",
+    fontSize: 11.5,
+    fontWeight: 600,
+    cursor: "pointer",
   },
   landingWrap: { display: "flex", flexDirection: "column" },
   landingLogoRow: {
