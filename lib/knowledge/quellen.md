@@ -59,6 +59,9 @@
 
 ## GUV-Forschung zu Berufskrankheiten/Post-COVID (amtlicher Statusbericht)
 - DGUV: "Forschung zu Berufskrankheiten – Bericht 2024" (Webcode p022811, Ausgabe Okt. 2025) — amtlicher Bericht nach § 9 Abs. 8 SGB VII, konkrete Post-COVID/Long-COVID-Projektliste und 2024er-Gesamtstatistik: siehe `bg-pflichten-mitwirkung.md` Abschnitt 4.
+- DGUV forum: "COVID-19 als Berufskrankheit und Unfall – Update 2023" (Ausgabe 10/2024) — kumulierte GUV-weite Melde-/Anerkennungszahlen seit Pandemiebeginn bis Ende 2023: https://forum.dguv.de/ausgabe/10-2024/artikel/covid-19-als-berufskrankheit-und-unfall-update-2023
+- DGUV forum: "COVID-19-Erkrankungen als Versicherungsfälle der BGW" (Ausgabe 1/2024) — BGW-spezifische Meldezahl seit Pandemiebeginn und BGW-Anteil an allen GUV-weiten COVID-Meldungen: https://forum.dguv.de/ausgabe-1-2024/covid-19-erkrankungen-als-versicherungsfaelle-der-bgw/
+- DGUV forum: "COVID-19 als Berufskrankheit in den Berichtsjahren 2020 und 2021" (Ausgabe 9/2022) — Jahreszahlen 2020/2021 (30.329 bzw. 152.173 Anzeigen), genutzt zur Korrektur einer fehlerhaften 2021er-Zahl in einem früheren Recherche-Entwurf: https://forum.dguv.de/ausgabe-9-2022/covid-19-als-berufskrankheit-in-den-berichtsjahren-2020-und-2021/
 
 ## Behandlungs-/Abrechnungswege der gesetzlichen Unfallversicherung
 - Deutsches Ärzteblatt: "Gesetzliche Unfallversicherung: Jeder Vertragsarzt darf abrechnen"
