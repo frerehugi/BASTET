@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { splitReferences } from "@/lib/format";
 import { splitStreamError } from "@/lib/streamProtocol";
+import { AboutPanel } from "@/components/AboutPanel";
 import { PATIENT_ABOUT_TEXT as ABOUT_TEXT } from "@/lib/content";
 
 interface FieldDef {
@@ -498,7 +499,14 @@ ${cccLines}`;
           <button style={styles.aboutLink} onClick={() => setAboutOpen((o) => !o)}>
             {aboutOpen ? "Über BASTET ausblenden" : "ℹ️ Über BASTET / Rechtliches"}
           </button>
-          {aboutOpen && <div style={styles.aboutPanel}>{ABOUT_TEXT}</div>}
+          {aboutOpen && (
+            <AboutPanel
+              text={ABOUT_TEXT}
+              panelStyle={styles.aboutPanel}
+              addressStyle={styles.aboutAddress}
+              copyButtonStyle={styles.aboutCopyButton}
+            />
+          )}
         </header>
 
         <div style={styles.dutyBanner}>
@@ -767,6 +775,22 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.55,
     color: "var(--text-muted)",
     whiteSpace: "pre-wrap",
+  },
+  aboutAddress: {
+    fontFamily: "monospace",
+    fontSize: 11,
+    color: "var(--text)",
+  },
+  aboutCopyButton: {
+    marginLeft: 8,
+    background: "var(--gold-dim)",
+    border: "1px solid var(--border-gold)",
+    color: "var(--gold-light)",
+    borderRadius: 999,
+    padding: "2px 10px",
+    fontSize: 11,
+    fontWeight: 600,
+    cursor: "pointer",
   },
   dutyBanner: {
     background: "var(--card)",
