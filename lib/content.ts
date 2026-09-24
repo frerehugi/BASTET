@@ -28,4 +28,6 @@ BASTET ist ein Open Source Projekt, "Open Source" bezieht sich hierbei auf die z
 
 BASTET ist ein privates Community-Projekt von und für Post-COVID/MECFS Betroffene, die Kosten für die Nutzung der Anthropic-Dienste sowie des Webhostings werden aktuell vollständig privat getragen. Über die IDs 9817 und 9818 ist BASTET als ERC-8004 Bot über CELO mit eigener Wallet gelistet, wer das Projekt unterstützen möchte, der kann dies über die nachfolgenden Netzwerke tun.
 
-BASTET Ethereum Wallet (ETH, CELO, Base etc): 0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608`;
+BASTET Ethereum Wallet (ETH, CELO, Base etc): 0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608
+
+Für Fragen und Anregungen benutzen Sie bitte diesen Telegram Kanal: https://t.me/bastet_covid`;
