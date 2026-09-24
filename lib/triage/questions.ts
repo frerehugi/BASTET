@@ -54,7 +54,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "schmerz",
     prompt:
-      "Welche der folgenden Schmerzformen haben Sie? (Mehrfachauswahl möglich — für die CCC-Kriterien zählen mindestens 2)",
+      "Welche der folgenden Schmerzformen haben Sie? (Mehrfachnennung möglich)",
     type: "multi",
     options: [
       { value: "muskel", label: "Muskelschmerzen" },
@@ -68,7 +68,7 @@ export const QUESTIONS: Question[] = [
   {
     id: "kognitiv",
     prompt:
-      "Welche kognitiven/neurologischen Beeinträchtigungen haben Sie? (Mehrfachauswahl — für die CCC-Kriterien zählen mindestens 2)",
+      "Welche kognitiven/neurologischen Beeinträchtigungen haben Sie? (Mehrfachnennung möglich)",
     type: "multi",
     options: [
       { value: "konzentration", label: "Konzentrationsstörungen" },
