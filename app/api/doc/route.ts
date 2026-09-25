@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { runDocAssessmentStream, type UploadedFile } from "@/lib/doc";
 import { STREAM_ERROR_MARKER } from "@/lib/streamProtocol";
+import { REFERENZEN_MARKER } from "@/lib/format";
+import { incrementCompleted, incrementStarted } from "@/lib/userCount";
 
 export const runtime = "nodejs";
 export const maxDuration = 150;
@@ -69,6 +71,11 @@ export async function POST(request: Request) {
     }
   }
 
+  // "Sitzung gestartet" = jeder valide /api/doc-Call - der Doc-Arm ist
+  // einmalig/formularartig, keine Mehrfachrunden wie im Web-Chat-Arm (siehe
+  // lib/userCount.ts). Fire-and-forget, blockiert die Anfrage nicht.
+  void incrementStarted("doc");
+
   const generator = runDocAssessmentStream(body.userInput, files);
 
   // Erstes Chunk manuell abrufen, BEVOR die Response erstellt wird: ein
@@ -88,10 +95,14 @@ export async function POST(request: Request) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      let full = "";
+      let streamErrored = false;
       try {
         if (!first.done) {
+          full += first.value;
           controller.enqueue(encoder.encode(first.value));
           for await (const chunk of generator) {
+            full += chunk;
             controller.enqueue(encoder.encode(chunk));
           }
         }
@@ -101,10 +112,17 @@ export async function POST(request: Request) {
         // als eigener Fehler-Response. app/doc/page.tsx trennt ihn wieder
         // heraus (siehe lib/streamProtocol.ts, gleiches Muster wie im
         // Web-Chat-Arm).
+        streamErrored = true;
         const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
         controller.enqueue(encoder.encode(STREAM_ERROR_MARKER + message));
       } finally {
         controller.close();
+      }
+      // Erst NACH controller.close() zählen (siehe lib/userCount.ts) - nur
+      // eine tatsächlich fertiggestellte Auswertung mit REFERENZEN-Block
+      // ohne Stream-Fehler zählt als "completed".
+      if (!streamErrored && full.includes(REFERENZEN_MARKER)) {
+        void incrementCompleted("doc");
       }
     },
   });

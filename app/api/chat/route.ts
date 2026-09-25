@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { runInterviewStream } from "@/lib/chat";
 import type { ChatMessage } from "@/lib/anthropic";
 import { STREAM_ERROR_MARKER } from "@/lib/streamProtocol";
+import { REFERENZEN_MARKER } from "@/lib/format";
+import { incrementCompleted, incrementStarted } from "@/lib/userCount";
 
 export const runtime = "nodejs";
 export const maxDuration = 150;
@@ -41,10 +43,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "messages fehlt oder ist ungültig." }, { status: 400 });
   }
 
+  const turnCount = typeof body.turnCount === "number" ? body.turnCount : 0;
+  // "Sitzung gestartet" = erster echter Backend-Call (die Tier-1-Triage davor
+  // läuft rein clientseitig, siehe app/page.tsx) - siehe lib/userCount.ts.
+  // Fire-and-forget, blockiert die eigentliche Anfrage nicht.
+  if (turnCount === 0) void incrementStarted("web");
+  // War in einer vorherigen Runde (z.B. vor einer Rückfrage) schon eine
+  // vollständige Auswertung mit REFERENZEN-Block dabei? Nur dann NICHT noch
+  // einmal als "completed" zählen, wenn diese Runde erneut einen liefert.
+  const alreadyCompleted = body.messages.some(
+    (m) => m.role === "assistant" && typeof m.content === "string" && m.content.includes(REFERENZEN_MARKER)
+  );
+
   const generator = runInterviewStream(
     body.messages,
     !!body.diagnosisConfirmed,
-    typeof body.turnCount === "number" ? body.turnCount : 0,
+    turnCount,
     typeof body.triageContext === "string" ? body.triageContext : null,
     typeof body.triageAnchor === "string" ? body.triageAnchor : null,
     !!body.beruflicherKontextNein,
@@ -67,10 +81,14 @@ export async function POST(request: Request) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      let full = "";
+      let streamErrored = false;
       try {
         if (!first.done) {
+          full += first.value;
           controller.enqueue(encoder.encode(first.value));
           for await (const chunk of generator) {
+            full += chunk;
             controller.enqueue(encoder.encode(chunk));
           }
         }
@@ -81,10 +99,18 @@ export async function POST(request: Request) {
         // als eigener Fehler-Response. app/page.tsx trennt ihn wieder heraus
         // und behandelt ihn wie einen fehlgeschlagenen Request (kein
         // stillschweigender Teilerfolg, siehe lib/anthropic.ts).
+        streamErrored = true;
         const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
         controller.enqueue(encoder.encode(STREAM_ERROR_MARKER + message));
       } finally {
         controller.close();
+      }
+      // Erst NACH controller.close() zählen (siehe lib/userCount.ts) - eine
+      // Auswertung gilt erst als "completed", wenn diese Runde tatsächlich
+      // (erstmals) einen vollständigen REFERENZEN-Block geliefert hat, ohne
+      // Stream-Fehler mittendrin.
+      if (!streamErrored && !alreadyCompleted && full.includes(REFERENZEN_MARKER)) {
+        void incrementCompleted("web");
       }
     },
   });

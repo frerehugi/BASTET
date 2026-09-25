@@ -42,8 +42,14 @@ export function stripKnowledgeFilenames(text: string): string {
  * Fall zwar inzwischen ebenfalls ab, aber genau wie beim REFERENZEN-Block ist
  * reine Prompt-Befolgung nicht zuverlässig genug (siehe build/testfaelle.md).
  */
+// Exportiert, damit app/api/chat/route.ts und app/api/doc/route.ts (siehe
+// lib/userCount.ts) serverseitig erkennen können, ob eine gestreamte Antwort
+// eine vollständige Auswertung mit REFERENZEN-Block enthielt, ohne den
+// Marker-String ein zweites Mal zu duplizieren.
+export const REFERENZEN_MARKER = "REFERENZEN:";
+
 export function splitReferences(content: string): ParsedAssessment {
-  const marker = "REFERENZEN:";
+  const marker = REFERENZEN_MARKER;
   const idx = content.indexOf(marker);
   if (idx === -1) return { body: stripKnowledgeFilenames(content), refs: null };
   const body = stripKnowledgeFilenames(content.slice(0, idx).trim());

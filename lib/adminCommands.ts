@@ -1,5 +1,6 @@
 import { sendTelegramMessage } from "./telegram";
 import { approvePendingItem, getPendingItems, rejectPendingItem, type PendingItem } from "./reviewQueue";
+import { getUserCounts } from "./userCount";
 
 /**
  * Proaktive Benachrichtigung vom Cron-Check (siehe app/api/cron/check-updates)
@@ -34,6 +35,22 @@ export function isAdminChat(chatId: number): boolean {
 function formatPendingItem(item: PendingItem, index: number): string {
   const date = new Date(item.detectedAt).toISOString().slice(0, 10);
   return `${index + 1}. [${item.id}] ${item.sourceLabel} (${date})\n${item.summary}\nQuelle: ${item.sourceUrl}`;
+}
+
+/**
+ * Rein anonyme Nutzungszähler (siehe lib/userCount.ts) - "gestartet" minus
+ * "abgeschlossen" ergibt die grobe Abbruchrate je Arm. Telegram-Arm bewusst
+ * (noch) nicht mitgezählt, siehe dortiger Kommentar.
+ */
+async function handleStats(chatId: number): Promise<void> {
+  const counts = await getUserCounts();
+  await sendTelegramMessage(
+    chatId,
+    `📊 Nutzungszähler (anonym, seit Zählbeginn)\n\n` +
+      `Web-Arm: ${counts.web.started} gestartet, ${counts.web.completed} abgeschlossen\n` +
+      `Doc-Arm: ${counts.doc.started} gestartet, ${counts.doc.completed} abgeschlossen\n\n` +
+      `Telegram-Arm wird hier noch nicht mitgezählt.`
+  );
 }
 
 async function handlePendingList(chatId: number): Promise<void> {
@@ -104,6 +121,11 @@ export async function handleAdminCommand(chatId: number, text: string): Promise<
 
   if (/^\/pending\b/i.test(text)) {
     await handlePendingList(chatId);
+    return true;
+  }
+
+  if (/^\/stats\b/i.test(text)) {
+    await handleStats(chatId);
     return true;
   }
 
