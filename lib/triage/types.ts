@@ -63,6 +63,10 @@ export interface TriageResult {
   gdbBegruendung: string[];
   mdeEinschlaegig: boolean;
   mdeGrund: string;
+  /** Nur gesetzt, wenn mdeEinschlaegig - grobe Krosswalk-Spanne, keine 1:1-Übernahme der GdB-Spanne. */
+  mdeSpanneVon?: number;
+  mdeSpanneBis?: number;
+  mdeBegruendung: string[];
   emrKategorie: "keine" | "teilweise" | "voll" | "nicht_erhoben";
   emrBegruendung: string;
   dauerErfuellt: boolean;

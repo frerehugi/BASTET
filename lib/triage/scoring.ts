@@ -113,6 +113,11 @@ export function computeTriage(answers: Answers): TriageResult {
   const gdbBegruendung: string[] = [];
   const unsichereDatenlage =
     arbeitsfaehigkeit === "unklar" || (pem === "ja" && !pemErholung);
+  // Schweregrad-Einordnung der Globalfunktionsstörung - dieselbe Herleitung wie
+  // für die GdB-Spanne unten, aber als eigenes, wiederverwendbares Label, damit
+  // Abschnitt 3 (MdE) unten dieselbe Grundlage nutzen kann, statt die
+  // Bell-Score-/Arbeitsfähigkeit-Fallunterscheidung ein zweites Mal abzubilden.
+  let globalfunktionSchweregrad: "leicht" | "mittel" | "schwer" | "unsicher" = "leicht";
 
   if (bellScoreValid) {
     // Bell-Score hat Vorrang vor der Arbeitsfähigkeit-/PEM-Erholungs-Näherung
@@ -122,12 +127,14 @@ export function computeTriage(answers: Answers): TriageResult {
     if (bellScoreNum < 40) {
       gdbVon = 70;
       gdbBis = 100;
+      globalfunktionSchweregrad = "schwer";
       gdbBegruendung.push(
         `Bell-Score ${bellScoreNum} (unter 40) — nach Scheibenbogen et al. keine relevante Erwerbsfähigkeit mehr zu erwarten, Analogie VersMedV 3.1.1, schwere Ausprägung.`
       );
     } else if (bellScoreNum < 60) {
       gdbVon = 50;
       gdbBis = 60;
+      globalfunktionSchweregrad = "mittel";
       gdbBegruendung.push(
         `Bell-Score ${bellScoreNum} (40–59) — nach Scheibenbogen et al. allenfalls leichte, sitzende Tätigkeit in flexibler Teilzeit vorstellbar, Analogie VersMedV 3.1.1, mittelschwere Ausprägung.`
       );
@@ -139,18 +146,21 @@ export function computeTriage(answers: Answers): TriageResult {
   } else if (arbeitsfaehigkeit === "unter-3" || pemErholung === "ueber-monat") {
     gdbVon = 70;
     gdbBis = 100;
+    globalfunktionSchweregrad = "schwer";
     gdbBegruendung.push(
       "Schwere Globalfunktionsstörung (Arbeitsfähigkeit unter 3 Std./Tag bzw. PEM-Erholung über einen Monat) — Analogie zur Hirnschäden-Skala VersMedV 3.1.1, schwere Ausprägung."
     );
   } else if (arbeitsfaehigkeit === "3-bis-6" || pemErholung === "ueber-woche") {
     gdbVon = 50;
     gdbBis = 60;
+    globalfunktionSchweregrad = "mittel";
     gdbBegruendung.push(
       "Mittelschwere Globalfunktionsstörung (Arbeitsfähigkeit 3–6 Std./Tag bzw. PEM-Erholung über eine Woche) — Analogie VersMedV 3.1.1, mittelschwere Ausprägung."
     );
   } else if (unsichereDatenlage) {
     gdbVon = 30;
     gdbBis = 70;
+    globalfunktionSchweregrad = "unsicher";
     gdbBegruendung.push(
       "Datenlage für eine engere Spanne nicht ausreichend (Arbeitsfähigkeit oder PEM-Erholungsdauer unklar) — bewusst weite Spanne statt falscher Präzision."
     );
@@ -167,6 +177,7 @@ export function computeTriage(answers: Answers): TriageResult {
   if (alltagsverrichtungen === "bettlaegerig-nah") {
     gdbVon = Math.max(gdbVon, 70);
     gdbBis = 100;
+    globalfunktionSchweregrad = "schwer";
     gdbBegruendung.push(
       "Weitgehend bettlägerig / auf Hilfe bei den meisten Alltagsverrichtungen angewiesen — spricht unabhängig von anderen Angaben für die obere Spanne, Analogie zur schweren Hirnschäden-Ausprägung."
     );
@@ -229,6 +240,84 @@ export function computeTriage(answers: Answers): TriageResult {
       " — dem Grunde nach einschlägig, MdE-Spanne unter Vorbehalt der Anerkennung.";
   }
 
+  // Grobe MdE-Spanne, sofern einschlägig - eigene Krosswalk-Tabelle statt
+  // 1:1-Übernahme der GdB-Spanne, weil GdB (VersMedV, amtliche Tabelle) und
+  // MdE (GUV, reine Erfahrungswerte ohne amtliche Tabelle) für denselben
+  // Gesundheitsschaden nach Fachliteratur systematisch unterschiedlich ausfallen
+  // (siehe gdb-mde-systematik.md, unfallversicherung-mde.md). Krosswalk-Werte
+  // aus neurologie-mde-guv-tabellen.md, Abschnitt 3 (Widder/Gaidzik,
+  // hirnorganisches Psychosyndrom/zentrale vegetative Störungen - dieselbe
+  // Globalfunktions-Analogie, die auch der GdB-Herleitung oben zugrunde liegt).
+  let mdeSpanneVon: number | undefined;
+  let mdeSpanneBis: number | undefined;
+  const mdeBegruendung: string[] = [];
+  if (mdeEinschlaegig) {
+    switch (globalfunktionSchweregrad) {
+      case "schwer":
+        mdeSpanneVon = 60;
+        mdeSpanneBis = 100;
+        mdeBegruendung.push(
+          "Schwere Globalfunktionsstörung — Analogie zu den GUV-Erfahrungswerten für hirnorganisches Psychosyndrom/zentrale vegetative Störungen, schwere Ausprägung (Widder/Gaidzik)."
+        );
+        break;
+      case "mittel":
+        mdeSpanneVon = 40;
+        mdeSpanneBis = 50;
+        mdeBegruendung.push(
+          "Mittelschwere Globalfunktionsstörung — Analogie wie oben, mittlere Ausprägung."
+        );
+        break;
+      case "unsicher":
+        mdeSpanneVon = 20;
+        mdeSpanneBis = 60;
+        mdeBegruendung.push(
+          "Datenlage für eine engere MdE-Spanne nicht ausreichend (Arbeitsfähigkeit, PEM-Erholungsdauer bzw. Bell-Score unklar) — bewusst weite Spanne statt falscher Präzision."
+        );
+        break;
+      default:
+        mdeSpanneVon = 20;
+        mdeSpanneBis = 40;
+        mdeBegruendung.push(
+          "Geringe Globalfunktionsstörung — Analogie wie oben, geringe Ausprägung."
+        );
+    }
+
+    // Kalibrierung gegen eine konkrete, veröffentlichte Post-COVID-MdE-
+    // Entscheidung (siehe postcovid-mecfs.md Abschnitt 6): SG Heilbronn hat für
+    // ein strukturell ähnliches Bild (Fatigue/PEM + leichtere kognitive Störung
+    // + gesicherte psychische Komorbidität) MdE 30 festgestellt - deutlich unter
+    // der oberen Hälfte der "mittel"-Spanne. Dient als Korrektiv gegen eine zu
+    // hohe Einschätzung bei vergleichbarer Konstellation, nicht als Automatik.
+    if (
+      globalfunktionSchweregrad === "mittel" &&
+      psychKomorbid === "ja-gesichert" &&
+      kognitivCount >= 1 &&
+      kognitivCount <= 3 &&
+      mdeSpanneVon !== undefined &&
+      mdeSpanneBis !== undefined
+    ) {
+      // Spanne um den realen Fallwert (30) verankern statt sie auf einen
+      // einzelnen Punkt zu kollabieren - der Präzedenzfall zieht sowohl die
+      // Unter- als auch die Obergrenze nach unten.
+      mdeSpanneVon = Math.min(mdeSpanneVon, 30);
+      mdeSpanneBis = Math.min(mdeSpanneBis, 40);
+      mdeBegruendung.push(
+        "Vergleichbares kombiniertes Bild (Fatigue/PEM, leichtere kognitive Störung, gesicherte psychische Komorbidität) wurde in SG Heilbronn, Urt. v. 12.12.2024 – S 2 U 426/24 (nicht rechtskräftig), mit MdE 30 % festgestellt — spricht dafür, hier nicht ohne Weiteres in Richtung 50 zu gehen."
+      );
+    }
+
+    // Kein rechnerischer Aufschlag bei mehreren Erhöhungsfaktoren (anders als
+    // beim GdB oben): Die GUV bildet die Gesamt-MdE bei mehreren betroffenen
+    // Funktionsbereichen ausdrücklich "integrierend", eine Addition einzelner
+    // MdE-Sätze ist unzulässig (DGUV, Grundlagen der Begutachtung von
+    // Arbeitsunfällen, Abschn. 8.3, siehe unfallversicherung-mde.md).
+    if (erhoehungsfaktoren >= 2) {
+      mdeBegruendung.push(
+        "Mehrere Funktionsbereiche gleichzeitig betroffen — die Gesamt-MdE wird dabei integrierend gebildet, nicht durch Addition einzelner Werte; das kann für die obere Spannenhälfte sprechen, aber keinen automatischen Aufschlag begründen."
+      );
+    }
+  }
+
   // --- 4. Erwerbsminderungsrente (SGB VI) ----------------------------------
   let emrKategorie: TriageResult["emrKategorie"];
   let emrBegruendung: string;
@@ -282,6 +371,9 @@ export function computeTriage(answers: Answers): TriageResult {
     gdbBegruendung,
     mdeEinschlaegig,
     mdeGrund,
+    mdeSpanneVon,
+    mdeSpanneBis,
+    mdeBegruendung,
     emrKategorie,
     emrBegruendung,
     dauerErfuellt,

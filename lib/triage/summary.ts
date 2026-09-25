@@ -48,6 +48,11 @@ function gdbLine(result: TriageResult): string {
   return `Geschätzte Spanne: ${result.gdbSpanneVon}–${result.gdbSpanneBis}`;
 }
 
+function mdeLine(result: TriageResult): string | null {
+  if (result.mdeSpanneVon === undefined || result.mdeSpanneBis === undefined) return null;
+  return `Geschätzte Spanne: ${result.mdeSpanneVon}–${result.mdeSpanneBis}`;
+}
+
 function mdeEinschlaegigLabel(answers: Answers, result: TriageResult): string {
   // beruflicherKontext "unsicher" macht result.mdeEinschlaegig zu false (wie
   // "nein"), aber mdeGrund sagt explizit "kann nicht eingeordnet werden" -
@@ -82,6 +87,12 @@ export function formatTriageSummary(answers: Answers, result: TriageResult): str
   const iomRef = refFor("Institute of Medicine (IOM) 2015, SEID-Kriterien (\"Systemic Exertion Intolerance Disease\")");
   const gdbRef = refFor("VersMedV, Anlage Teil B Nr. 18.4 i. V. m. Nr. 3.7 (analoge Beurteilung bei ME/CFS/Fatigue-Syndromen)");
   const mdeRef = result.mdeEinschlaegig ? refFor("§ 56 Abs. 1 SGB VII, i. V. m. BK-Nr. 3101 BKV") : null;
+  const mdeSpanneRef =
+    result.mdeSpanneVon !== undefined
+      ? refFor(
+          "Widder/Gaidzik, Neurologische Begutachtung (MdE-Erfahrungssätze, Analogie hirnorganisches Psychosyndrom/zentrale vegetative Störungen); SG Heilbronn, Urt. v. 12.12.2024 – S 2 U 426/24 (nicht rechtskräftig, Kalibrierungsbeispiel Post-COVID)"
+        )
+      : null;
   const emrRef = result.emrKategorie !== "nicht_erhoben" ? refFor("§ 43 SGB VI (Rente wegen Erwerbsminderung)") : null;
 
   const lines: string[] = [];
@@ -100,6 +111,15 @@ export function formatTriageSummary(answers: Answers, result: TriageResult): str
   lines.push("── MdE (gesetzliche Unfallversicherung) ──");
   lines.push(`Einschlägig: ${mdeEinschlaegigLabel(answers, result)}`);
   lines.push(`${result.mdeGrund}${mdeRef ? ` [${mdeRef}]` : ""}`);
+  const mLine = mdeLine(result);
+  if (mLine) {
+    lines.push(mLine);
+    lines.push("Begründung:");
+    for (const b of result.mdeBegruendung) lines.push(`- ${b}${mdeSpanneRef ? ` [${mdeSpanneRef}]` : ""}`);
+    lines.push(
+      "Hinweis: Anders als beim GdB gibt es für die MdE keine amtliche Tabelle — dies ist eine grobe Analogie auf Basis allgemeiner GUV-Erfahrungswerte, keine ME/CFS-spezifische MdE-Tabelle. Die tatsächliche MdE-Höhe ist im Einzelfall gutachterlich zu klären."
+    );
+  }
   lines.push("");
   lines.push("── Erwerbsminderungsrente (EMR, gesetzliche Rentenversicherung SGB VI) ──");
   lines.push(`Tägliches Leistungsvermögen: ${emrLabel(result)}`);
