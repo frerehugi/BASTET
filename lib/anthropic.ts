@@ -37,10 +37,42 @@ interface AnthropicContentBlock {
   text?: string;
 }
 
+// Von Anthropic auf jeder Antwort mitgeliefert, bislang aber nirgends
+// ausgelesen - ohne das gab es keine Sichtbarkeit, ob Prompt Caching
+// tatsächlich greift (cache_read_input_tokens sollte bei warmem Cache
+// deutlich über input_tokens liegen) oder wie teuer eine Anfrage wirklich
+// war. Siehe logUsage() unten (Kosteneffizienz-Review).
+interface UsageInfo {
+  input_tokens?: number;
+  cache_creation_input_tokens?: number;
+  cache_read_input_tokens?: number;
+  output_tokens?: number;
+}
+
 interface AnthropicResponse {
   content?: AnthropicContentBlock[];
   error?: { message?: string; type?: string };
   stop_reason?: string;
+  usage?: UsageInfo;
+}
+
+/**
+ * Reines Server-Log (Vercel Logs), kein Redis/keine Persistenz - anders als
+ * lib/userCount.ts geht es hier nicht um eine dauerhaft abrufbare Kennzahl,
+ * sondern um die Möglichkeit, im Log nach Cache-Trefferquote/Tokenmengen zu
+ * suchen, wenn die tatsächlichen Kosten unklar sind (z.B. cache_read_input_tokens
+ * über mehrere Anfragen hinweg mit input_tokens vergleichen). `context`
+ * identifiziert grob die Aufrufstelle (z.B. "callClaude"/"streamClaude"),
+ * ohne dass lib/anthropic.ts wissen muss, welcher Arm/Modus aufgerufen hat.
+ */
+function logUsage(context: string, usage: UsageInfo | undefined): void {
+  if (!usage) return;
+  console.log(
+    `[anthropic:usage] ${context} input=${usage.input_tokens ?? 0} ` +
+      `cache_write=${usage.cache_creation_input_tokens ?? 0} ` +
+      `cache_read=${usage.cache_read_input_tokens ?? 0} ` +
+      `output=${usage.output_tokens ?? 0}`
+  );
 }
 
 function getApiKey(): string {
@@ -125,6 +157,8 @@ export async function callClaude(
     throw new Error(detail);
   }
 
+  logUsage("callClaude", data.usage);
+
   const text = (data.content || [])
     .filter((block) => block.type === "text")
     .map((block) => block.text || "")
@@ -159,6 +193,12 @@ interface StreamEvent {
   delta?: StreamDelta;
   content_block?: { type?: string };
   error?: { message?: string; type?: string };
+  // message_start trägt die initiale usage (input_tokens, cache_creation_/
+  // cache_read_input_tokens); message_delta trägt am Stream-Ende die
+  // kumulierte usage.output_tokens - beide zusammen ergeben logUsage()s
+  // vollständiges Bild, siehe streamClaude() unten.
+  message?: { usage?: UsageInfo };
+  usage?: UsageInfo;
 }
 
 /**
@@ -219,6 +259,11 @@ export async function* streamClaude(
   let midStreamError: string | null = null;
   let textBlocksSeen = 0;
   let anyTextEmitted = false;
+  // usage kommt über zwei SSE-Events verteilt (siehe StreamEvent oben) -
+  // message_start liefert input/cache_write/cache_read, message_delta am
+  // Ende die kumulierten output_tokens. Letzterer Wert überschreibt sich bei
+  // mehreren message_delta-Events immer mit dem jeweils neuesten Stand.
+  let usage: UsageInfo = {};
 
   try {
     while (true) {
@@ -249,8 +294,11 @@ export async function* streamClaude(
         } else if (event.type === "content_block_delta" && event.delta?.type === "text_delta" && event.delta.text) {
           anyTextEmitted = true;
           yield event.delta.text;
+        } else if (event.type === "message_start" && event.message?.usage) {
+          usage = { ...usage, ...event.message.usage };
         } else if (event.type === "message_delta" && event.delta?.stop_reason !== undefined) {
           stopReason = event.delta.stop_reason;
+          if (event.usage) usage = { ...usage, ...event.usage };
         } else if (event.type === "error") {
           midStreamError = event.error?.message ?? event.error?.type ?? "Unbekannter Stream-Fehler.";
         }
@@ -259,6 +307,11 @@ export async function* streamClaude(
   } finally {
     reader.releaseLock();
   }
+
+  // Auch bei einem anschließenden Fehler (max_tokens, midStreamError) loggen -
+  // die Tokens wurden so oder so verbraucht, und gerade eine abgeschnittene
+  // Antwort ist für die Kosteneinordnung relevant.
+  logUsage("streamClaude", usage);
 
   if (midStreamError) {
     throw new Error(midStreamError);
