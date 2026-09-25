@@ -28,8 +28,10 @@ export function computeTriage(answers: Answers): TriageResult {
   const schlaf = asMulti(answers.schlaf);
   const psychKomorbid = answers.psychKomorbid as string | undefined;
   const arbeitsfaehigkeit = answers.arbeitsfaehigkeit as string | undefined;
+  // Eine einzige Frage deckt sowohl den beruflichen Zusammenhang als auch den
+  // BK-3101-Anerkennungsstatus ab (siehe questions.ts) - "nein"/"unsicher" wie
+  // zuvor, die übrigen drei Werte kodieren zugleich den Anerkennungsstatus.
   const beruflicherKontext = answers.beruflicherKontext as string | undefined;
-  const bk3101Status = answers.bk3101Status as string | undefined;
   const pemAusloeseschwelle = answers.pemAusloeseschwelle as string | undefined;
   const schmerzschwere = answers.schmerzschwere as string | undefined;
   const alltagsverrichtungen = answers.alltagsverrichtungen as string | undefined;
@@ -224,19 +226,22 @@ export function computeTriage(answers: Answers): TriageResult {
   }
 
   // --- 3. MdE (gesetzliche Unfallversicherung) ----------------------------
-  const mdeEinschlaegig = beruflicherKontext === "ja";
+  const mdeEinschlaegig =
+    beruflicherKontext === "anerkannt" ||
+    beruflicherKontext === "gemeldet-offen" ||
+    beruflicherKontext === "nicht-gemeldet";
   let mdeGrund: string;
   if (beruflicherKontext === "unsicher") {
     mdeGrund =
       "Beruflicher Zusammenhang als unsicher angegeben — MdE-Einschlägigkeit kann hier nicht eingeordnet werden, das sollte in der Detailanalyse geklärt werden.";
   } else if (!mdeEinschlaegig) {
     mdeGrund = "Kein beruflicher Zusammenhang angegeben — MdE nach SGB VII nicht einschlägig.";
-  } else if (bk3101Status === "anerkannt") {
+  } else if (beruflicherKontext === "anerkannt") {
     mdeGrund = "Beruflicher Zusammenhang angegeben, BK-3101 bereits anerkannt — MdE-Bemessung einschlägig.";
   } else {
     mdeGrund =
       "Beruflicher Zusammenhang angegeben, BK-3101 " +
-      (bk3101Status === "gemeldet-offen" ? "gemeldet, Verfahren offen" : "noch nicht gemeldet") +
+      (beruflicherKontext === "gemeldet-offen" ? "gemeldet, Verfahren offen" : "noch nicht gemeldet") +
       " — dem Grunde nach einschlägig, MdE-Spanne unter Vorbehalt der Anerkennung.";
   }
 

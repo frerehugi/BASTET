@@ -209,23 +209,16 @@ export const QUESTIONS: Question[] = [
   {
     id: "beruflicherKontext",
     prompt:
-      "Bestand ein beruflicher Zusammenhang mit Ihrer Erkrankung — z. B. Ansteckung bei einer Tätigkeit im Gesundheitsdienst, in der Wohlfahrtspflege oder in einem Labor?",
+      "Ist Ihre Erkrankung durch die Berufsgenossenschaft/gesetzliche Unfallversicherung als Berufskrankheit (z. B. BK-Nr. 3101), Arbeits- oder Wegeunfall anerkannt?",
+    hint:
+      "Das betrifft nur die gesetzliche Unfallversicherung (z. B. bei Ansteckung während einer Tätigkeit im Gesundheitsdienst, in der Wohlfahrtspflege oder in einem Labor) — nicht die gesetzliche oder private Krankenversicherung.",
     type: "single",
     options: [
-      { value: "ja", label: "Ja" },
-      { value: "nein", label: "Nein" },
-      { value: "unsicher", label: "Unsicher / möglicher, aber unklarer Zusammenhang" },
-    ],
-  },
-  {
-    id: "bk3101Status",
-    showIf: (a) => a.beruflicherKontext === "ja",
-    prompt: "Wie ist der Status einer Berufskrankheiten-Meldung (BK-Nr. 3101)?",
-    type: "single",
-    options: [
-      { value: "nicht-gemeldet", label: "Noch nicht gemeldet" },
+      { value: "anerkannt", label: "Ja, bereits anerkannt" },
       { value: "gemeldet-offen", label: "Gemeldet, Verfahren läuft noch" },
-      { value: "anerkannt", label: "Bereits anerkannt" },
+      { value: "nicht-gemeldet", label: "Noch nicht gemeldet, aber beruflicher Zusammenhang wahrscheinlich" },
+      { value: "nein", label: "Nein, kein beruflicher Zusammenhang" },
+      { value: "unsicher", label: "Unsicher / möglicher, aber unklarer Zusammenhang" },
     ],
   },
 ];
