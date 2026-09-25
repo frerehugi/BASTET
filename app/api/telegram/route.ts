@@ -8,9 +8,10 @@ import {
   CRISIS_NOTE,
   PATIENT_ABOUT_TEXT,
 } from "@/lib/content";
-import { splitReferences, stripStatsBlock } from "@/lib/format";
+import { REFERENZEN_MARKER, splitReferences, stripStatsBlock } from "@/lib/format";
 import { sendTelegramMessage, startTypingIndicator } from "@/lib/telegram";
 import { getSession, saveSession, type TelegramSession } from "@/lib/telegramSession";
+import { incrementCompleted, incrementStarted } from "@/lib/userCount";
 
 export const runtime = "nodejs";
 export const maxDuration = 150;
@@ -153,6 +154,18 @@ export async function POST(request: Request): Promise<Response> {
       return ok();
     }
 
+    // "Sitzung gestartet" = erste echte Interview-Runde (nur die
+    // OPENING_QUESTION steht bislang in session.messages) - siehe
+    // lib/userCount.ts. Vor dem Push prüfen, sonst zählt jede Runde als Start.
+    if (session.messages.length === 1) void incrementStarted("telegram");
+    // War in einer vorherigen Runde schon eine vollständige Auswertung mit
+    // REFERENZEN-Block dabei? Nur dann NICHT noch einmal als "completed"
+    // zählen, wenn diese Runde erneut einen liefert (gleiches Prinzip wie
+    // app/api/chat/route.ts).
+    const alreadyCompleted = session.messages.some(
+      (m) => m.role === "assistant" && typeof m.content === "string" && m.content.includes(REFERENZEN_MARKER)
+    );
+
     // Normale Interview-Runde.
     session.messages.push({ role: "user", content: text });
     session.turnCount += 1;
@@ -182,6 +195,10 @@ export async function POST(request: Request): Promise<Response> {
     const cleaned = stripStatsBlock(raw);
     session.messages.push({ role: "assistant", content: cleaned });
     await saveSession(chatId, session);
+
+    if (!alreadyCompleted && cleaned.includes(REFERENZEN_MARKER)) {
+      void incrementCompleted("telegram");
+    }
 
     const { body, refs } = splitReferences(cleaned);
     await sendTelegramMessage(chatId, body);
