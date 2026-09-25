@@ -5,6 +5,7 @@ import type { Answers, QuestionId } from "@/lib/triage/types";
 import { QUESTIONS, nextQuestion, progress } from "@/lib/triage/questions";
 import { computeTriage } from "@/lib/triage/scoring";
 import { formatTriageSummary } from "@/lib/triage/summary";
+import { BellScoreReference } from "@/components/BellScoreReference";
 
 interface TriageFlowProps {
   onComplete: (answers: Answers, summaryText: string, empfehlungDetailanalyse: boolean) => void;
@@ -23,6 +24,10 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
   // sonst hält nextQuestion() die Frage schon nach der ersten Option-Auswahl
   // für beantwortet und springt vorzeitig zur nächsten Frage.
   const [draft, setDraft] = useState<string[]>([]);
+  // Eingabe der aktuell angezeigten "number"-Frage (bislang nur "bellScore") -
+  // gleiches Prinzip wie `draft` oben, getrennt von `answers` bis zum
+  // expliziten "Weiter"-Klick.
+  const [numberDraft, setNumberDraft] = useState("");
 
   const current = nextQuestion(answers);
   const { done, total } = progress(answers);
@@ -54,6 +59,13 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
     const next = { ...answers, [id]: draft };
     setAnswers(next);
     setDraft([]);
+    maybeFinish(next);
+  }
+
+  function answerNumber(id: QuestionId, value: string) {
+    const next = { ...answers, [id]: value };
+    setAnswers(next);
+    setNumberDraft("");
     maybeFinish(next);
   }
 
@@ -115,6 +127,50 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
           </button>
         </>
       )}
+
+      {current.type === "number" && (
+        <>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={current.min}
+            max={current.max}
+            placeholder={current.placeholder}
+            style={styles.numberInput}
+            value={numberDraft}
+            onChange={(e) => setNumberDraft(e.target.value)}
+          />
+          {current.id === "bellScore" && (
+            <BellScoreReference
+              linkStyle={styles.bellScoreLink}
+              panelStyle={styles.bellScorePanel}
+              rowStyle={styles.bellScoreRow}
+              valueStyle={styles.bellScoreValue}
+              textStyle={styles.bellScoreText}
+              sourceStyle={styles.bellScoreSource}
+            />
+          )}
+          <div style={styles.numberButtonRow}>
+            <button
+              style={styles.continueButton}
+              onClick={() => answerNumber(current.id, numberDraft)}
+              disabled={
+                numberDraft.trim() === "" ||
+                Number.isNaN(Number(numberDraft)) ||
+                (current.min !== undefined && Number(numberDraft) < current.min) ||
+                (current.max !== undefined && Number(numberDraft) > current.max)
+              }
+            >
+              Weiter
+            </button>
+            {current.optional && (
+              <button style={styles.skipButton} onClick={() => answerNumber(current.id, "")}>
+                Weiß ich nicht
+              </button>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -165,6 +221,51 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     cursor: "pointer",
   },
+  numberInput: {
+    marginTop: 18,
+    width: "100%",
+    background: "rgba(255,255,255,.05)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 12,
+    padding: "13px 16px",
+    fontSize: 15.5,
+    fontFamily: "inherit",
+    boxSizing: "border-box",
+  },
+  numberButtonRow: { display: "flex", flexDirection: "column", gap: 8 },
+  skipButton: {
+    background: "none",
+    border: "none",
+    color: "var(--text-faint)",
+    fontSize: 13.5,
+    textDecoration: "underline",
+    cursor: "pointer",
+    padding: 0,
+  },
+  bellScoreLink: {
+    marginTop: 10,
+    background: "none",
+    border: "none",
+    color: "var(--text-faint)",
+    fontSize: 12.5,
+    textDecoration: "underline",
+    cursor: "pointer",
+    padding: 0,
+    display: "block",
+  },
+  bellScorePanel: {
+    marginTop: 8,
+    marginBottom: 14,
+    background: "rgba(255,255,255,.03)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    padding: "10px 12px",
+  },
+  bellScoreRow: { display: "flex", gap: 10, padding: "4px 0", borderBottom: "1px solid var(--border)" },
+  bellScoreValue: { flex: "0 0 28px", fontWeight: 700, fontSize: 12.5, color: "var(--gold-light)" },
+  bellScoreText: { fontSize: 11.5, lineHeight: 1.5, color: "var(--text-muted)" },
+  bellScoreSource: { marginTop: 8, fontSize: 10.5, lineHeight: 1.5, color: "var(--text-faint)" },
 };
 
 // QUESTIONS wird hier nicht direkt verwendet, aber re-exportiert lassen,

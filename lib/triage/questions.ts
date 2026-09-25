@@ -1,5 +1,15 @@
 import type { Answers, Question } from "./types";
 
+/** Für showIf("schmerzschwere") - dieselbe "mindestens ein relevanter Wert
+ *  außer dem Ausschlusswert"-Logik wie countRelevant() in scoring.ts, hier
+ *  aber nur als boolescher Check, ohne scoring.ts zu importieren (Tier-1-
+ *  Module bleiben bewusst unabhängig voneinander, siehe dortiger Kommentar). */
+function hatRelevanteSchmerzangabe(a: Answers): boolean {
+  const v = a.schmerz;
+  const arr = Array.isArray(v) ? v : v ? [v] : [];
+  return arr.some((s) => s !== "keine");
+}
+
 // Jede Frage entspricht 1:1 einem Abfragepunkt aus
 // lib/knowledge/ccc-fragenkatalog-kalibrierung.md - die Ausprägungen dort sind
 // hier direkt die Button-Optionen. Reihenfolge bewusst so gewählt, dass die
@@ -17,6 +27,17 @@ export const QUESTIONS: Question[] = [
       { value: "ja", label: "Ja" },
       { value: "nein", label: "Nein" },
       { value: "unklar", label: "Unklar / noch nie darauf geachtet" },
+    ],
+  },
+  {
+    id: "pemAusloeseschwelle",
+    showIf: (a) => a.pem === "ja",
+    prompt: "Wie stark muss die Belastung sein, damit bei Ihnen eine PEM-Verschlechterung auftritt?",
+    type: "single",
+    options: [
+      { value: "leichteste-alltagsbelastung", label: "Schon leichteste Alltagsbelastung reicht (z. B. Zähneputzen, kurzes Gespräch)" },
+      { value: "mittelschwere-belastung", label: "Erst bei mittelschwerer Belastung (z. B. kurzer Spaziergang, Hausarbeit)" },
+      { value: "nur-starke-belastung", label: "Nur bei stärkerer Belastung (z. B. längere körperliche Anstrengung)" },
     ],
   },
   {
@@ -63,6 +84,18 @@ export const QUESTIONS: Question[] = [
       { value: "hals", label: "Halsschmerzen" },
       { value: "lymphknoten", label: "Druckschmerzhafte Lymphknoten" },
       { value: "keine", label: "Keine davon" },
+    ],
+  },
+  {
+    id: "schmerzschwere",
+    showIf: hatRelevanteSchmerzangabe,
+    prompt: "Wie stark beeinträchtigen Sie diese Schmerzen insgesamt im Alltag?",
+    type: "single",
+    options: [
+      { value: "kaum", label: "Kaum spürbar" },
+      { value: "spuerbar", label: "Spürbar, aber alltagstauglich" },
+      { value: "deutlich", label: "Deutlich einschränkend" },
+      { value: "kaum-auszuhalten", label: "Sehr stark, kaum auszuhalten" },
     ],
   },
   {
@@ -127,6 +160,28 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "bellScore",
+    prompt: "Können Sie Ihren Bell-Score schätzen?",
+    hint:
+      "Der Bell-Score (0–100) beschreibt Ihr allgemeines Leistungsniveau bei ME/CFS/Fatigue — 100 = keine Einschränkung, 0 = schwerste Einschränkung. Falls Ihnen die Skala nicht geläufig ist, nutzen Sie die deutsche Tabelle unten oder überspringen Sie die Frage.",
+    type: "number",
+    options: [],
+    placeholder: "z. B. 45",
+    min: 0,
+    max: 100,
+    optional: true,
+  },
+  {
+    id: "alltagsverrichtungen",
+    prompt: "Wie kommen Sie aktuell im Alltag zurecht?",
+    type: "single",
+    options: [
+      { value: "selbststaendig", label: "Selbstständig, ohne fremde Hilfe" },
+      { value: "unterstuetzung", label: "Mit Unterstützung bei einzelnen Verrichtungen" },
+      { value: "bettlaegerig-nah", label: "Weitgehend bettlägerig / auf Hilfe bei den meisten Verrichtungen angewiesen" },
+    ],
+  },
+  {
     id: "arbeitsfaehigkeit",
     prompt:
       "Grob geschätzt: Wie viele Stunden täglich wäre irgendeine leichte Tätigkeit auf dem allgemeinen Arbeitsmarkt für Sie aktuell vorstellbar — unabhängig von Ihrem bisherigen Beruf?",
@@ -137,6 +192,18 @@ export const QUESTIONS: Question[] = [
       { value: "3-bis-6", label: "3 bis unter 6 Stunden" },
       { value: "unter-3", label: "Unter 3 Stunden" },
       { value: "unklar", label: "Kann ich nicht einschätzen" },
+    ],
+  },
+  {
+    id: "objektiveTests",
+    prompt:
+      "Wurden bei Ihnen bereits objektive Tests durchgeführt (z. B. 6-Minuten-Gehstrecke, Handkraftmessung, neuropsychologische Testung)?",
+    type: "single",
+    options: [
+      { value: "auffaellig", label: "Ja, mit auffälligem/pathologischem Ergebnis" },
+      { value: "unauffaellig", label: "Ja, Ergebnis unauffällig" },
+      { value: "nein", label: "Nein, noch keine durchgeführt" },
+      { value: "unbekannt", label: "Weiß ich nicht" },
     ],
   },
   {

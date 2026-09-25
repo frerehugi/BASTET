@@ -30,6 +30,13 @@ export function computeTriage(answers: Answers): TriageResult {
   const arbeitsfaehigkeit = answers.arbeitsfaehigkeit as string | undefined;
   const beruflicherKontext = answers.beruflicherKontext as string | undefined;
   const bk3101Status = answers.bk3101Status as string | undefined;
+  const pemAusloeseschwelle = answers.pemAusloeseschwelle as string | undefined;
+  const schmerzschwere = answers.schmerzschwere as string | undefined;
+  const alltagsverrichtungen = answers.alltagsverrichtungen as string | undefined;
+  const objektiveTests = answers.objektiveTests as string | undefined;
+  const bellScoreRaw = answers.bellScore as string | undefined;
+  const bellScoreNum = bellScoreRaw && bellScoreRaw.trim() !== "" ? Number(bellScoreRaw) : NaN;
+  const bellScoreValid = !Number.isNaN(bellScoreNum) && bellScoreNum >= 0 && bellScoreNum <= 100;
 
   const schmerzCount = countRelevant(schmerz);
   const kognitivCount = countRelevant(kognitiv);
@@ -107,7 +114,29 @@ export function computeTriage(answers: Answers): TriageResult {
   const unsichereDatenlage =
     arbeitsfaehigkeit === "unklar" || (pem === "ja" && !pemErholung);
 
-  if (arbeitsfaehigkeit === "unter-3" || pemErholung === "ueber-monat") {
+  if (bellScoreValid) {
+    // Bell-Score hat Vorrang vor der Arbeitsfähigkeit-/PEM-Erholungs-Näherung
+    // (siehe Kommentar oben) - er ist die direktere, in der Literatur
+    // (Scheibenbogen et al. in "Die Ärztliche Begutachtung") konkret mit
+    // Erwerbsfähigkeit korrelierte Kennzahl.
+    if (bellScoreNum < 40) {
+      gdbVon = 70;
+      gdbBis = 100;
+      gdbBegruendung.push(
+        `Bell-Score ${bellScoreNum} (unter 40) — nach Scheibenbogen et al. keine relevante Erwerbsfähigkeit mehr zu erwarten, Analogie VersMedV 3.1.1, schwere Ausprägung.`
+      );
+    } else if (bellScoreNum < 60) {
+      gdbVon = 50;
+      gdbBis = 60;
+      gdbBegruendung.push(
+        `Bell-Score ${bellScoreNum} (40–59) — nach Scheibenbogen et al. allenfalls leichte, sitzende Tätigkeit in flexibler Teilzeit vorstellbar, Analogie VersMedV 3.1.1, mittelschwere Ausprägung.`
+      );
+    } else {
+      gdbBegruendung.push(
+        `Bell-Score ${bellScoreNum} (ab 60) — nach Scheibenbogen et al. bei individuellem Pacing ggf. vollzeitnahe Teilnahme am Erwerbsleben möglich, Analogie VersMedV 3.1.1, geringe Ausprägung.`
+      );
+    }
+  } else if (arbeitsfaehigkeit === "unter-3" || pemErholung === "ueber-monat") {
     gdbVon = 70;
     gdbBis = 100;
     gdbBegruendung.push(
@@ -131,6 +160,18 @@ export function computeTriage(answers: Answers): TriageResult {
     );
   }
 
+  // Unabhängig von der obigen Herleitung: weitgehende Bettlägerigkeit ist ein
+  // eigenständiger, starker Hinweis auf die obere Spanne (Analogie schwere
+  // Hirnschädigung, siehe neurologie-vergleichsfaelle.md) - als Boden, nicht
+  // als Ersatz für die übrige Begründung.
+  if (alltagsverrichtungen === "bettlaegerig-nah") {
+    gdbVon = Math.max(gdbVon, 70);
+    gdbBis = 100;
+    gdbBegruendung.push(
+      "Weitgehend bettlägerig / auf Hilfe bei den meisten Alltagsverrichtungen angewiesen — spricht unabhängig von anderen Angaben für die obere Spanne, Analogie zur schweren Hirnschäden-Ausprägung."
+    );
+  }
+
   // Erhöhungsfaktoren (keine Addition, aber Anhebung der Spanne plausibel),
   // siehe versmedv-gdb-gds.md Gesamt-GdB-Prinzip.
   let erhoehungsfaktoren = 0;
@@ -146,10 +187,24 @@ export function computeTriage(answers: Answers): TriageResult {
       "Eigenständige, fachärztlich gesicherte psychiatrische Komorbidität — kann als Erhöhungsfaktor in die Gesamt-GdB-Bildung einfließen (keine Addition, VersMedV Teil A Nr. 3)."
     );
   }
-  if (schmerzCount >= 3) {
+  if (schmerzCount >= 3 || schmerzschwere === "kaum-auszuhalten") {
     erhoehungsfaktoren++;
     gdbBegruendung.push(
-      "Breites Schmerzbild (≥3 Lokalisationen) — je nach Charakter ggf. zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie) zu prüfen."
+      schmerzCount >= 3
+        ? "Breites Schmerzbild (≥3 Lokalisationen) — je nach Charakter ggf. zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie) zu prüfen."
+        : "Selbst berichtete Schmerzintensität \"kaum auszuhalten\" — spricht auch bei weniger Lokalisationen für eine zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie)."
+    );
+  }
+  if (pemAusloeseschwelle === "leichteste-alltagsbelastung") {
+    erhoehungsfaktoren++;
+    gdbBegruendung.push(
+      "PEM tritt bereits bei leichtester Alltagsbelastung auf — spricht für eine schwerere Ausprägung, konsistent mit der Bell-Score-Logik zu Auslöseschwellen."
+    );
+  }
+  if (objektiveTests === "auffaellig") {
+    erhoehungsfaktoren++;
+    gdbBegruendung.push(
+      "Objektive Testung (z. B. 6-Minuten-Gehstrecke, Handkraftmessung, neuropsychologische Testung) mit auffälligem/pathologischem Ergebnis — stützt die geschilderte Symptomatik durch ein objektivierbares Untersuchungsinstrument (Scheibenbogen et al.)."
     );
   }
   if (erhoehungsfaktoren >= 2 && gdbBis < 100) {
@@ -203,11 +258,17 @@ export function computeTriage(answers: Answers): TriageResult {
     offenePunkte.push(
       "CCC/IOM sind mangels PEM nicht erfüllt — das schließt eine andere postakute Infektionsfolge (PAIS) mit Fatigue/Belastungsintoleranz ohne PEM nicht aus. Das wäre diagnostisch etwas anderes als ME/CFS und sollte ärztlich eingeordnet werden, statt hier als 'keine relevante Erkrankung' missverstanden zu werden."
     );
-  if (unsichereDatenlage) offenePunkte.push("Arbeitsfähigkeit bzw. PEM-Erholungsdauer nicht präzise genug für eine engere GdB-Spanne.");
+  // Nur relevant, wenn nicht ohnehin ein Bell-Score vorliegt - der macht die
+  // Unschärfe von Arbeitsfähigkeit/PEM-Erholung für die GdB-Spanne obsolet.
+  if (unsichereDatenlage && !bellScoreValid)
+    offenePunkte.push("Arbeitsfähigkeit bzw. PEM-Erholungsdauer nicht präzise genug für eine engere GdB-Spanne.");
   if (arbeitsfaehigkeit === "unklar") offenePunkte.push("Leistungsvermögen für die EMR-Einordnung nicht eingeschätzt.");
   if (beruflicherKontext === "unsicher")
     offenePunkte.push("Ob ein beruflicher Zusammenhang besteht, ist unsicher — relevant für die MdE-Einschlägigkeit.");
-  offenePunkte.push("Objektive Tests (6-Minuten-Gehstrecke, Handkraftmessung, neuropsychologische Testung) wurden hier nicht erfasst.");
+  if (!objektiveTests || objektiveTests === "unbekannt" || objektiveTests === "nein")
+    offenePunkte.push(
+      "Objektive Tests (6-Minuten-Gehstrecke, Handkraftmessung, neuropsychologische Testung) liegen nach eigener Angabe nicht vor — für die Detailanalyse/ein Gutachten relevant, falls im Verlauf noch durchgeführt."
+    );
 
   const empfehlungDetailanalyse = cccErfuellt === "ja" || cccErfuellt === "teilweise" || offenePunkte.length > 1;
 
