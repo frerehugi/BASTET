@@ -36,6 +36,9 @@ export function computeTriage(answers: Answers): TriageResult {
   const schmerzschwere = answers.schmerzschwere as string | undefined;
   const alltagsverrichtungen = answers.alltagsverrichtungen as string | undefined;
   const objektiveTests = answers.objektiveTests as string | undefined;
+  const autonomHfDokumentiert = answers.autonomHfDokumentiert as string | undefined;
+  const atembeschwerden = answers.atembeschwerden as string | undefined;
+  const diabetesStatus = answers.diabetesStatus as string | undefined;
   const bellScoreRaw = answers.bellScore as string | undefined;
   const bellScoreNum = bellScoreRaw && bellScoreRaw.trim() !== "" ? Number(bellScoreRaw) : NaN;
   const bellScoreValid = !Number.isNaN(bellScoreNum) && bellScoreNum >= 0 && bellScoreNum <= 100;
@@ -185,6 +188,81 @@ export function computeTriage(answers: Answers): TriageResult {
     );
   }
 
+  // Atembeschwerden (VersMedV Teil B, 8.3) und Diabetes mellitus (VersMedV
+  // Teil B, 15.1) sind eigenständige körperliche Befunde außerhalb des
+  // ME/CFS-Kernpakets oben (Fatigue/PEM/kognitiv/Schmerz/Schlaf/autonom/
+  // psychisch) - siehe symptomliste-gdb-mde-abgleich.md, wo diese Domänen
+  // bereits als eigenständig kalibriert, aber in computeTriage() bislang
+  // nicht abgebildet dokumentiert waren (build/phase9-…-self-gatekeeper.md,
+  // Tier-1-Härtung). Wirken hier bewusst nur als Boden auf die
+  // Gesamt-GdB-Spanne (Gesamt-GdB-Prinzip, keine Addition, VersMedV Teil A
+  // Nr. 3) - NICHT als Änderung von `globalfunktionSchweregrad`, das
+  // ausschließlich die ME/CFS-Globalfunktionsstörung beschreibt und weiter
+  // unten als Grundlage für die MdE-Krosswalk-Tabelle dient; ein anderes
+  // Organsystem betreffend, darf es diese Einordnung nicht verfälschen.
+  if (atembeschwerden && atembeschwerden !== "keine") {
+    let atemVon = 0;
+    let atemBis = 0;
+    let atemLabel = "";
+    if (atembeschwerden === "ruhe") {
+      atemVon = 80;
+      atemBis = 100;
+      atemLabel = "schweren Grades (Atemnot bereits in Ruhe/bei leichtester Belastung)";
+    } else if (atembeschwerden === "leichte-belastung") {
+      atemVon = 50;
+      atemBis = 70;
+      atemLabel = "mittleren Grades (Atemnot bereits bei alltäglicher leichter Belastung)";
+    } else if (atembeschwerden === "mittelschwere-belastung") {
+      atemVon = 20;
+      atemBis = 40;
+      atemLabel = "geringen Grades (Atemnot bei mittelschwerer Belastung)";
+    }
+    if (atemVon > gdbVon) {
+      gdbVon = atemVon;
+      gdbBis = Math.max(gdbBis, atemBis);
+      gdbBegruendung.push(
+        `Atemwegsbeeinträchtigung ${atemLabel} — nach VersMedV 8.3 eigenständig mit GdB ${atemVon}–${atemBis} zu bewerten, hebt die Gesamtspanne entsprechend an (Gesamt-GdB-Prinzip, keine Addition).`
+      );
+    } else {
+      gdbBegruendung.push(
+        `Atemwegsbeeinträchtigung ${atemLabel} — nach VersMedV 8.3 eigenständig mit GdB ${atemVon}–${atemBis} zu bewerten, liegt hier unterhalb der ohnehin bereits höheren Gesamteinschätzung und ändert die Spanne nicht zusätzlich.`
+      );
+    }
+  }
+  if (diabetesStatus && diabetesStatus !== "nein" && diabetesStatus !== "diaet") {
+    let diabVon = 0;
+    let diabBis = 0;
+    let diabLabel = "";
+    if (diabetesStatus === "insulin-instabil") {
+      diabVon = 50;
+      diabBis = 50;
+      diabLabel = "unter Insulintherapie, instabile Stoffwechsellage (inkl. gelegentlicher schwerer Unterzuckerungen)";
+    } else if (diabetesStatus === "insulin-stabil") {
+      diabVon = 30;
+      diabBis = 40;
+      diabLabel = "unter Insulintherapie, stabile bis mäßig schwankende Stoffwechsellage";
+    } else if (diabetesStatus === "orale-hypo") {
+      diabVon = 20;
+      diabBis = 20;
+      diabLabel = "mit Medikamenten mit erhöhter Unterzuckerungsneigung eingestellt";
+    } else if (diabetesStatus === "orale-nicht-hypo") {
+      diabVon = 10;
+      diabBis = 10;
+      diabLabel = "mit Medikamenten ohne erhöhte Unterzuckerungsneigung eingestellt";
+    }
+    if (diabVon > gdbVon) {
+      gdbVon = diabVon;
+      gdbBis = Math.max(gdbBis, diabBis);
+      gdbBegruendung.push(
+        `Diabetes mellitus, ${diabLabel} — nach VersMedV 15.1 eigenständig mit GdB ${diabVon}${diabBis > diabVon ? `–${diabBis}` : ""} zu bewerten, hebt die Gesamtspanne entsprechend an (Gesamt-GdB-Prinzip, keine Addition).`
+      );
+    } else {
+      gdbBegruendung.push(
+        `Diabetes mellitus, ${diabLabel} — nach VersMedV 15.1 eigenständig mit GdB ${diabVon}${diabBis > diabVon ? `–${diabBis}` : ""} zu bewerten, liegt hier unterhalb der ohnehin bereits höheren Gesamteinschätzung und ändert die Spanne nicht zusätzlich.`
+      );
+    }
+  }
+
   // Erhöhungsfaktoren (keine Addition, aber Anhebung der Spanne plausibel),
   // siehe versmedv-gdb-gds.md Gesamt-GdB-Prinzip.
   let erhoehungsfaktoren = 0;
@@ -218,6 +296,12 @@ export function computeTriage(answers: Answers): TriageResult {
     erhoehungsfaktoren++;
     gdbBegruendung.push(
       "Objektive Testung (z. B. 6-Minuten-Gehstrecke, Handkraftmessung, neuropsychologische Testung) mit auffälligem/pathologischem Ergebnis — stützt die geschilderte Symptomatik durch ein objektivierbares Untersuchungsinstrument (Scheibenbogen et al.)."
+    );
+  }
+  if (autonomHfDokumentiert === "ja") {
+    erhoehungsfaktoren++;
+    gdbBegruendung.push(
+      "Dokumentierter Herzfrequenzanstieg beim Aufstehen (≥30 bpm bzw. auf ≥120 bpm, Schellong-/Kipptischtest) — erfüllt die POTS-Diagnosekriterien (Raj 2013, Canadian Cardiovascular Society 2020) und objektiviert die berichtete orthostatische Intoleranz zusätzlich (schmerz-neuro-kardio-erweiterung.md)."
     );
   }
   if (erhoehungsfaktoren >= 2 && gdbBis < 100) {
@@ -345,7 +429,30 @@ export function computeTriage(answers: Answers): TriageResult {
         "Leistungsvermögen nicht sicher einschätzbar — eine sozialmedizinische Begutachtung müsste dies eigenständig klären.";
   }
 
-  // --- 5. Offene Punkte / Empfehlung Detailanalyse -------------------------
+  // --- 5. Konsistenzprüfung (einfache Widerspruchserkennung) ---------------
+  // Kein Vorwurf, keine medizinische Plausibilitätsbewertung - nur ein
+  // Hinweis auf Antwortkombinationen, die sich gegenseitig eher ausschließen,
+  // damit die Detailanalyse gezielt nachfragen kann statt sie stillschweigend
+  // zu verrechnen. Bewusst wenige, klar begründbare Regeln statt eines
+  // allgemeinen Konsistenz-Solvers.
+  const inkonsistenzen: string[] = [];
+  if (alltagsverrichtungen === "bettlaegerig-nah" && arbeitsfaehigkeit === "ueber-6") {
+    inkonsistenzen.push(
+      "Weitgehend bettlägerig, gleichzeitig aber eine Arbeitsfähigkeit von 6 Std./Tag oder mehr angegeben — das kann an einem guten Tag bei stark schwankendem Verlauf liegen, oder an einem Missverständnis einer der beiden Fragen. In der Detailanalyse gezielt nachfragen."
+    );
+  }
+  if (bellScoreValid && bellScoreNum >= 70 && alltagsverrichtungen === "bettlaegerig-nah") {
+    inkonsistenzen.push(
+      `Bell-Score ${bellScoreNum} (kaum eingeschränktes Leistungsniveau) bei gleichzeitig angegebener weitgehender Bettlägerigkeit — beide Angaben passen für sich genommen nicht zusammen, ggf. die Bell-Score-Schätzung noch einmal prüfen.`
+    );
+  }
+  if (bellScoreValid && bellScoreNum < 40 && arbeitsfaehigkeit === "ueber-6") {
+    inkonsistenzen.push(
+      `Bell-Score ${bellScoreNum} (schwere Ausprägung) bei gleichzeitig angegebener Arbeitsfähigkeit von 6 Std./Tag oder mehr — beide Angaben passen für sich genommen nicht zusammen, ggf. in der Detailanalyse klären.`
+    );
+  }
+
+  // --- 6. Offene Punkte / Empfehlung Detailanalyse -------------------------
   const offenePunkte: string[] = [];
   if (pem === "unklar") offenePunkte.push("Ob PEM vorliegt, ist noch unklar.");
   if (pem === "nein")
@@ -364,7 +471,8 @@ export function computeTriage(answers: Answers): TriageResult {
       "Objektive Tests (6-Minuten-Gehstrecke, Handkraftmessung, neuropsychologische Testung) liegen nach eigener Angabe nicht vor — für die Detailanalyse/ein Gutachten relevant, falls im Verlauf noch durchgeführt."
     );
 
-  const empfehlungDetailanalyse = cccErfuellt === "ja" || cccErfuellt === "teilweise" || offenePunkte.length > 1;
+  const empfehlungDetailanalyse =
+    cccErfuellt === "ja" || cccErfuellt === "teilweise" || offenePunkte.length > 1 || inkonsistenzen.length > 0;
 
   return {
     cccErfuellt,
@@ -384,5 +492,6 @@ export function computeTriage(answers: Answers): TriageResult {
     dauerErfuellt,
     offenePunkte,
     empfehlungDetailanalyse,
+    inkonsistenzen,
   };
 }

@@ -40,17 +40,31 @@ function summarizeAngaben(answers: Answers): string {
   if (answers.alltagsverrichtungen === "bettlaegerig-nah") {
     parts.push("eine weitgehend bettlägerige Alltagssituation");
   }
+  if (answers.atembeschwerden && answers.atembeschwerden !== "keine") {
+    parts.push("Atemwegsbeeinträchtigungen mit belastungsabhängiger Atemnot");
+  }
+  if (answers.diabetesStatus && answers.diabetesStatus !== "nein" && answers.diabetesStatus !== "diaet") {
+    parts.push("ein neu aufgetretener oder bestehender Diabetes mellitus mit medikamentöser Behandlung");
+  }
   if (parts.length === 0) return "Es wurden keine der abgefragten Kernsymptome bejaht.";
   return "Berichtet werden " + parts.join(", ") + ".";
 }
 
+// Manche Einzeltabellen (z. B. VersMedV 15.1, Diabetes ohne Insulin-
+// Instabilität) liefern einen einzelnen Punktwert statt einer Spanne - als
+// "X–X" ausgegeben läse sich das wie eine unbeabsichtigte Nullbreite statt
+// wie der eigentlich gemeinte feste Wert.
+function formatVonBis(von: number, bis: number): string {
+  return von === bis ? `${von}` : `${von}–${bis}`;
+}
+
 function gdbLine(result: TriageResult): string {
-  return `Geschätzte Spanne: ${result.gdbSpanneVon}–${result.gdbSpanneBis}`;
+  return `Geschätzte Spanne: ${formatVonBis(result.gdbSpanneVon, result.gdbSpanneBis)}`;
 }
 
 function mdeLine(result: TriageResult): string | null {
   if (result.mdeSpanneVon === undefined || result.mdeSpanneBis === undefined) return null;
-  return `Geschätzte Spanne: ${result.mdeSpanneVon}–${result.mdeSpanneBis}`;
+  return `Geschätzte Spanne: ${formatVonBis(result.mdeSpanneVon, result.mdeSpanneBis)}`;
 }
 
 function mdeEinschlaegigLabel(answers: Answers, result: TriageResult): string {
@@ -131,6 +145,11 @@ export function formatTriageSummary(answers: Answers, result: TriageResult): str
   if (result.offenePunkte.length > 0) {
     lines.push("Offene Punkte für eine genauere Einschätzung:");
     for (const p of result.offenePunkte) lines.push(`- ${p}`);
+    lines.push("");
+  }
+  if (result.inkonsistenzen.length > 0) {
+    lines.push("Hinweis auf möglicherweise widersprüchliche Angaben (kein Vorwurf, nur ein Prüfpunkt für die Detailanalyse):");
+    for (const i of result.inkonsistenzen) lines.push(`- ${i}`);
     lines.push("");
   }
   lines.push(

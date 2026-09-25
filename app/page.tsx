@@ -314,9 +314,25 @@ export default function App() {
     }
   }
 
+  /**
+   * Einziger Netzwerk-Call der gesamten Tier-1-Triage - reine anonyme
+   * Zählung (siehe app/api/track-tier1, lib/userCount.ts), kein
+   * Anthropic-Call. Fire-and-forget: ein Fehler hier darf den Tier-1-Flow
+   * nie stören, deshalb wird das Ergebnis bewusst nicht abgewartet/geworfen.
+   */
+  function trackTier1(event: "started" | "completed") {
+    fetch("/api/track-tier1", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event }),
+      keepalive: true,
+    }).catch(() => {});
+  }
+
   function startChat(confirmed: boolean) {
     setDiagnosisConfirmed(confirmed);
     setPhase("triage");
+    trackTier1("started");
   }
 
   /**
@@ -340,6 +356,7 @@ export default function App() {
     setBeruflicherKontextNein(answers.beruflicherKontext === "nein");
     setMessages([{ role: "assistant", content: summaryText }]);
     setPhase("triageResult");
+    trackTier1("completed");
   }
 
   /**

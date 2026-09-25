@@ -15,6 +15,8 @@ export type QuestionId =
   | "autonom"
   | "autonomHfDokumentiert"
   | "schlaf"
+  | "atembeschwerden"
+  | "diabetesStatus"
   | "psychKomorbid"
   | "bellScore"
   | "alltagsverrichtungen"
@@ -72,4 +74,8 @@ export interface TriageResult {
   offenePunkte: string[];
   /** Grober Komplexitäts-Hinweis, steuert den Tier-2-Teaser-Text. */
   empfehlungDetailanalyse: boolean;
+  /** Einfache Widerspruchsprüfung zwischen einzelnen Antworten (z. B.
+   *  "weitgehend bettlägerig" bei gleichzeitig angegebener voller
+   *  Arbeitsfähigkeit) - kein Vorwurf, nur ein Hinweis für die Detailanalyse. */
+  inkonsistenzen: string[];
 }

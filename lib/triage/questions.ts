@@ -149,6 +149,31 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "atembeschwerden",
+    prompt:
+      "Haben Sie durch Atembeschwerden bedingte Einschränkungen (z. B. Atemnot bei Belastung, ärztlich festgestellte Lungenfunktionseinschränkung)?",
+    type: "single",
+    options: [
+      { value: "keine", label: "Keine" },
+      { value: "mittelschwere-belastung", label: "Atemnot bei mittelschwerer Belastung (z. B. forsches Gehen, Treppensteigen)" },
+      { value: "leichte-belastung", label: "Atemnot bereits bei leichter Alltagsbelastung" },
+      { value: "ruhe", label: "Atemnot bereits in Ruhe oder bei leichtester Belastung" },
+    ],
+  },
+  {
+    id: "diabetesStatus",
+    prompt: "Ist im Zusammenhang mit Ihrer Erkrankung neu ein Diabetes mellitus aufgetreten oder bei Ihnen bekannt?",
+    type: "single",
+    options: [
+      { value: "nein", label: "Nein" },
+      { value: "diaet", label: "Ja, mit Diät allein eingestellt" },
+      { value: "orale-nicht-hypo", label: "Ja, mit Medikamenten ohne erhöhte Unterzuckerungsneigung" },
+      { value: "orale-hypo", label: "Ja, mit Medikamenten mit erhöhter Unterzuckerungsneigung" },
+      { value: "insulin-stabil", label: "Ja, mit Insulin, stabile bis mäßig schwankende Stoffwechsellage" },
+      { value: "insulin-instabil", label: "Ja, mit Insulin, instabile Stoffwechsellage (inkl. gelegentlicher schwerer Unterzuckerungen)" },
+    ],
+  },
+  {
     id: "psychKomorbid",
     prompt:
       "Besteht zusätzlich eine eigenständige psychiatrische Diagnose (nicht nur eine Belastungsreaktion auf die körperliche Erkrankung)?",

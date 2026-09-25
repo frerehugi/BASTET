@@ -25,9 +25,9 @@ function getRedis(): Redis {
  * "wie oft insgesamt", nie "von wem". "started" minus "completed" ergibt
  * später die Abbruchrate.
  */
-export type UserCountArm = "web" | "doc" | "telegram";
+export type UserCountArm = "web" | "doc" | "telegram" | "tier1";
 
-const ARMS: UserCountArm[] = ["web", "doc", "telegram"];
+const ARMS: UserCountArm[] = ["web", "doc", "telegram", "tier1"];
 
 function startedKey(arm: UserCountArm): string {
   return `bastet:usercount:${arm}:started`;
@@ -39,11 +39,15 @@ function completedKey(arm: UserCountArm): string {
 
 /**
  * "started" = erster tatsächlicher Backend-Call einer Sitzung (Web: erster
- * /api/chat-Call, turnCount 0 - die vorgelagerte Tier-1-Triage läuft rein
- * clientseitig, siehe app/page.tsx; Doc: jeder /api/doc-Call, da der
- * Doc-Arm keine Mehrfachrunden kennt). Fire-and-forget: ein Zählfehler
- * (z. B. Redis kurzzeitig nicht erreichbar) darf die eigentliche Anfrage
- * nie blockieren oder scheitern lassen.
+ * /api/chat-Call, turnCount 0; Doc: jeder /api/doc-Call, da der Doc-Arm keine
+ * Mehrfachrunden kennt). Ausnahme "tier1": Tier 1 läuft rein clientseitig
+ * (kein API-Call, kein Token-Verbrauch, siehe app/TriageFlow.tsx) - "started"/
+ * "completed" kommen hier über den einzigen dafür nötigen Netzwerk-Call
+ * (app/api/track-tier1) rein, damit build/phase9-…-self-gatekeeper.md
+ * Abschnitt "Tier-1-Qualität" überhaupt messen kann, wie viele Nutzer:innen
+ * Tier 1 abschließen - unabhängig davon, ob sie danach zu Tier 2 wechseln.
+ * Fire-and-forget: ein Zählfehler (z. B. Redis kurzzeitig nicht erreichbar)
+ * darf die eigentliche Anfrage nie blockieren oder scheitern lassen.
  */
 export async function incrementStarted(arm: UserCountArm): Promise<void> {
   try {

@@ -46,9 +46,10 @@ async function handleStats(chatId: number): Promise<void> {
   await sendTelegramMessage(
     chatId,
     `📊 Nutzungszähler (anonym, seit Zählbeginn)\n\n` +
-      `Web-Arm: ${counts.web.started} gestartet, ${counts.web.completed} abgeschlossen\n` +
+      `Web-Arm (Tier 2): ${counts.web.started} gestartet, ${counts.web.completed} abgeschlossen\n` +
       `Doc-Arm: ${counts.doc.started} gestartet, ${counts.doc.completed} abgeschlossen\n` +
-      `Telegram-Arm: ${counts.telegram.started} gestartet, ${counts.telegram.completed} abgeschlossen`
+      `Telegram-Arm: ${counts.telegram.started} gestartet, ${counts.telegram.completed} abgeschlossen\n` +
+      `Tier 1 (regelbasiert, Web): ${counts.tier1.started} gestartet, ${counts.tier1.completed} abgeschlossen`
   );
 }
 
