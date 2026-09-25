@@ -39,8 +39,7 @@ function formatPendingItem(item: PendingItem, index: number): string {
 
 /**
  * Rein anonyme Nutzungszähler (siehe lib/userCount.ts) - "gestartet" minus
- * "abgeschlossen" ergibt die grobe Abbruchrate je Arm. Telegram-Arm bewusst
- * (noch) nicht mitgezählt, siehe dortiger Kommentar.
+ * "abgeschlossen" ergibt die grobe Abbruchrate je Arm.
  */
 async function handleStats(chatId: number): Promise<void> {
   const counts = await getUserCounts();
@@ -48,8 +47,8 @@ async function handleStats(chatId: number): Promise<void> {
     chatId,
     `📊 Nutzungszähler (anonym, seit Zählbeginn)\n\n` +
       `Web-Arm: ${counts.web.started} gestartet, ${counts.web.completed} abgeschlossen\n` +
-      `Doc-Arm: ${counts.doc.started} gestartet, ${counts.doc.completed} abgeschlossen\n\n` +
-      `Telegram-Arm wird hier noch nicht mitgezählt.`
+      `Doc-Arm: ${counts.doc.started} gestartet, ${counts.doc.completed} abgeschlossen\n` +
+      `Telegram-Arm: ${counts.telegram.started} gestartet, ${counts.telegram.completed} abgeschlossen`
   );
 }
 

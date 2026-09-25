@@ -19,13 +19,15 @@ function getRedis(): Redis {
 }
 
 /**
- * Rein anonyme Nutzungszähler (Web- und Doc-Arm; Telegram vorerst nicht
- * mitgezählt) - zwei einfache Redis-INCR-Zähler pro Arm, "started" und
- * "completed". Kein IP, keine chat_id, keine sonstige Kennung wird
- * gespeichert; die Zahlen sagen nur "wie oft insgesamt", nie "von wem".
- * "started" minus "completed" ergibt später die Abbruchrate.
+ * Rein anonyme Nutzungszähler (Web-, Doc- und Telegram-Arm) - zwei einfache
+ * Redis-INCR-Zähler pro Arm, "started" und "completed". Kein IP, keine
+ * chat_id, keine sonstige Kennung wird gespeichert; die Zahlen sagen nur
+ * "wie oft insgesamt", nie "von wem". "started" minus "completed" ergibt
+ * später die Abbruchrate.
  */
-export type UserCountArm = "web" | "doc";
+export type UserCountArm = "web" | "doc" | "telegram";
+
+const ARMS: UserCountArm[] = ["web", "doc", "telegram"];
 
 function startedKey(arm: UserCountArm): string {
   return `bastet:usercount:${arm}:started`;
@@ -60,22 +62,19 @@ export async function incrementCompleted(arm: UserCountArm): Promise<void> {
   }
 }
 
-export interface UserCounts {
-  web: { started: number; completed: number };
-  doc: { started: number; completed: number };
-}
+export type UserCounts = Record<UserCountArm, { started: number; completed: number }>;
 
 /** Für den Admin-Stats-Überblick (siehe lib/adminCommands.ts, /stats). */
 export async function getUserCounts(): Promise<UserCounts> {
   const redis = getRedis();
-  const [webStarted, webCompleted, docStarted, docCompleted] = await Promise.all([
-    redis.get<number>(startedKey("web")),
-    redis.get<number>(completedKey("web")),
-    redis.get<number>(startedKey("doc")),
-    redis.get<number>(completedKey("doc")),
-  ]);
-  return {
-    web: { started: webStarted ?? 0, completed: webCompleted ?? 0 },
-    doc: { started: docStarted ?? 0, completed: docCompleted ?? 0 },
-  };
+  const perArm = await Promise.all(
+    ARMS.map(async (arm) => {
+      const [started, completed] = await Promise.all([
+        redis.get<number>(startedKey(arm)),
+        redis.get<number>(completedKey(arm)),
+      ]);
+      return [arm, { started: started ?? 0, completed: completed ?? 0 }] as const;
+    })
+  );
+  return Object.fromEntries(perArm) as UserCounts;
 }
