@@ -33,6 +33,13 @@ function summarizeAngaben(answers: Answers): string {
   if (answers.psychKomorbid === "ja-gesichert") {
     parts.push("eine eigenständige, fachärztlich gesicherte psychiatrische Komorbidität");
   }
+  const bellScore = answers.bellScore;
+  if (typeof bellScore === "string" && bellScore.trim() !== "" && !Number.isNaN(Number(bellScore))) {
+    parts.push(`ein geschätzter Bell-Score von ${bellScore}`);
+  }
+  if (answers.alltagsverrichtungen === "bettlaegerig-nah") {
+    parts.push("eine weitgehend bettlägerige Alltagssituation");
+  }
   if (parts.length === 0) return "Es wurden keine der abgefragten Kernsymptome bejaht.";
   return "Berichtet werden " + parts.join(", ") + ".";
 }

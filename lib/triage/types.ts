@@ -5,16 +5,21 @@
 
 export type QuestionId =
   | "pem"
+  | "pemAusloeseschwelle"
   | "pemLatenz"
   | "pemErholung"
   | "dauer"
   | "schmerz"
+  | "schmerzschwere"
   | "kognitiv"
   | "autonom"
   | "autonomHfDokumentiert"
   | "schlaf"
   | "psychKomorbid"
+  | "bellScore"
+  | "alltagsverrichtungen"
   | "arbeitsfaehigkeit"
+  | "objektiveTests"
   | "beruflicherKontext"
   | "bk3101Status";
 
@@ -29,11 +34,21 @@ export interface Question {
   showIf?: (answers: Answers) => boolean;
   prompt: string;
   hint?: string;
-  type: "single" | "multi";
+  /** "number" = freies Zahlenfeld statt Auswahlbuttons (siehe TriageFlow.tsx),
+   *  bislang nur für "bellScore" genutzt. */
+  type: "single" | "multi" | "number";
   options: ChoiceOption[];
   /** Bei Mehrfachauswahl: Wert, der sich mit allen anderen gegenseitig
    *  ausschließt (z.B. "keine davon" oder "unauffällig"). Default: "keine". */
   exclusiveValue?: string;
+  /** Nur für type "number": Platzhaltertext im Eingabefeld. */
+  placeholder?: string;
+  /** Nur für type "number": Grenzen für die Eingabevalidierung im UI. */
+  min?: number;
+  max?: number;
+  /** Nur für type "number": zeigt einen "Weiß ich nicht"-Button, der die
+   *  Frage ohne Wert überspringt (Answers[id] wird dann "" statt einer Zahl). */
+  optional?: boolean;
 }
 
 export type Answers = Partial<Record<QuestionId, string | string[]>>;
