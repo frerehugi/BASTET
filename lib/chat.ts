@@ -1,18 +1,30 @@
 import { callClaude, streamClaude, type ChatMessage, type SystemTextBlock } from "./anthropic";
 import { getStaticKnowledgeBase, getKnowledgeAddendum } from "./knowledgeBase";
 
-// Cache-Architektur (siehe build/effizienz-plan.md Abschnitt 1): der
-// System-Prompt wird als drei Blöcke aufgebaut, in Reihenfolge stabil -> groß
-// -> variabel, damit Prompt Caching greift (reiner Präfix-Match - jede
+// Cache-Architektur (siehe build/effizienz-plan.md Abschnitt 1, korrigiert
+// nach einem Kosteneffizienz-Review): der System-Prompt wird als drei Blöcke
+// aufgebaut, damit Prompt Caching greift (reiner Präfix-Match - jede
 // Bytedifferenz vor einem Breakpoint invalidiert alles Nachfolgende):
 //
-//   Block A (RULES)     - Regeltexte, pro Konversation nur 2 mögliche
+//   Block A (KB)         - die Wissensbasis (Größenordnung ~90-95K Tokens,
+//                          grob per Zeichenzahl/4 geschätzt, nie exakt
+//                          gemessen), byte-identisch für alle Anfragen MIT
+//                          vollem Bestand, eigener cache_control-Breakpoint,
+//                          bewusst ALS ERSTER Block. Wichtig: ihr Cache-Key
+//                          hängt dadurch nur vom Modell und ihrem eigenen
+//                          Text ab, nicht vom nachfolgenden Block B - diese
+//                          Zeile wird deshalb über runInterview(),
+//                          runBgHelpStream() (unten) UND lib/doc.ts hinweg
+//                          geteilt, statt dass jeder der (mindestens drei)
+//                          Modi seinen eigenen, vollen Schreibpreis für
+//                          denselben Text zahlt. Frühere Reihenfolge hatte
+//                          hier den Regeltext ZUERST - das hat genau diese
+//                          modusübergreifende Cache-Teilung verhindert, ohne
+//                          dass es auffiel (siehe Git-Historie).
+//   Block B (RULES)      - Regeltexte, pro Konversation nur 2 mögliche
 //                          Varianten (mit/ohne Tier-1-Vorlauf), eigener
-//                          cache_control-Breakpoint.
-//   Block B (KB)         - die ~48K-Token-Wissensbasis, byte-identisch für
-//                          alle Anfragen, eigener cache_control-Breakpoint
-//                          (getrennt von Block A, damit ein Regeltext-Deploy
-//                          nicht die viel teurere KB-Cache-Zeile invalidiert).
+//                          cache_control-Breakpoint - deutlich kleiner als
+//                          Block A, ein Neuschreiben pro Variante ist billig.
 //   Block C (dynamisch)  - Diagnose-Status, die tatsächlichen Tier-1-Antworten,
 //                          Turn-Budget-Fortschritt, Wissensbasis-Addendum.
 //                          Ändert sich pro Turn/Patient:in - KEIN
@@ -386,14 +398,19 @@ async function buildSystemBlocks(
       "trotzdem zu bewerten, nur ohne diese beiden Ablaufhilfen):";
 
   return [
+    // Wissensbasis ZUERST (siehe Kommentar oben im Datei-Header): ihr
+    // Cache-Key hängt dadurch nur vom Modell + ihrem eigenen Text ab, nicht
+    // vom danach folgenden, modusabhängigen Regeltext - dieselbe
+    // Byte-identische Kombination aus Header+Volltext teilt sich so eine
+    // Cache-Zeile mit buildBgHelpSystemBlocks() und lib/doc.ts.
     {
       type: "text",
-      text: buildRulesBlock(hasTriageContext),
+      text: `${wissensbasisHeader}\n${staticKnowledgeBase}`,
       cache_control: { type: "ephemeral", ttl: "1h" },
     },
     {
       type: "text",
-      text: `${wissensbasisHeader}\n${staticKnowledgeBase}`,
+      text: buildRulesBlock(hasTriageContext),
       cache_control: { type: "ephemeral", ttl: "1h" },
     },
     {
@@ -552,14 +569,16 @@ async function buildBgHelpSystemBlocks(evaluationContext: string | null): Promis
   }
 
   return [
+    // Wissensbasis ZUERST - teilt sich die Cache-Zeile mit buildSystemBlocks()
+    // oben und lib/doc.ts, siehe Kommentar im Datei-Header.
     {
       type: "text",
-      text: buildBgHelpRulesBlock(),
+      text: `WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):\n${staticKnowledgeBase}`,
       cache_control: { type: "ephemeral", ttl: "1h" },
     },
     {
       type: "text",
-      text: `WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):\n${staticKnowledgeBase}`,
+      text: buildBgHelpRulesBlock(),
       cache_control: { type: "ephemeral", ttl: "1h" },
     },
     {

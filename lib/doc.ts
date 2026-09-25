@@ -1,11 +1,13 @@
 import { streamClaude, type ContentBlock, type SystemTextBlock } from "./anthropic";
 import { getStaticKnowledgeBase, getKnowledgeAddendum } from "./knowledgeBase";
 
-// Gleiche Cache-Architektur wie lib/chat.ts (siehe dortigen Kommentar und
-// build/effizienz-plan.md Abschnitt 1): Regeln und Wissensbasis sind hier
-// beide vollständig statisch (keine Turn-/Triage-Dynamik im Doc-Arm), nur das
-// seltene Wissensbasis-Addendum ist variabel und bleibt daher außerhalb der
-// cache_control-Breakpoints.
+// Gleiche Cache-Architektur wie lib/chat.ts (siehe dortigen Datei-Header-
+// Kommentar): Regeln und Wissensbasis sind hier beide vollständig statisch
+// (keine Turn-/Triage-Dynamik im Doc-Arm), nur das seltene Wissensbasis-
+// Addendum ist variabel und bleibt daher außerhalb der cache_control-
+// Breakpoints. Wissensbasis-Block bewusst ZUERST (vor dem Regeltext) - teilt
+// sich dadurch eine Cache-Zeile mit runInterview() und runBgHelpStream() in
+// lib/chat.ts, statt eine eigene für denselben Text zu schreiben.
 
 function buildRulesBlock(): string {
   return `Du bist eine fachliche Orientierungshilfe für Ärzt:innen zur GdB/MdE-
@@ -163,12 +165,12 @@ async function buildSystemBlocks(): Promise<SystemTextBlock[]> {
   const blocks: SystemTextBlock[] = [
     {
       type: "text",
-      text: buildRulesBlock(),
+      text: `WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):\n${staticKnowledgeBase}`,
       cache_control: { type: "ephemeral", ttl: "1h" },
     },
     {
       type: "text",
-      text: `WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):\n${staticKnowledgeBase}`,
+      text: buildRulesBlock(),
       cache_control: { type: "ephemeral", ttl: "1h" },
     },
   ];
