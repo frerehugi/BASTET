@@ -64,6 +64,20 @@ Frage markiert:
    `lib/adminCommands.ts`) — unabhängig vom Nutzer-Flow.
 7. Ein Mockup der Gate-/Erfolgs-Screens existiert bereits (Design-Canvas,
    zwei Zustände, BASTET-Optik) — reiner visueller Entwurf, keine Code-Anbindung.
+8. **Doc-Arm bekommt dieselbe persönliche Self-Verifizierung wie Tier 2**,
+   keine institutionelle Alternative (Klinik-Domain, Ärztekammer-Nummer o. Ä.)
+   — Entscheidung von Florian, die im vorherigen Entwurf noch offene Frage
+   damit geklärt. Die unten stehende Perspektive bleibt als Begründung
+   dafür stehen, warum das noch einmal bewusst abgewogen wurde, nicht als
+   offener Punkt.
+9. **Self bleibt trotz des Ausweisdokument-Ausschlusses (siehe unten) die
+   Wahl für den ersten Wurf** — bewusste Entscheidung von Florian: "Self ist
+   aktuell der beste Partner", auch wenn das einzelne Nutzer:innen ohne
+   unterstütztes Dokument ausschließt. Macht den Punkt unten nicht
+   hinfällig, sondern verschiebt ihn von "vor dem Start zu klären" zu
+   "während des Betriebs beobachten und bei Bedarf nachbessern" (siehe
+   Tier-1-Fallback-Konsequenz unten, die dadurch wichtiger wird, nicht
+   überflüssig).
 
 ## Perspektive: Patient:in / Nutzer:in
 
@@ -97,11 +111,19 @@ können (u. a. bestimmte Gruppen ohne gültigen Reisepass, je nach
 Herkunftsland unterschiedlich unterstützte Dokumente). Für ein
 Gesundheits-Tool, das gerade für vulnerable, oft ohnehin marginalisierte
 Gruppen gedacht ist, ist das ein echter Zugangsgerechtigkeits-Punkt, keine
-Kleinigkeit. Zwei Konsequenzen, die dieser Plan festhält, statt sie zu
-übergehen:
+Kleinigkeit.
+
+**Entschieden (Florian)**: Self wird trotzdem als erste Umsetzung genutzt —
+"Self ist aktuell der beste Partner", der Ausschluss einzelner Nutzer:innen
+ohne unterstütztes Ausweisdokument wird bewusst in Kauf genommen (Punkt 9
+oben), statt die Self-Integration deswegen aufzuschieben oder von vornherein
+eine alternative Verifizierungsmethode zu bauen. Zwei Konsequenzen bleiben
+dadurch aber **wichtiger, nicht überflüssig**:
 - Tier 1 muss für diese Gruppe die **einzige**, aber vollwertige Option
   bleiben — kein "Light-Modus", sondern eine ernstzunehmende Auswertung
-  (siehe Tier-1-Abschnitt unten).
+  (siehe Tier-1-Abschnitt unten). Das ist jetzt keine theoretische
+  Absicherung mehr, sondern der tatsächliche Weg für real ausgeschlossene
+  Nutzer:innen.
 - Die Kommunikation beim Self-Gate sollte diesen Fall nicht verschweigen:
   ein klarer Satz in der Art "Ohne unterstütztes Ausweisdokument bleibt die
   kostenlose Ersteinschätzung weiterhin vollständig nutzbar" gehört in den
@@ -116,19 +138,23 @@ Schritt, sondern der **erste** Zugriffsschutz überhaupt für diesen Arm — das
 ist ein größerer Sprung als beim Patient:innen-Tier-2, wo zumindest schon ein
 Diagnose-Gate und ein zweistufiger Flow existieren.
 
-Das wirft eine Frage auf, die dieser Plan bewusst offen lässt (siehe unten),
-statt sie stillschweigend mitzuentscheiden: Ärzt:innen, die BASTET als
-Arbeitswerkzeug für eine Begutachtung nutzen, könnten es befremdlich finden,
-dafür ihre **persönliche, passgebundene Identität** über eine
-Consumer-Verifizierungs-App nachweisen zu müssen — anders als bei einer
+Das wirft eine Frage auf, die zunächst offen gelassen wurde: Ärzt:innen, die
+BASTET als Arbeitswerkzeug für eine Begutachtung nutzen, könnten es
+befremdlich finden, dafür ihre **persönliche, passgebundene Identität** über
+eine Consumer-Verifizierungs-App nachweisen zu müssen — anders als bei einer
 patientenseitigen Anti-Abuse-Maßnahme ist das Bedrohungsmodell hier
 möglicherweise ein anderes (eher Scraping/automatisierte Massenzugriffe als
-Mehrfachidentitäten einer einzelnen Person). Denkbare Alternativen für
-später, nicht jetzt zu entscheiden: institutionelle Verifikation (Klinik-
-/BG-E-Mail-Domain), Nachweis über die Ärztekammer-Nummer, oder ein
-einfacheres Allowlist-/Zugangscode-Modell für wiederkehrende institutionelle
-Nutzer:innen. Bis das geklärt ist, bleibt die ursprüngliche Entscheidung
-("Self auch für den Doc-Arm") der Ausgangspunkt dieses Plans.
+Mehrfachidentitäten einer einzelnen Person). Denkbare Alternativen wären
+institutionelle Verifikation (Klinik-/BG-E-Mail-Domain), Nachweis über die
+Ärztekammer-Nummer, oder ein einfacheres Allowlist-/Zugangscode-Modell für
+wiederkehrende institutionelle Nutzer:innen gewesen.
+
+**Entschieden (Florian)**: Der Doc-Arm bekommt dieselbe persönliche
+Self-Verifizierung wie Tier 2, keine institutionelle Sonderlösung — Punkt 8
+oben. Sollte sich in der Praxis zeigen, dass das für Ärzt:innen eine echte
+Nutzungshürde ist (z. B. sichtbar an einer sehr niedrigen Doc-Arm-Nutzung
+nach dem Rollout, siehe 9f-Monitoring), ist das ein Punkt für eine spätere
+Nachjustierung, kein jetzt zu lösendes Problem.
 
 ## Tier-1-Qualität — tragendes Fundament, nicht Nebenprodukt
 
@@ -210,9 +236,10 @@ angegangen werden — siehe Reihenfolge im Phasenplan unten.
 - **9c — Redis-Cooldown-Gate**: Nullifier → Redis-Key nach demselben Muster
   wie `lib/userCount.ts`, gegated auf abgeschlossene Sitzungen, gleitendes
   1-Stunden-Fenster.
-- **9d — Doc-Arm-Anbindung**: abhängig von der unten offenen Frage
-  (persönliche vs. institutionelle Verifikation) — erst nach dieser
-  Entscheidung konkretisieren.
+- **9d — Doc-Arm-Anbindung**: dieselbe persönliche Self-Verifizierung wie
+  Tier 2 (entschieden, siehe Architekturentscheidungen Punkt 8) — technisch
+  identisch zu 9b/9c, nur auf `doc.bastet-covid.org` statt
+  `bastet-covid.org` verankert.
 - **9e — Telegram-Reduktion**: Tier-2-Pfad aus `app/api/telegram/route.ts`
   / `lib/telegramSession.ts` entfernen, feste Website-Verweis-Nachricht nach
   Tier-1-Abschluss, Admin-Befehle unverändert lassen.
@@ -220,17 +247,25 @@ angegangen werden — siehe Reihenfolge im Phasenplan unten.
   Self-Gate vergleichen (jetzt messbar dank 9a-Tracking), bestehendes
   Anthropic-Ausgabenlimit bleibt zusätzlich als Sicherheitsnetz bestehen.
 
-## Offene Entscheidungen vor dem Start (von Florian zu klären)
+## Bereits geklärte Entscheidungen (vormals offen)
 
-- [ ] Doc-Arm: persönliche Self-Verifizierung wie bei Patient:innen, oder
-      institutioneller Nachweis (Klinik-Domain, Ärztekammer-Nummer,
-      Zugangscode)?
-- [ ] Reihenfolge 9a vs. 9b/9c — wirklich vorgezogen, oder parallel mit
-      fester Deadline für 9a?
-- [ ] Umfang von 9a — reicht die genannte Dreierliste
-      (respiratorisch/kardiovaskulär/Diabetes) für den ersten Schritt, oder
-      soll die Symptomliste direkt vollständig gegen `postcovid-symptomliste.md`
-      abgeglichen werden?
+- [x] **Doc-Arm-Verifikation**: persönliche Self-Verifizierung wie bei
+      Patient:innen, keine institutionelle Alternative — siehe
+      Architekturentscheidungen Punkt 8.
+- [x] **Ausweisdokument-Ausschluss**: bewusst in Kauf genommen, Self bleibt
+      trotzdem die erste Wahl ("Self ist aktuell der beste Partner") — siehe
+      Architekturentscheidungen Punkt 9. Macht Tier 1 als vollwertigen
+      Fallback wichtiger, nicht die Entscheidung selbst hinfällig.
+- [x] **9a (Tier-1-Härtung)**: bereits umgesetzt (siehe Commit-Historie /
+      PR zu Atembeschwerden-, Diabetes-Frage, Konsistenzprüfung, Tier-1-
+      Tracking) — lief wie im Leitsatz vorgesehen vor der Self-Integration.
+
+## Offene Entscheidungen vor dem Start von 9b/9c (von Florian zu klären)
+
+- [ ] Umfang einer möglichen weiteren Tier-1-Erweiterung über 9a hinaus —
+      soll die Symptomliste irgendwann vollständig gegen
+      `postcovid-symptomliste.md` abgeglichen werden, oder reicht der jetzige
+      Stand (Kernpaket + Atembeschwerden + Diabetes) auf Weiteres?
 - [ ] Self-App: Sprachunterstützung (Deutsch) und Barrierefreiheit für eine
       eher ältere/kognitiv beeinträchtigte Zielgruppe vorher selbst prüfen,
       bevor der Gate-Text darauf verweist
