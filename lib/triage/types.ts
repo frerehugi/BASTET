@@ -20,8 +20,7 @@ export type QuestionId =
   | "alltagsverrichtungen"
   | "arbeitsfaehigkeit"
   | "objektiveTests"
-  | "beruflicherKontext"
-  | "bk3101Status";
+  | "beruflicherKontext";
 
 export interface ChoiceOption {
   value: string;
