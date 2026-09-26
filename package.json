@@ -10,6 +10,7 @@
     "test:regression": "node scripts/regression-test.mts"
   },
   "dependencies": {
+    "@selfxyz/enterprise-sdk": "^0.4.1",
     "@upstash/redis": "1.34.3",
     "next": "15.5.25",
     "react": "18.3.1",

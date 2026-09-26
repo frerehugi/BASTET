@@ -1,6 +1,7 @@
 import { sendTelegramMessage } from "./telegram";
 import { approvePendingItem, getPendingItems, rejectPendingItem, type PendingItem } from "./reviewQueue";
 import { getUserCounts } from "./userCount";
+import { getSelfToggleState, hasSelfConfig, setSelfEnabled } from "./selfFeatureFlag";
 
 /**
  * Proaktive Benachrichtigung vom Cron-Check (siehe app/api/cron/check-updates)
@@ -51,6 +52,48 @@ async function handleStats(chatId: number): Promise<void> {
       `Telegram-Arm: ${counts.telegram.started} gestartet, ${counts.telegram.completed} abgeschlossen\n` +
       `Tier 1 (regelbasiert, Web): ${counts.tier1.started} gestartet, ${counts.tier1.completed} abgeschlossen`
   );
+}
+
+/**
+ * Ein-/Ausschalter für die Self-Verifizierung (build/phase9-bastet-2.0-
+ * self-gatekeeper.md, 9b) - bewusst als einfacher Telegram-Befehl statt
+ * eines Deploys, damit "schalte Self aus" sofort wirkt (Redis-Flag, siehe
+ * lib/selfFeatureFlag.ts) und BASTET ohne jede weitere Änderung in den
+ * Zustand von vor der Self-Integration zurückkehrt.
+ */
+async function handleSelfToggle(chatId: number, arg: string | undefined): Promise<void> {
+  const normalized = arg?.trim().toLowerCase();
+  if (!normalized || normalized === "status") {
+    const state = await getSelfToggleState();
+    const configured = hasSelfConfig();
+    const effektivAn = state === "on" && configured;
+    await sendTelegramMessage(
+      chatId,
+      `Self-Verifizierung: ${effektivAn ? "AN" : "AUS"} (Schalter: ${state === "on" ? "an" : "aus"}${
+        configured ? "" : ", SELF_API_KEY/SELF_FLOW_ID/SELF_WEBHOOK_SECRET fehlen — bleibt deshalb technisch immer aus"
+      })\nUmschalten: "self an" / "self aus"`
+    );
+    return;
+  }
+  if (/^(an|ein|aktivieren)$/.test(normalized)) {
+    await setSelfEnabled(true);
+    await sendTelegramMessage(
+      chatId,
+      hasSelfConfig()
+        ? "Self-Verifizierung eingeschaltet — Tier 2 und Doc-Arm verlangen ab jetzt eine Verifizierung."
+        : "Schalter steht jetzt auf 'an', aber SELF_API_KEY/SELF_FLOW_ID/SELF_WEBHOOK_SECRET fehlen noch — Self bleibt deshalb technisch aus, bis diese gesetzt sind."
+    );
+    return;
+  }
+  if (/^(aus|deaktivieren)$/.test(normalized)) {
+    await setSelfEnabled(false);
+    await sendTelegramMessage(
+      chatId,
+      "Self-Verifizierung ausgeschaltet — BASTET läuft ab sofort wieder wie vor der Self-Integration, ohne Verifizierungsschritt."
+    );
+    return;
+  }
+  await sendTelegramMessage(chatId, 'Unbekannter Befehl. "self status" · "self an" · "self aus".');
 }
 
 async function handlePendingList(chatId: number): Promise<void> {
@@ -126,6 +169,12 @@ export async function handleAdminCommand(chatId: number, text: string): Promise<
 
   if (/^\/stats\b/i.test(text)) {
     await handleStats(chatId);
+    return true;
+  }
+
+  const selfMatch = text.match(/^self\b\s*(.*)?/i);
+  if (selfMatch) {
+    await handleSelfToggle(chatId, selfMatch[1]);
     return true;
   }
 

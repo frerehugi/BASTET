@@ -35,6 +35,42 @@ interface Message {
 }
 type Phase = "landing" | "gate" | "warned" | "triage" | "triageResult" | "chat" | "ended";
 
+// Überbrückt den vollständigen Seiten-Neuaufbau beim Self-Verifizierungs-
+// Roundtrip (app/page.tsx -> verify.self.xyz -> zurück zu app/page.tsx):
+// React-State geht dabei verloren, sessionStorage (nur dieses Browser-Tab,
+// nie an BASTET-Server übertragen) überlebt ihn. Bewusst sessionStorage statt
+// localStorage - die Daten sollen nicht über das Ende der Sitzung hinaus
+// bestehen bleiben, ganz im Sinne des "wir speichern nichts darüber hinaus"-
+// Prinzips aus STORAGE_NOTICE oben.
+const SELF_STORAGE_PREFIX = "bastet:self:pending:";
+
+interface PersistedTriageState {
+  messages: Message[];
+  triageContext: string | null;
+  triageAnchor: string | null;
+  beruflicherKontextNein: boolean;
+}
+
+function persistStateForSelf(id: string, state: PersistedTriageState) {
+  try {
+    sessionStorage.setItem(SELF_STORAGE_PREFIX + id, JSON.stringify(state));
+  } catch {
+    // sessionStorage kann in seltenen Fällen (privater Modus, voller
+    // Speicher) fehlschlagen - dann geht beim Rücksprung nur der Tier-1-
+    // Kontext verloren, die Verifizierung selbst bleibt davon unberührt.
+  }
+}
+
+function readAndClearPersistedStateForSelf(id: string): PersistedTriageState | null {
+  try {
+    const raw = sessionStorage.getItem(SELF_STORAGE_PREFIX + id);
+    sessionStorage.removeItem(SELF_STORAGE_PREFIX + id);
+    return raw ? (JSON.parse(raw) as PersistedTriageState) : null;
+  } catch {
+    return null;
+  }
+}
+
 function useAutoScroll(dep: number) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -75,6 +111,13 @@ export default function App() {
   const [bgHelpInput, setBgHelpInput] = useState<Record<number, string>>({});
   const [bgHelpLoading, setBgHelpLoading] = useState<Record<number, boolean>>({});
   const [bgHelpError, setBgHelpError] = useState<Record<number, string | null>>({});
+  // Self-Verifizierungs-Gate vor Tier 2 (build/phase9-bastet-2.0-self-
+  // gatekeeper.md, 9b) - selfError zeigt eine gescheiterte/abgebrochene
+  // Verifizierung an, selfCheckLoading blendet den "Detailanalyse anfordern"-
+  // Button kurz aus, während die Session bei Self angelegt wird bzw. der
+  // Rücksprung geprüft wird.
+  const [selfError, setSelfError] = useState<string | null>(null);
+  const [selfCheckLoading, setSelfCheckLoading] = useState(false);
 
   const BG_HELP_GREETING =
     "BG-Verfahren können bürokratisch und aufwändig sein. Fragen Sie mich einfach, was Sie wissen möchten, und ich versuche Ihnen eine möglichst präzise Antwort zu geben.";
@@ -366,18 +409,114 @@ export default function App() {
    * kommt (Bugfix: der Text endete zuvor auf "Erste Frage:", ohne dass
    * danach je eine gestellt wurde - erst ein Senden durch die Person hätte
    * den ersten echten Call ausgelöst).
+   *
+   * Nimmt `baseMessages` explizit als Parameter statt aus dem `messages`-
+   * State zu lesen: nach einem Self-Redirect-Roundtrip (siehe
+   * beginDetailanalyse/das useEffect unten) ist der wiederhergestellte
+   * Nachrichtenverlauf noch nicht als State committet, wenn diese Funktion
+   * aufgerufen wird - React-State-Updates sind asynchron.
    */
-  function beginDetailanalyse() {
+  function beginDetailanalyseActual(baseMessages: Message[]) {
     setPhase("chat");
     const directive: Message = {
       role: "user",
       content:
         "[Bitte jetzt mit der Detailanalyse beginnen und die erste Vertiefungsfrage stellen — zu Medikation/Therapieansprechen, bereits durchgeführten objektiven Tests oder individuellen Besonderheiten.]",
     };
-    const next = [...messages, directive];
+    const next = [...baseMessages, directive];
     setMessages(next);
     callChatApi(next);
   }
+
+  /**
+   * Optionales Self-Verifizierungs-Gate vor beginDetailanalyseActual() (build/
+   * phase9-bastet-2.0-self-gatekeeper.md, 9b). Ist Self serverseitig
+   * ausgeschaltet oder nicht konfiguriert, liefert /api/self/create-session
+   * `{ enabled: false }` und hier passiert exakt das, was vor der Self-
+   * Integration passierte: sofortiger Start ohne jeden Verifizierungsschritt.
+   * Jeder Fehlerfall (Netzwerk, Self selbst nicht erreichbar) degradiert
+   * bewusst auf dasselbe Verhalten, statt Tier 2 zu blockieren.
+   */
+  async function beginDetailanalyse() {
+    setSelfError(null);
+    setSelfCheckLoading(true);
+    try {
+      const res = await fetch("/api/self/create-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      const data: { enabled: boolean; id?: string; verificationUrl?: string } = await res.json();
+      if (!data.enabled || !data.id || !data.verificationUrl) {
+        beginDetailanalyseActual(messages);
+        return;
+      }
+      persistStateForSelf(data.id, { messages, triageContext, triageAnchor, beruflicherKontextNein });
+      window.location.href = data.verificationUrl;
+    } catch {
+      beginDetailanalyseActual(messages);
+    } finally {
+      setSelfCheckLoading(false);
+    }
+  }
+
+  /**
+   * Rücksprung von Self nach einem Verifizierungsversuch (Query-Parameter
+   * `self=<externalUuid>` aus successUrl/failureUrl, siehe
+   * app/api/self/create-session). Läuft einmalig beim Laden der Seite -
+   * ohne diesen Parameter passiert nichts, die Seite startet wie gewohnt bei
+   * "landing". Der Redirect selbst gilt nicht als Bestätigung (siehe
+   * app/api/self/webhook) - bei "success" wird kurz auf den Svix-signierten
+   * Webhook gepollt, bevor tatsächlich in Tier 2 gestartet wird.
+   */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const selfId = params.get("self");
+    if (!selfId) return;
+    const outcome = params.get("selfOutcome");
+    window.history.replaceState(null, "", window.location.pathname);
+
+    const restored = readAndClearPersistedStateForSelf(selfId);
+    const restoredMessages = restored?.messages ?? [];
+    setPhase("triageResult");
+    setMessages(restoredMessages);
+    setTriageContext(restored?.triageContext ?? null);
+    setTriageAnchor(restored?.triageAnchor ?? null);
+    setBeruflicherKontextNein(restored?.beruflicherKontextNein ?? false);
+
+    if (outcome === "failure") {
+      setSelfError(
+        'Die Self-Verifizierung wurde nicht abgeschlossen. Sie können es über "Detailanalyse anfordern" erneut versuchen.'
+      );
+      return;
+    }
+
+    (async () => {
+      const maxAttempts = 8;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+          const res = await fetch(`/api/self/session-status?id=${encodeURIComponent(selfId)}`);
+          const data: { status: "pending" | "valid" | "invalid" } = await res.json();
+          if (data.status === "valid") {
+            beginDetailanalyseActual(restoredMessages);
+            return;
+          }
+          if (data.status === "invalid") {
+            setSelfError(
+              'Die Self-Verifizierung war nicht erfolgreich. Sie können es über "Detailanalyse anfordern" erneut versuchen.'
+            );
+            return;
+          }
+        } catch {
+          // Einzelner Poll-Fehler wird ignoriert, nächster Versuch folgt.
+        }
+        await new Promise((resolve) => setTimeout(resolve, 750));
+      }
+      setSelfError(
+        'Die Bestätigung der Verifizierung dauert ungewöhnlich lange. Bitte versuchen Sie es über "Detailanalyse anfordern" erneut.'
+      );
+    })();
+  }, []);
 
   function handleSend() {
     if (!input.trim() || loading) return;
@@ -834,9 +973,10 @@ export default function App() {
               )}
             </div>
 
+            {phase === "triageResult" && selfError && <div style={styles.errorBox}>{selfError}</div>}
             {phase === "triageResult" && (
               <div style={styles.footerRow}>
-                <button style={styles.footerPrimaryButton} onClick={beginDetailanalyse}>
+                <button style={styles.footerPrimaryButton} onClick={beginDetailanalyse} disabled={selfCheckLoading}>
                   Detailanalyse anfordern (Beta)
                 </button>
                 <button
