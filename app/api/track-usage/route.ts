@@ -14,7 +14,7 @@ import { incrementCompleted, incrementStarted, type UserCountArm } from "@/lib/u
 // Abschnitt Tier-1-Qualität.
 export const runtime = "nodejs";
 
-const TRACKABLE_ARMS: UserCountArm[] = ["tier1", "landing"];
+const TRACKABLE_ARMS: UserCountArm[] = ["tier1", "landing", "arztVerweis"];
 
 interface TrackUsageBody {
   /** Default "tier1" - Rückwärtskompatibilität zum alten track-tier1-Aufruf. */

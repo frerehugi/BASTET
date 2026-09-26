@@ -31,9 +31,14 @@ function getRedis(): Redis {
 // ein einmaliges Ereignis, kein "completed" im eigentlichen Sinn) - siehe
 // handleStats() in lib/adminCommands.ts, das tier1:started stattdessen als
 // den "wie viele kamen wirklich bis Tier 1"-Vergleichswert nutzt.
-export type UserCountArm = "web" | "doc" | "telegram" | "tier1" | "landing";
+//
+// "arztVerweis": Klick auf "Ich möchte erst zum Arzt" im Warnhinweis-
+// Bildschirm (nur erreichbar über "Nein/unklar" bei der Diagnose-Gate-
+// Frage) - die zweite Aussteigemöglichkeit zwischen Landing-Klick und
+// Tier-1-Start, gleiches Prinzip wie "landing": nur "started" wird gesetzt.
+export type UserCountArm = "web" | "doc" | "telegram" | "tier1" | "landing" | "arztVerweis";
 
-const ARMS: UserCountArm[] = ["web", "doc", "telegram", "tier1", "landing"];
+const ARMS: UserCountArm[] = ["web", "doc", "telegram", "tier1", "landing", "arztVerweis"];
 
 function startedKey(arm: UserCountArm): string {
   return `bastet:usercount:${arm}:started`;

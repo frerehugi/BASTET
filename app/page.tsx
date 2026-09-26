@@ -362,7 +362,7 @@ export default function App() {
    * kein Anthropic-Call. Fire-and-forget: ein Fehler hier darf den Flow nie
    * stören, deshalb wird das Ergebnis bewusst nicht abgewartet/geworfen.
    */
-  function trackUsage(arm: "tier1" | "landing", event: "started" | "completed") {
+  function trackUsage(arm: "tier1" | "landing" | "arztVerweis", event: "started" | "completed") {
     fetch("/api/track-usage", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -384,6 +384,15 @@ export default function App() {
    */
   function trackLandingClick() {
     trackUsage("landing", "started");
+  }
+
+  /**
+   * Klick auf "Ich möchte erst zum Arzt" (Warnhinweis-Bildschirm, nur nach
+   * "Nein/unklar" bei der Diagnose-Gate-Frage erreichbar) - die zweite
+   * Aussteigemöglichkeit vor Tier 1, neben dem reinen Nicht-weiter-Klicken.
+   */
+  function trackArztVerweis() {
+    trackUsage("arztVerweis", "started");
   }
 
   function startChat(confirmed: boolean) {
@@ -770,7 +779,13 @@ export default function App() {
               <button style={styles.secondaryButton} onClick={() => startChat(false)}>
                 Trotzdem orientierende Einschätzung
               </button>
-              <button style={styles.primaryButton} onClick={() => setPhase("ended")}>
+              <button
+                style={styles.primaryButton}
+                onClick={() => {
+                  trackArztVerweis();
+                  setPhase("ended");
+                }}
+              >
                 Ich möchte erst zum Arzt
               </button>
             </div>
