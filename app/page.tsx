@@ -1014,9 +1014,6 @@ export default function App() {
             {phase === "triageResult" && selfError && <div style={styles.errorBox}>{selfError}</div>}
             {phase === "triageResult" && (
               <div style={styles.footerRow}>
-                <button style={styles.footerPrimaryButton} onClick={beginDetailanalyse} disabled={selfCheckLoading}>
-                  Detailanalyse anfordern (Beta)
-                </button>
                 <button
                   style={styles.linkButton}
                   onClick={() => copyText(fullTranscriptText(), "all")}
@@ -1024,6 +1021,9 @@ export default function App() {
                   {copiedAll ? "Kurzauswertung kopiert ✓" : "Kurzauswertung kopieren"}
                 </button>
                 <span style={styles.crisisNote}>{CRISIS_NOTE}</span>
+                <button style={styles.footerPrimaryButton} onClick={beginDetailanalyse} disabled={selfCheckLoading}>
+                  KI-Chat zur Detailanalyse starten (Beta)
+                </button>
               </div>
             )}
 
