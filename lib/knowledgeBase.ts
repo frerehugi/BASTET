@@ -27,6 +27,7 @@ const FILES = [
   "postcovid-symptomliste.md",
   "symptomliste-gdb-mde-abgleich.md",
   "medikamentoese-therapie-postcovid.md",
+  "emoprom-lcn-proms-battery.md",
   "ccc-fragenkatalog-kalibrierung.md",
   "nervensystem-psyche-herz-gdb.md",
   "neurologie-vergleichsfaelle.md",
