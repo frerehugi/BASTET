@@ -130,3 +130,53 @@ der individuell angepassten Tätigkeit der Patientin und dem für SGB VI
 maßgeblichen allgemeinen Arbeitsmarkt, statt die 80%-Tätigkeit unreflektiert
 als Beleg fehlender Erwerbsminderung zu werten — genau die Nuance, die bei der
 Fachprompt-Formulierung beabsichtigt war.
+
+## Externe Kalibrierungsprobe: Tier-1-Kombinationslogik gegen ein reales,
+## krankheitsfremdes Mehrfachdiagnose-Urteil (26.09.2026)
+
+Auf die Frage, ob die Tier-1-GdB-Kombinationslogik (`lib/triage/scoring.ts`,
+Boden-Prinzip + Erhöhungsfaktoren) gegen echte Gutachten aus anderen
+Krankheitsbereichen geprüft ist: nein, bislang nicht. Zwei Schritte
+nachgeholt — zuerst synthetisch (siehe `scripts/triage-scoring-selftest.mts`,
+deckte einen echten Bug in der Atembeschwerden-/Diabetes-Boden-Vergleichslogik
+auf, behoben in PR #48), dann per Websuche gegen einen echten, unabhängigen
+Fall.
+
+**Gefundener Fall**: LSG München, Az. L 2 SB 86/15, Urt. v. 22.03.2017 —
+bestätigte Gesamt-GdB 70 aus: Wirbelsäulenfunktionsstörung + Polyneuropathie
+(Einzel-GdB 50, führend), Herz-Kreislauf-Störung/Herzklappenfehler/
+Bluthochdruck/Herzrhythmusstörungen (Einzel-GdB 30), Lungenfunktions-
+einschränkung/Lungenemphysem (Einzel-GdB 20). Netto +20 über dem
+Einzel-Höchstwert durch zwei real substanzielle Zusatzbefunde — kein
+Post-COVID-/ME-CFS-Bezug, rein zur Prüfung der Kombinationslogik selbst
+herangezogen.
+
+**Nachgebaute BASTET-Konstellation** (Bell-Score 45 → Baseline 50–60 als
+Analogon zum führenden Einzel-GdB 50, Atembeschwerden mittelschwere-Belastung
+GdB 20–40 als Analogon zum Lungenbefund GdB 20, `autonomHfDokumentiert: "ja"`
+als grobes Analogon zum Herz-Kreislauf-Befund GdB 30 — BASTET hat dafür keinen
+eigenen Einzel-GdB-Block, nur den booleschen Erhöhungsfaktor):
+
+```
+BASTET-Ergebnis: GdB 50–60 (KEINE Erhöhung)
+Realer Fall:     GdB 70 (Erhöhung um 20 über dem führenden Einzelwert)
+```
+
+**Befund**: Die Atembeschwerden-Domäne wirkt in BASTET ausschließlich als
+Boden (Anhebung nur, wenn sie die aktuelle Spanne übersteigt) — liegt sie
+darunter, zählt sie **nicht einmal als Erhöhungsfaktor**, obwohl sie im realen
+Fall genau zur Verstärkung beigetragen hat. Dasselbe gilt für Diabetes und
+Parästhesien (siehe deren identischer Boden-Aufbau in `scoring.ts`). Der
+einzige hier gefeuerte Erhöhungsfaktor (`autonomHfDokumentiert`) allein reicht
+nicht für den +10-Bonus (Schwelle: ≥2 Erhöhungsfaktoren). Ergebnis: BASTET
+unterschätzt in dieser Konstellation die reale Gesamt-GdB-Erhöhung vollständig
+(0 statt 20), nicht nur graduell.
+
+**Einordnung, keine automatische Korrektur**: Das ist die konservative
+Richtung (Tier 1 unterschätzt hier, statt zu überschätzen) — angesichts von
+"kein Ersatz für ein echtes Gutachten" eher die sicherere Fehlerrichtung als
+eine Überschätzung. Ob die Boden-Domänen (Atembeschwerden/Diabetes/
+Parästhesien) zusätzlich als eigene Erhöhungsfaktoren zählen sollen, wenn sie
+zwar nicht die Spanne anheben, aber real vorhanden sind, ist eine bewusste
+Entscheidung, keine automatische Bugfix-Korrektur — von Florian zu klären,
+bevor das umgesetzt wird.
