@@ -21,6 +21,8 @@ export type QuestionId =
   | "atembeschwerden"
   | "diabetesStatus"
   | "psychKomorbid"
+  | "medikation"
+  | "medikationWirkung"
   | "bellScore"
   | "alltagsverrichtungen"
   | "arbeitsfaehigkeit"

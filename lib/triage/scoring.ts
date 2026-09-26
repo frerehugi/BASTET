@@ -41,6 +41,8 @@ export function computeTriage(answers: Answers): TriageResult {
   const diabetesStatus = answers.diabetesStatus as string | undefined;
   const paraesthesien = answers.paraesthesien as string | undefined;
   const schmerzausbreitung = answers.schmerzausbreitung as string | undefined;
+  const medikation = answers.medikation as string | undefined;
+  const medikationWirkung = answers.medikationWirkung as string | undefined;
   // pemTriggerart wird bewusst NICHT destrukturiert - fließt nur über
   // answersToContextText() (lib/triage/context.ts) als reines Kontext-Signal
   // in Tier 2 ein, ohne eigene Scoring-Logik in diesem Schritt.
@@ -324,6 +326,37 @@ export function computeTriage(answers: Answers): TriageResult {
         `Periphere Dys-/Parästhesien, ${paraLabel} — nach VersMedV 3.11 eigenständig mit GdB ${paraVon}–${paraBis} zu bewerten, liegt hier unterhalb der ohnehin bereits höheren Gesamteinschätzung.`
       );
     }
+  }
+
+  // Medikation (ccc-fragenkatalog-kalibrierung.md Abschnitt 8): fließt bewusst
+  // NUR als Einordnungshinweis in die Begründung ein, NICHT als eigener
+  // Erhöhungsfaktor oder Boden - anders als z. B. bei Parästhesien/Atem-
+  // beschwerden gibt es hier keinen VersMedV-Punkt, der "schlechtes
+  // Therapieansprechen" in eine eigene GdB-Spanne übersetzt, und ein
+  // ungrundierter numerischer Aufschlag wäre reine Erfindung. Der eigentliche
+  // Zweck ist Transparenz: die übrigen Angaben (Schmerz, PEM, Fatigue, ...)
+  // beschreiben immer den Zustand UNTER der hier angegebenen Medikation, nie
+  // den hypothetischen unbehandelten Verlauf - das soll für die Detailanalyse
+  // und ein späteres Gutachten sichtbar bleiben, statt stillschweigend
+  // vorausgesetzt zu werden.
+  if (medikation === "ja") {
+    if (medikationWirkung === "keine-besserung") {
+      gdbBegruendung.push(
+        "Regelmäßige ärztlich verordnete Medikation ohne wesentliche Besserung der Beschwerden — die übrigen Angaben spiegeln den Verlauf bereits unter Therapie wider, nicht einen zusätzlich unbehandelten Zustand."
+      );
+    } else if (medikationWirkung === "teilweise-besserung") {
+      gdbBegruendung.push(
+        "Regelmäßige ärztlich verordnete Medikation mit teilweiser Besserung — die übrigen Angaben beschreiben den bereits teilweise behandelten Zustand."
+      );
+    } else if (medikationWirkung === "deutliche-besserung") {
+      gdbBegruendung.push(
+        "Regelmäßige ärztlich verordnete Medikation mit deutlicher Besserung — die übrigen Angaben beschreiben den bereits durch Therapie gebesserten Zustand; unbehandelt wäre nach eigener Einschätzung von einer stärkeren Ausprägung auszugehen."
+      );
+    }
+  } else if (medikation === "nein") {
+    gdbBegruendung.push(
+      "Aktuell keine regelmäßige ärztlich verordnete Medikation gegen die Beschwerden — die übrigen Angaben beschreiben den unbehandelten Verlauf."
+    );
   }
 
   // Erhöhungsfaktoren (keine Addition, aber Anhebung der Spanne plausibel),
