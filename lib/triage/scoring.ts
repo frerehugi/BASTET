@@ -279,28 +279,43 @@ export function computeTriage(answers: Answers): TriageResult {
     let paraVon = 0;
     let paraBis = 0;
     let paraLabel = "";
+    // Als Spannen statt Einzelwerte (wie Atembeschwerden/Diabetes oben) -
+    // VersMedV 3.11 gibt für die Polyneuropathie-Analogie ebenfalls einen
+    // Korridor je Schweregrad vor, keine scharfe Prozentzahl. Werte direkt aus
+    // schmerz-neuro-kardio-erweiterung.md: "reine, milde Kribbelparästhesien
+    // ohne funktionelle Auswirkung ... GdB 10-20", "erst mit nachweisbarer
+    // Funktionsbeeinträchtigung ... steigt die Einstufung auf 30 und höher".
+    // Deshalb 30-50 für die schwerste Stufe statt nur 30-40: Erst eine
+    // Obergrenze ÜBER dem GdB-Default von 30-40 kann die Gesamtspanne bei
+    // sonst mildem Verlauf tatsächlich anheben - mit einem einzelnen
+    // Punktwert von 30 (erste Fassung dieses Blocks) wäre das nie möglich
+    // gewesen, da gdbVon im gesamten Funktionsverlauf monoton nicht-fallend
+    // ist und nie unter 30 sinkt.
     if (paraesthesien === "deutlich-mit-schwaeche") {
       paraVon = 30;
-      paraBis = 30;
+      paraBis = 50;
       paraLabel = "deutlich, mit zusätzlicher Kraftminderung/Gangunsicherheit";
     } else if (paraesthesien === "deutlich") {
       paraVon = 20;
-      paraBis = 20;
+      paraBis = 30;
       paraLabel = "deutlich, ohne motorische Begleitsymptome";
     } else if (paraesthesien === "leicht") {
       paraVon = 10;
-      paraBis = 10;
+      paraBis = 20;
       paraLabel = "leicht bis gelegentlich";
     }
-    if (paraVon > gdbVon) {
-      gdbVon = paraVon;
+    // Beide Grenzen prüfen, nicht nur die untere (paraVon > gdbVon allein
+    // hätte den Fall verpasst, dass nur die Obergrenze etwas beiträgt, wie
+    // bei "deutlich-mit-schwaeche" gegen einen Default von 30-40).
+    if (paraVon > gdbVon || paraBis > gdbBis) {
+      gdbVon = Math.max(gdbVon, paraVon);
       gdbBis = Math.max(gdbBis, paraBis);
       gdbBegruendung.push(
-        `Periphere Dys-/Parästhesien, ${paraLabel} — nach VersMedV 3.11 (Polyneuropathie-Analogie) eigenständig mit GdB ${paraVon} zu bewerten${paraesthesien === "deutlich-mit-schwaeche" ? " (Hochstufung bei zusätzlicher Kraftminderung/Gangunsicherheit, vgl. schmerz-neuro-kardio-erweiterung.md)" : ""}, hebt die Gesamtspanne entsprechend an (Gesamt-GdB-Prinzip, keine Addition).`
+        `Periphere Dys-/Parästhesien, ${paraLabel} — nach VersMedV 3.11 (Polyneuropathie-Analogie) eigenständig mit GdB ${paraVon}–${paraBis} zu bewerten${paraesthesien === "deutlich-mit-schwaeche" ? " (Hochstufung bei zusätzlicher Kraftminderung/Gangunsicherheit, vgl. schmerz-neuro-kardio-erweiterung.md)" : ""}, hebt die Gesamtspanne entsprechend an (Gesamt-GdB-Prinzip, keine Addition).`
       );
     } else {
       gdbBegruendung.push(
-        `Periphere Dys-/Parästhesien, ${paraLabel} — nach VersMedV 3.11 eigenständig mit GdB ${paraVon} zu bewerten, liegt hier unterhalb der ohnehin bereits höheren Gesamteinschätzung.`
+        `Periphere Dys-/Parästhesien, ${paraLabel} — nach VersMedV 3.11 eigenständig mit GdB ${paraVon}–${paraBis} zu bewerten, liegt hier unterhalb der ohnehin bereits höheren Gesamteinschätzung.`
       );
     }
   }
