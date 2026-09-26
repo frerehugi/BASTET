@@ -1,7 +1,7 @@
 import { sendTelegramMessage } from "./telegram";
 import { approvePendingItem, getPendingItems, rejectPendingItem, type PendingItem } from "./reviewQueue";
 import { getUserCounts } from "./userCount";
-import { getSelfToggleState, hasSelfConfig, setSelfEnabled } from "./selfFeatureFlag";
+import { getSelfToggleState, hasSelfConfig, setSelfEnabled, type SelfArm } from "./selfFeatureFlag";
 
 /**
  * Proaktive Benachrichtigung vom Cron-Check (siehe app/api/cron/check-updates)
@@ -54,46 +54,80 @@ async function handleStats(chatId: number): Promise<void> {
   );
 }
 
+const SELF_ARM_LABEL: Record<SelfArm, string> = { web: "Web (Tier 2)", doc: "Doc-Arm" };
+
 /**
  * Ein-/Ausschalter für die Self-Verifizierung (build/phase9-bastet-2.0-
- * self-gatekeeper.md, 9b) - bewusst als einfacher Telegram-Befehl statt
+ * self-gatekeeper.md, 9b/9d) - bewusst als einfacher Telegram-Befehl statt
  * eines Deploys, damit "schalte Self aus" sofort wirkt (Redis-Flag, siehe
  * lib/selfFeatureFlag.ts) und BASTET ohne jede weitere Änderung in den
  * Zustand von vor der Self-Integration zurückkehrt.
+ *
+ * Seit 9d ein Schalter PRO ARM (Florian wollte Self zunächst nur für den
+ * Doc-Arm aktivieren, ohne den Web-Arm mit umzuschalten) - der Arm ist
+ * deshalb, anders als zuvor, ein verpflichtender erster Teil des Arguments
+ * ("self doc an"), außer bei der reinen Statusabfrage ohne Argument, die
+ * beide Arme auf einmal zeigt.
  */
 async function handleSelfToggle(chatId: number, arg: string | undefined): Promise<void> {
-  const normalized = arg?.trim().toLowerCase();
-  if (!normalized || normalized === "status") {
-    const state = await getSelfToggleState();
-    const configured = hasSelfConfig();
+  const parts = (arg ?? "").trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const configured = hasSelfConfig();
+  const configHint = configured
+    ? ""
+    : "\nSELF_API_KEY/SELF_FLOW_ID/SELF_WEBHOOK_SECRET fehlen — bleibt deshalb technisch immer aus, unabhängig vom Schalter.";
+
+  // Kein Argument oder nur "status": Überblick über beide Arme auf einmal.
+  if (parts.length === 0 || (parts.length === 1 && parts[0] === "status")) {
+    const lines = await Promise.all(
+      (["web", "doc"] as SelfArm[]).map(async (arm) => {
+        const state = await getSelfToggleState(arm);
+        const effektivAn = state === "on" && configured;
+        return `${SELF_ARM_LABEL[arm]}: ${effektivAn ? "AN" : "AUS"} (Schalter: ${state === "on" ? "an" : "aus"})`;
+      })
+    );
+    await sendTelegramMessage(
+      chatId,
+      `Self-Verifizierung:\n${lines.join("\n")}${configHint}\nUmschalten: "self web an" · "self doc an" · "self web aus" · "self doc aus"`
+    );
+    return;
+  }
+
+  const armArg = parts[0];
+  if (armArg !== "web" && armArg !== "doc") {
+    await sendTelegramMessage(chatId, 'Bitte Arm angeben: "self web ..." oder "self doc ...". Nur "self status" zeigt beide.');
+    return;
+  }
+  const arm: SelfArm = armArg;
+  const action = parts[1];
+
+  if (!action || action === "status") {
+    const state = await getSelfToggleState(arm);
     const effektivAn = state === "on" && configured;
     await sendTelegramMessage(
       chatId,
-      `Self-Verifizierung: ${effektivAn ? "AN" : "AUS"} (Schalter: ${state === "on" ? "an" : "aus"}${
-        configured ? "" : ", SELF_API_KEY/SELF_FLOW_ID/SELF_WEBHOOK_SECRET fehlen — bleibt deshalb technisch immer aus"
-      })\nUmschalten: "self an" / "self aus"`
+      `Self-Verifizierung (${SELF_ARM_LABEL[arm]}): ${effektivAn ? "AN" : "AUS"} (Schalter: ${state === "on" ? "an" : "aus"})${configHint}\nUmschalten: "self ${arm} an" / "self ${arm} aus"`
     );
     return;
   }
-  if (/^(an|ein|aktivieren)$/.test(normalized)) {
-    await setSelfEnabled(true);
+  if (/^(an|ein|aktivieren)$/.test(action)) {
+    await setSelfEnabled(arm, true);
     await sendTelegramMessage(
       chatId,
-      hasSelfConfig()
-        ? "Self-Verifizierung eingeschaltet — Tier 2 und Doc-Arm verlangen ab jetzt eine Verifizierung."
-        : "Schalter steht jetzt auf 'an', aber SELF_API_KEY/SELF_FLOW_ID/SELF_WEBHOOK_SECRET fehlen noch — Self bleibt deshalb technisch aus, bis diese gesetzt sind."
+      configured
+        ? `Self-Verifizierung für ${SELF_ARM_LABEL[arm]} eingeschaltet — verlangt ab jetzt eine Verifizierung.`
+        : `Schalter für ${SELF_ARM_LABEL[arm]} steht jetzt auf 'an', aber SELF_API_KEY/SELF_FLOW_ID/SELF_WEBHOOK_SECRET fehlen noch — bleibt deshalb technisch aus, bis diese gesetzt sind.`
     );
     return;
   }
-  if (/^(aus|deaktivieren)$/.test(normalized)) {
-    await setSelfEnabled(false);
+  if (/^(aus|deaktivieren)$/.test(action)) {
+    await setSelfEnabled(arm, false);
     await sendTelegramMessage(
       chatId,
-      "Self-Verifizierung ausgeschaltet — BASTET läuft ab sofort wieder wie vor der Self-Integration, ohne Verifizierungsschritt."
+      `Self-Verifizierung für ${SELF_ARM_LABEL[arm]} ausgeschaltet — läuft ab sofort wieder wie vor der Self-Integration, ohne Verifizierungsschritt.`
     );
     return;
   }
-  await sendTelegramMessage(chatId, 'Unbekannter Befehl. "self status" · "self an" · "self aus".');
+  await sendTelegramMessage(chatId, 'Unbekannter Befehl. "self status" · "self doc an" · "self doc aus" · "self web an" · "self web aus".');
 }
 
 async function handlePendingList(chatId: number): Promise<void> {

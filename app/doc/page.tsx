@@ -1,11 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { splitReferences } from "@/lib/format";
 import { splitStreamError } from "@/lib/streamProtocol";
 import { AboutPanel } from "@/components/AboutPanel";
 import { BellScoreReference } from "@/components/BellScoreReference";
 import { PATIENT_ABOUT_TEXT as ABOUT_TEXT } from "@/lib/content";
+
+// Self-Verifizierungs-Gate vor der eigentlichen Einschätzung (build/phase9-
+// bastet-2.0-self-gatekeeper.md, 9d) - der Doc-Arm hatte bislang KEINERLEI
+// Zugriffsschutz. Gleiches Muster wie beim Web-Arm-Gate in app/page.tsx
+// (eigener Redirect-Roundtrip über sessionStorage, siehe dortige
+// Kommentare), zwei bewusste Abweichungen:
+// - Eigener Schalter (arm: "doc", lib/selfFeatureFlag.ts) statt des Web-Arm-
+//   Schalters - Florian wollte Self zunächst NUR für den Doc-Arm aktivieren.
+// - Anhänge (attachedFiles, teils mehrere MB Base64) werden bewusst NICHT
+//   über den Redirect-Roundtrip mitgeschickt (sessionStorage-Quote-Risiko),
+//   und nach erfolgreicher Verifizierung wird NICHT automatisch erneut
+//   gesendet wie beim Web-Arm - sonst könnte eine Einschätzung
+//   stillschweigend ohne die ursprünglich beigefügten Befunde entstehen.
+//   Stattdessen: Formulartext wird wiederhergestellt, bei vorherigen
+//   Anhängen ein klarer Hinweis, sie erneut hinzuzufügen, und ein erneuter,
+//   bewusster Klick auf "Einschätzung erstellen" nötig.
+// - Einmal pro Browser-Tab verifiziert (sessionStorage-Flag), nicht pro
+//   einzelner Einschätzung - passend zum "einmalig, nicht pro Sitzung"-
+//   Prinzip aus dem Plan, ohne dass es dafür ein eigenes Login-System gibt.
+const SELF_DOC_STORAGE_PREFIX = "bastet:self:doc:pending:";
+const SELF_DOC_VERIFIED_KEY = "bastet:self:doc:verified";
+
+interface PersistedDocState {
+  values: { beruf: string; anamnese: string; untersuchung: string; befunde: string };
+  ccc: Record<string, string>;
+  diagnosisCertain: "gesichert" | "verdacht";
+  hadAttachments: boolean;
+}
+
+function persistDocStateForSelf(id: string, state: PersistedDocState) {
+  try {
+    sessionStorage.setItem(SELF_DOC_STORAGE_PREFIX + id, JSON.stringify(state));
+  } catch {
+    // sessionStorage kann fehlschlagen (privater Modus, voller Speicher) -
+    // dann geht beim Rücksprung nur der Formularinhalt verloren, die
+    // Verifizierung selbst bleibt davon unberührt (wie in app/page.tsx).
+  }
+}
+
+function readAndClearDocStateForSelf(id: string): PersistedDocState | null {
+  try {
+    const raw = sessionStorage.getItem(SELF_DOC_STORAGE_PREFIX + id);
+    sessionStorage.removeItem(SELF_DOC_STORAGE_PREFIX + id);
+    return raw ? (JSON.parse(raw) as PersistedDocState) : null;
+  } catch {
+    return null;
+  }
+}
+
+function isSelfVerifiedThisTab(): boolean {
+  try {
+    return sessionStorage.getItem(SELF_DOC_VERIFIED_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markSelfVerifiedThisTab() {
+  try {
+    sessionStorage.setItem(SELF_DOC_VERIFIED_KEY, "1");
+  } catch {
+    // Fail-safe: schlägt das Setzen fehl, wird bei der nächsten Einschätzung
+    // erneut gegated statt fälschlich dauerhaft "verifiziert" zu bleiben -
+    // die sichere Fehlerrichtung (lieber einmal zu oft fragen als zu wenig).
+  }
+}
 
 interface FieldDef {
   key: "beruf" | "anamnese" | "untersuchung" | "befunde";
@@ -239,6 +305,9 @@ export default function DocApp() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [selfError, setSelfError] = useState<string | null>(null);
+  const [selfNotice, setSelfNotice] = useState<string | null>(null);
+  const [selfCheckLoading, setSelfCheckLoading] = useState(false);
 
   function isChipSelected(field: CccField, opt: string): boolean {
     const current = ccc[field.key] || "";
@@ -316,8 +385,7 @@ export default function DocApp() {
 
   const canSubmit = values.anamnese.trim().length > 0 && ccc.dauer !== "";
 
-  async function handleSubmit() {
-    if (!canSubmit || loading) return;
+  async function submitActual() {
     setLoading(true);
     setError(null);
     setResult(null);
@@ -407,6 +475,120 @@ ${cccLines}`;
     }
   }
 
+  /**
+   * Self-Verifizierungs-Gate vor submitActual() (build/phase9-bastet-2.0-
+   * self-gatekeeper.md, 9d) - arm: "doc", eigener Schalter, unabhängig vom
+   * Web-Arm-Gate in app/page.tsx. Ist Self für den Doc-Arm ausgeschaltet
+   * oder nicht konfiguriert, liefert /api/self/create-session
+   * `{ enabled: false }` und hier passiert exakt das, was vor dieser
+   * Integration passierte: sofortiger Start ohne Verifizierungsschritt.
+   */
+  async function handleSubmit() {
+    if (!canSubmit || loading) return;
+
+    if (isSelfVerifiedThisTab()) {
+      await submitActual();
+      return;
+    }
+
+    setSelfError(null);
+    setSelfNotice(null);
+    setSelfCheckLoading(true);
+    try {
+      const res = await fetch("/api/self/create-session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ arm: "doc", returnPath: window.location.pathname }),
+      });
+      const data: { enabled: boolean; id?: string; verificationUrl?: string } = await res.json();
+      if (!data.enabled || !data.id || !data.verificationUrl) {
+        // Self für den Doc-Arm aus/nicht konfiguriert - wie vor der
+        // Integration direkt starten, und den Tab als "verifiziert"
+        // markieren, damit spätere Klicks hier nicht jedes Mal erneut den
+        // (bereits als aus bekannten) Schalter abfragen.
+        markSelfVerifiedThisTab();
+        await submitActual();
+        return;
+      }
+      persistDocStateForSelf(data.id, {
+        values,
+        ccc,
+        diagnosisCertain,
+        hadAttachments: attachedFiles.length > 0,
+      });
+      window.location.href = data.verificationUrl;
+    } catch {
+      await submitActual();
+    } finally {
+      setSelfCheckLoading(false);
+    }
+  }
+
+  /**
+   * Rücksprung von Self nach einem Verifizierungsversuch (Query-Parameter
+   * `self=<externalUuid>`, siehe app/api/self/create-session) - gleiches
+   * Prinzip wie in app/page.tsx, aber bewusst OHNE automatischen erneuten
+   * Sendeversuch nach Erfolg (siehe Kommentar am Dateianfang: Anhänge gehen
+   * über den Roundtrip verloren, ein stillschweigender erneuter Versand
+   * würde eine unvollständige Einschätzung erzeugen, ohne dass das auffällt).
+   */
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const selfId = params.get("self");
+    if (!selfId) return;
+    const outcome = params.get("selfOutcome");
+    window.history.replaceState(null, "", window.location.pathname);
+
+    const restored = readAndClearDocStateForSelf(selfId);
+    if (restored) {
+      setValues(restored.values);
+      setCcc(restored.ccc);
+      setDiagnosisCertain(restored.diagnosisCertain);
+    }
+    const attachHint = restored?.hadAttachments
+      ? " Zuvor hinzugefügte Anhänge sind dabei verlorengegangen — bitte erneut hinzufügen."
+      : "";
+
+    if (outcome === "failure") {
+      setSelfError(
+        'Die Self-Verifizierung wurde nicht abgeschlossen. Bitte "Einschätzung erstellen" erneut versuchen.' + attachHint
+      );
+      return;
+    }
+
+    setSelfCheckLoading(true);
+    (async () => {
+      const maxAttempts = 8;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+          const res = await fetch(`/api/self/session-status?id=${encodeURIComponent(selfId)}`);
+          const data: { status: "pending" | "valid" | "invalid" } = await res.json();
+          if (data.status === "valid") {
+            markSelfVerifiedThisTab();
+            setSelfCheckLoading(false);
+            setSelfNotice("Verifizierung erfolgreich." + attachHint + ' Bitte "Einschätzung erstellen" erneut klicken.');
+            return;
+          }
+          if (data.status === "invalid") {
+            setSelfCheckLoading(false);
+            setSelfError(
+              'Die Self-Verifizierung war nicht erfolgreich. Bitte "Einschätzung erstellen" erneut versuchen.' + attachHint
+            );
+            return;
+          }
+        } catch {
+          // einzelner Poll-Fehler wird ignoriert, nächster Versuch folgt
+        }
+        await new Promise((resolve) => setTimeout(resolve, 750));
+      }
+      setSelfCheckLoading(false);
+      setSelfError(
+        'Die Bestätigung der Verifizierung dauert ungewöhnlich lange. Bitte "Einschätzung erstellen" erneut versuchen.' +
+          attachHint
+      );
+    })();
+  }, []);
+
   function handleReset() {
     setValues({ beruf: "", anamnese: "", untersuchung: "", befunde: "" });
     setCcc(initialCccState());
@@ -416,6 +598,8 @@ ${cccLines}`;
     setResult(null);
     setRefsOpen(false);
     setError(null);
+    setSelfError(null);
+    setSelfNotice(null);
   }
 
   async function copyResult() {
@@ -603,11 +787,11 @@ ${cccLines}`;
 
           <div style={styles.buttonRow}>
             <button
-              style={{ ...styles.primaryButton, opacity: canSubmit && !loading ? 1 : 0.5 }}
+              style={{ ...styles.primaryButton, opacity: canSubmit && !loading && !selfCheckLoading ? 1 : 0.5 }}
               onClick={handleSubmit}
-              disabled={!canSubmit || loading}
+              disabled={!canSubmit || loading || selfCheckLoading}
             >
-              {loading ? "Wird erstellt …" : "Einschätzung erstellen"}
+              {selfCheckLoading ? "Verifizierung wird geprüft …" : loading ? "Wird erstellt …" : "Einschätzung erstellen"}
             </button>
             <button style={styles.secondaryButton} onClick={handleReset} disabled={loading}>
               Zurücksetzen
@@ -620,6 +804,8 @@ ${cccLines}`;
             </span>
           )}
 
+          {selfNotice && <div style={styles.selfNoticeBox}>{selfNotice}</div>}
+          {selfError && <div style={styles.errorBox}>{selfError}</div>}
           {error && <div style={styles.errorBox}>{error}</div>}
         </div>
 
@@ -907,6 +1093,15 @@ const styles: Record<string, React.CSSProperties> = {
     background: "rgba(248,113,113,.08)",
     border: "1px solid rgba(248,113,113,.35)",
     color: "var(--danger)",
+    borderRadius: 10,
+    padding: "9px 12px",
+    fontSize: 13.5,
+  },
+  selfNoticeBox: {
+    marginTop: 12,
+    background: "var(--gold-dim)",
+    border: "1px solid var(--border-gold)",
+    color: "var(--gold-light)",
     borderRadius: 10,
     padding: "9px 12px",
     fontSize: 13.5,
