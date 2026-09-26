@@ -9,7 +9,7 @@ Strukturiert die Kanadischen Konsenskriterien (CCC) in abfragbare Einzelpunkte u
 | Auslöseschwelle | leichteste Alltagsbelastung / mittelschwere Belastung / nur starke Belastung |
 | Latenz bis Verschlechterung | sofort / Stunden / 1–3 Tage (typisch) |
 | Erholungsdauer | Stunden / Tage / >1 Woche / >1 Monat |
-| Betrifft auch kognitive/emotionale Belastung? | ja/nein |
+| Betrifft auch kognitive/emotionale Belastung? | ja/nein — umgesetzt in `lib/triage/questions.ts` als eigene Frage "pemTriggerart" (Mehrfachauswahl körperlich/geistig/emotional/unklar) |
 
 **Kalibrierung**: Kein direktes Analogon in anderen Fachgebieten — PEM ist ME/CFS-spezifisch. Dient primär der CCC-Erfüllungsprüfung, nicht direkt der GdB-Bemessung. Ausprägung/Erholungsdauer fließt aber in die Einstufung nach 3.7 (soziale Anpassungsschwierigkeiten) ein: je kürzer die belastungsfreie Zeit zwischen Einbrüchen, desto eher "schwere Störung".
 

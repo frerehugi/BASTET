@@ -31,14 +31,27 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "pemTriggerart",
+    showIf: (a) => a.pem === "ja",
+    prompt: "Wodurch wird die Verschlechterung bei Ihnen ausgelöst? (Mehrfachauswahl möglich)",
+    type: "multi",
+    options: [
+      { value: "koerperlich", label: "Körperliche Anstrengung" },
+      { value: "geistig", label: "Geistige Anstrengung (z. B. Konzentration, Bildschirmarbeit)" },
+      { value: "emotional", label: "Emotionale Belastung (z. B. Aufregung, Stress)" },
+      { value: "unklar", label: "Lässt sich nicht klar unterscheiden" },
+    ],
+    exclusiveValue: "unklar",
+  },
+  {
     id: "pemAusloeseschwelle",
     showIf: (a) => a.pem === "ja",
     prompt: "Wie stark muss die Belastung sein, damit bei Ihnen eine PEM-Verschlechterung auftritt?",
     type: "single",
     options: [
-      { value: "leichteste-alltagsbelastung", label: "Schon leichteste Alltagsbelastung reicht (z. B. Zähneputzen, kurzes Gespräch)" },
-      { value: "mittelschwere-belastung", label: "Erst bei mittelschwerer Belastung (z. B. kurzer Spaziergang, Hausarbeit)" },
-      { value: "nur-starke-belastung", label: "Nur bei stärkerer Belastung (z. B. längere körperliche Anstrengung)" },
+      { value: "leichteste-alltagsbelastung", label: "Schon kleinste Anstrengung reicht (z. B. wenige Schritte gehen, ein kurzes Gespräch, sich kurz konzentrieren)" },
+      { value: "mittelschwere-belastung", label: "Erst bei mittlerer Anstrengung (z. B. kurzer Spaziergang, längeres Gespräch, eine Stunde Bildschirmarbeit)" },
+      { value: "nur-starke-belastung", label: "Erst bei stärkerer, länger andauernder Anstrengung" },
     ],
   },
   {
@@ -88,6 +101,17 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "schmerzausbreitung",
+    showIf: hatRelevanteSchmerzangabe,
+    prompt: "Sind Ihre Schmerzen eher auf einzelne Körperbereiche begrenzt oder über mehrere Körperregionen verteilt spürbar?",
+    type: "single",
+    options: [
+      { value: "begrenzt", label: "Auf einzelne Bereiche begrenzt" },
+      { value: "mehrere-regionen", label: "Über mehrere Körperregionen verteilt" },
+      { value: "generalisiert", label: "Nahezu am ganzen Körper spürbar" },
+    ],
+  },
+  {
     id: "schmerzschwere",
     showIf: hatRelevanteSchmerzangabe,
     prompt: "Wie stark beeinträchtigen Sie diese Schmerzen insgesamt im Alltag?",
@@ -110,7 +134,7 @@ export const QUESTIONS: Question[] = [
       { value: "wortfindung", label: "Wortfindungsstörungen" },
       { value: "verarbeitung", label: "Verlangsamte Informationsverarbeitung" },
       { value: "reizueberempfindlich", label: "Reizüberempfindlichkeit (Licht/Geräusche)" },
-      { value: "koordination", label: "Gang-/Koordinationsstörung" },
+      { value: "koordination", label: "Gang-/Koordinationsstörung oder spürbare Muskelschwäche" },
       { value: "keine", label: "Keine davon" },
     ],
   },
@@ -147,6 +171,18 @@ export const QUESTIONS: Question[] = [
       { value: "ein-durchschlaf", label: "Ein-/Durchschlafstörung" },
       { value: "rhythmus", label: "Gestörter Tag-Nacht-Rhythmus" },
       { value: "unauffaellig", label: "Weitgehend unauffällig" },
+    ],
+  },
+  {
+    id: "paraesthesien",
+    prompt:
+      "Haben Sie Gefühlsstörungen wie Kribbeln, Taubheit, Brennen oder Ameisenlaufen (Parästhesien), z. B. in Armen, Beinen, Händen oder Füßen?",
+    type: "single",
+    options: [
+      { value: "keine", label: "Keine" },
+      { value: "leicht", label: "Leicht bis gelegentlich spürbar" },
+      { value: "deutlich", label: "Deutlich, regelmäßig bis dauerhaft spürbar" },
+      { value: "deutlich-mit-schwaeche", label: "Deutlich, zusätzlich mit spürbarer Muskelschwäche oder Gangunsicherheit" },
     ],
   },
   {
@@ -225,6 +261,7 @@ export const QUESTIONS: Question[] = [
     id: "objektiveTests",
     prompt:
       "Wurden bei Ihnen bereits objektive Tests durchgeführt (z. B. 6-Minuten-Gehstrecke, Handkraftmessung, neuropsychologische Testung)?",
+    hint: "Ein bereits bei den autonomen Beschwerden genannter Schellong-/Kipptisch-Test zählt hier ebenfalls.",
     type: "single",
     options: [
       { value: "auffaellig", label: "Ja, mit auffälligem/pathologischem Ergebnis" },
