@@ -66,6 +66,21 @@ export async function incrementCompleted(arm: UserCountArm): Promise<void> {
   }
 }
 
+/**
+ * Direktes Setzen (kein INCR) - NUR für die einmalige rückwirkende Tier-1-
+ * Korrektur gedacht (lib/adminCommands.ts, Befehl "backfill tier1"), sonst
+ * nirgends aufrufen: jeder normale Zähl-Vorgang läuft über
+ * incrementStarted()/incrementCompleted() oben, damit kein Turn versehentlich
+ * einen ganzen Zählerstand überschreibt statt ihn nur zu erhöhen.
+ */
+export async function setStartedCount(arm: UserCountArm, value: number): Promise<void> {
+  await getRedis().set(startedKey(arm), value);
+}
+
+export async function setCompletedCount(arm: UserCountArm, value: number): Promise<void> {
+  await getRedis().set(completedKey(arm), value);
+}
+
 export type UserCounts = Record<UserCountArm, { started: number; completed: number }>;
 
 /** Für den Admin-Stats-Überblick (siehe lib/adminCommands.ts, /stats). */

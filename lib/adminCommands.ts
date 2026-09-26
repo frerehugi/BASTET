@@ -1,6 +1,6 @@
 import { sendTelegramMessage } from "./telegram";
 import { approvePendingItem, getPendingItems, rejectPendingItem, type PendingItem } from "./reviewQueue";
-import { getUserCounts } from "./userCount";
+import { getUserCounts, setStartedCount, setCompletedCount } from "./userCount";
 import { getSelfToggleState, hasSelfConfig, setSelfEnabled, type SelfArm } from "./selfFeatureFlag";
 
 /**
@@ -44,17 +44,75 @@ function formatPendingItem(item: PendingItem, index: number): string {
  */
 async function handleStats(chatId: number): Promise<void> {
   const counts = await getUserCounts();
+  // Tier 1 ist strukturell IMMER Voraussetzung für einen Web-Arm-Start (siehe
+  // handleBackfillTier1 oben) - completed darf also nie unter web.started
+  // liegen. Tut es das doch, ist der Tier-1-Zähler veraltet (Zählung startete
+  // erst mit 9a) - Hinweis auf die Korrektur statt stillschweigend falscher
+  // Zahlen.
+  const tier1Veraltet = counts.tier1.completed < counts.web.started;
   await sendTelegramMessage(
     chatId,
     `📊 Nutzungszähler (anonym, seit Zählbeginn)\n\n` +
       `Web-Arm (Tier 2): ${counts.web.started} gestartet, ${counts.web.completed} abgeschlossen\n` +
       `Doc-Arm: ${counts.doc.started} gestartet, ${counts.doc.completed} abgeschlossen\n` +
       `Telegram-Arm: ${counts.telegram.started} gestartet, ${counts.telegram.completed} abgeschlossen\n` +
-      `Tier 1 (regelbasiert, Web): ${counts.tier1.started} gestartet, ${counts.tier1.completed} abgeschlossen`
+      `Tier 1 (regelbasiert, Web): ${counts.tier1.started} gestartet, ${counts.tier1.completed} abgeschlossen` +
+      (tier1Veraltet
+        ? `\n\n⚠️ Tier-1-Zähler liegt unter Web-Arm gestartet (${counts.web.started}) - das ist strukturell unmöglich ` +
+          `(jeder Web-Start setzt einen abgeschlossenen Tier-1-Durchlauf voraus). Zählung begann erst mit dem ` +
+          `9a-Rollout. "backfill tier1" hebt ihn auf eine begründete Mindestschätzung an.`
+        : "")
   );
 }
 
 const SELF_ARM_LABEL: Record<SelfArm, string> = { web: "Web (Tier 2)", doc: "Doc-Arm" };
+
+/**
+ * Einmalige rückwirkende Korrektur des Tier-1-Zählers (siehe Chat vom
+ * 26.09.2026): "web:started" (erster /api/chat-Call) ist strukturell NIE
+ * ohne einen zuvor abgeschlossenen Tier-1-Durchlauf erreichbar (siehe
+ * app/page.tsx: startChat() setzt immer erst phase="triage", "chat" ist nur
+ * über handleTriageComplete() -> beginDetailanalyse() erreichbar). Der
+ * Tier-1-Zähler selbst existiert aber erst seit dem 9a-Rollout - alle
+ * Tier-1-Durchläufe davor liefen, wurden aber nie gezählt.
+ *
+ * Beweisbare Untergrenze: die echte historische tier1:completed-Zahl war
+ * MINDESTENS so groß wie web:started (jeder Web-Start beweist einen
+ * vorherigen Tier-1-Abschluss). Für tier1:started gilt dieselbe Untergrenze
+ * (mindestens so viele Starts wie Abschlüsse) - die echte Zahl war
+ * vermutlich höher (abgebrochene Tier-1-Versuche, die nie zu Tier 2 führten,
+ * sind unwiederbringlich verloren, da nie geloggt). Deshalb bewusst max(...)
+ * statt eines Ersetzens, und eine Bestätigungsnachricht mit Vorher-/
+ * Nachher-Werten statt eines stillen Redis-Writes - das bleibt eine
+ * dokumentierte Korrektur, keine echte Messung.
+ *
+ * Idempotent: erneutes Ausführen (z.B. aus Versehen) hebt die Zahlen nur an,
+ * falls web:started seitdem weiter gewachsen ist, senkt sie nie ab.
+ */
+async function handleBackfillTier1(chatId: number): Promise<void> {
+  const counts = await getUserCounts();
+  const newStarted = Math.max(counts.tier1.started, counts.web.started);
+  const newCompleted = Math.max(counts.tier1.completed, counts.web.started);
+
+  if (newStarted === counts.tier1.started && newCompleted === counts.tier1.completed) {
+    await sendTelegramMessage(
+      chatId,
+      `Tier-1-Zähler ist bereits konsistent mit Web-Arm gestartet (${counts.web.started}) - keine Änderung nötig.`
+    );
+    return;
+  }
+
+  await Promise.all([setStartedCount("tier1", newStarted), setCompletedCount("tier1", newCompleted)]);
+
+  await sendTelegramMessage(
+    chatId,
+    `Tier-1-Zähler rückwirkend korrigiert (Mindestschätzung, keine echte Messung - siehe Begründung: ` +
+      `jeder Web-Arm-Start setzt einen abgeschlossenen Tier-1-Durchlauf voraus, abgebrochene Tier-1-Versuche vor ` +
+      `dem 9a-Rollout bleiben unbekannt):\n` +
+      `gestartet: ${counts.tier1.started} → ${newStarted}\n` +
+      `abgeschlossen: ${counts.tier1.completed} → ${newCompleted}`
+  );
+}
 
 /**
  * Ein-/Ausschalter für die Self-Verifizierung (build/phase9-bastet-2.0-
@@ -203,6 +261,11 @@ export async function handleAdminCommand(chatId: number, text: string): Promise<
 
   if (/^\/stats\b/i.test(text)) {
     await handleStats(chatId);
+    return true;
+  }
+
+  if (/^backfill\s+tier1\b/i.test(text)) {
+    await handleBackfillTier1(chatId);
     return true;
   }
 
