@@ -180,3 +180,18 @@ Parästhesien) zusätzlich als eigene Erhöhungsfaktoren zählen sollen, wenn si
 zwar nicht die Spanne anheben, aber real vorhanden sind, ist eine bewusste
 Entscheidung, keine automatische Bugfix-Korrektur — von Florian zu klären,
 bevor das umgesetzt wird.
+
+**Entscheidung (26.09.2026): nicht umsetzen, bewusst konservativ bleiben.**
+Florians Begründung: BASTET soll MdE/GdB-Einschätzungen eher konservativ
+halten, um bei Nutzer:innen keine zu hohen Erwartungen zu wecken. Hintergrund
+ist ein strukturelles Interessenkonfliktproblem im realen Gutachtenwesen —
+Gutachter:innen werden von der Berufsgenossenschaft (BG) beauftragt und auch
+von ihr bezahlt, um Rentengutachten für eben diese BG zu erstellen. Dieser
+Interessenkonflikt lässt sich nicht auflösen, führt aber (zumindest subjektiv)
+tendenziell eher zu niedrigeren als zu höheren Einschätzungen in echten
+Gutachten. Eine Tier-1-Vorabeinschätzung, die tendenziell zu hoch liegt, wäre
+in der Praxis daher riskanter (Enttäuschung, falsche Erwartungshaltung
+gegenüber dem echten Gutachten) als eine, die tendenziell zu niedrig liegt.
+Die hier gefundene Unterschätzung bleibt daher bestehen — die Boden-Domänen
+zählen weiterhin **nicht** zusätzlich als Erhöhungsfaktoren. Diese Frage gilt
+damit als geklärt, nicht nur als aufgeschoben.
