@@ -601,5 +601,16 @@ export async function* runBgHelpStream(
   evaluationContext: string | null
 ): AsyncGenerator<string, void, unknown> {
   const system = await buildBgHelpSystemBlocks(evaluationContext);
-  yield* streamClaude(system, messages, 16000, true, true);
+  // enableWebSearch bewusst false (Kosteneffizienz-Review, 26.09.2026): war
+  // zuvor unconditional true, offenbar durch Kopieren des runInterviewStream()-
+  // Aufrufmusters übernommen, ohne dieselbe dort dokumentierte, bewusste
+  // Beschränkung ("nur wenn triageContext gesetzt ist", siehe Commit
+  // 1447fde) mitzunehmen. Dieser Modus hat ohnehin schon die vollständige
+  // Wissensbasis (inkl. BG-Kontaktdaten) als Kontext, und der eigene Regeltext
+  // (buildBgHelpRulesBlock) verlangt explizit KEIN REFERENZEN-Format für
+  // Web-Quellen - es gäbe also keine Zitierdisziplin für einen echten
+  // Suchtreffer. Jede tatsächlich ausgelöste Suche wäre reine Zusatzkosten
+  // ohne dafür vorgesehenen Nutzen, bei einem Feature, das laut eigenem
+  // Prompt "knapp und konkret" bleiben soll.
+  yield* streamClaude(system, messages, 16000, false, true);
 }
