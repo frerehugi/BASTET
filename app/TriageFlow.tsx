@@ -119,7 +119,7 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
           )}
           {current.optional && (
             <button style={styles.skipButton} onClick={() => answerSingle(current.id, "")}>
-              Weiß ich nicht
+              {current.skipLabel ?? "Weiß ich nicht"}
             </button>
           )}
         </>
@@ -156,7 +156,8 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
         <>
           <input
             type="number"
-            inputMode="numeric"
+            inputMode="decimal"
+            step="any"
             min={current.min}
             max={current.max}
             placeholder={current.placeholder}
@@ -179,7 +180,7 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
             </button>
             {current.optional && (
               <button style={styles.skipButton} onClick={() => answerNumber(current.id, "")}>
-                Weiß ich nicht
+                {current.skipLabel ?? "Weiß ich nicht"}
               </button>
             )}
           </div>

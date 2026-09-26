@@ -59,8 +59,8 @@ check(
 
 console.log("\n=== Vollständiger Durchlauf: remaining fällt monoton, endet bei 0 ===");
 // Ein Pfad, der JEDEN bedingten Zweig nimmt (PEM=ja, Schmerz vorhanden,
-// Autonom mit Orthostase, Medikation=ja), damit alle 25 Fragen durchlaufen
-// werden - strengster Test für Monotonie.
+// Autonom mit Orthostase, Medikation=ja, FUNCAP=beides), damit alle 27
+// Fragen durchlaufen werden - strengster Test für Monotonie.
 const vollerPfad: Array<[keyof Answers, string | string[]]> = [
   ["pem", "ja"],
   ["pemTriggerart", ["koerperlich"]],
@@ -85,7 +85,9 @@ const vollerPfad: Array<[keyof Answers, string | string[]]> = [
   ["alltagsverrichtungen", "selbststaendig"],
   ["arbeitsfaehigkeit", "ueber-6"],
   ["objektiveTests", "unbekannt"],
-  ["funcapScore", "nein"],
+  ["funcapScore", "beides"],
+  ["funcap55Value", "3.4"],
+  ["funcap27Value", ""],
   ["beruflicherKontext", "nein"],
 ];
 
@@ -103,7 +105,7 @@ for (const [id, value] of vollerPfad) {
   );
   vorherigesRemaining = remaining;
 }
-check("Nach vollständigem Durchlauf (alle 25 Fragen beantwortet): remaining = 0", vorherigesRemaining === 0, `${vorherigesRemaining}`);
+check("Nach vollständigem Durchlauf (alle 27 Fragen beantwortet): remaining = 0", vorherigesRemaining === 0, `${vorherigesRemaining}`);
 
 console.log(`\n${failures === 0 ? "Alle Checks bestanden." : `${failures} Check(s) fehlgeschlagen.`}`);
 process.exit(failures === 0 ? 0 : 1);

@@ -28,6 +28,8 @@ export type QuestionId =
   | "arbeitsfaehigkeit"
   | "objektiveTests"
   | "funcapScore"
+  | "funcap55Value"
+  | "funcap27Value"
   | "beruflicherKontext";
 
 export interface ChoiceOption {
@@ -61,10 +63,17 @@ export interface Question {
   /** Nur für type "number": Grenzen für die Eingabevalidierung im UI. */
   min?: number;
   max?: number;
-  /** Zeigt einen "Weiß ich nicht"-Button, der die Frage ohne Wert überspringt
+  /** Zeigt einen Überspringen-Button, der die Frage ohne Wert überspringt
    *  (Answers[id] wird dann "" statt eines echten Werts) - für "number" und
-   *  "single" nutzbar. */
+   *  "single" nutzbar. Verhindert bewusst eine Sackgasse bei Folgefragen wie
+   *  "Bitte Score eingeben", die man ausgelöst hat, ohne den Wert parat zu
+   *  haben (z.B. FUNCAP55/27, siehe funcap55Value/funcap27Value). */
   optional?: boolean;
+  /** Text auf dem Überspringen-Button, falls `optional`. Default "Weiß ich
+   *  nicht" (siehe TriageFlow.tsx) - für Folgefragen, bei denen "kenne ich
+   *  nicht" nicht passt (z.B. "ohne Score weiter" statt "Weiß ich nicht",
+   *  wenn die Person gerade erst bestätigt hat, einen Score zu haben). */
+  skipLabel?: string;
 }
 
 export type Answers = Partial<Record<QuestionId, string | string[]>>;
