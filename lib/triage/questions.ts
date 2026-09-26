@@ -222,6 +222,27 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "medikation",
+    prompt:
+      "Nehmen Sie aktuell aufgrund Ihrer Beschwerden noch regelmäßig ärztlich verordnete Medikamente ein (z. B. gegen Schmerzen, Schlafstörungen, Kreislaufbeschwerden)?",
+    type: "single",
+    options: [
+      { value: "ja", label: "Ja" },
+      { value: "nein", label: "Nein" },
+    ],
+  },
+  {
+    id: "medikationWirkung",
+    showIf: (a) => a.medikation === "ja",
+    prompt: "Haben sich Ihre Beschwerden durch diese Medikamente gebessert?",
+    type: "single",
+    options: [
+      { value: "deutliche-besserung", label: "Ja, deutlich gebessert" },
+      { value: "teilweise-besserung", label: "Teilweise gebessert" },
+      { value: "keine-besserung", label: "Kaum bis keine Besserung" },
+    ],
+  },
+  {
     id: "bellScore",
     prompt: "Können Sie Ihren Bell-Score schätzen?",
     hint:

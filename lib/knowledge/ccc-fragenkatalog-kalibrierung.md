@@ -92,8 +92,8 @@ Diese generische Hirnschäden-Skala eignet sich als Kalibrierungsanker für den 
 
 | Abfragepunkt | Warum relevant |
 |---|---|
-| Aktuelle Medikation (Wirkstoffgruppen) | Symptomkontrollierende Medikation (z. B. Betablocker bei POTS, Schmerzmedikation, Stimulanzien) kann den *aktuellen* Befund maskieren — relevant für die Einordnung "wie stark wäre die Beeinträchtigung unbehandelt" |
-| Therapieansprechen | gut / teilweise / kein Ansprechen — schlechtes Ansprechen trotz adäquater Therapie stützt tendenziell eine höhere Einstufung |
+| Aktuelle Medikation (ja/nein) | Symptomkontrollierende Medikation (z. B. Betablocker bei POTS, Schmerzmedikation, Stimulanzien) kann den *aktuellen* Befund maskieren — relevant für die Einordnung "wie stark wäre die Beeinträchtigung unbehandelt". Umgesetzt in `lib/triage/questions.ts` als Frage "medikation" (ja/nein, ohne Wirkstoffgruppen-Detail — das bleibt Tier 2 vorbehalten). |
+| Therapieansprechen | gut / teilweise / kein Ansprechen — schlechtes Ansprechen trotz adäquater Therapie stützt laut dieser Kalibrierung tendenziell eine höhere Einstufung. Umgesetzt als Frage "medikationWirkung" (deutliche/teilweise/keine Besserung) — **bewusst nur als Einordnungshinweis in der Begründung**, nicht als eigener numerischer Erhöhungsfaktor (Entscheidung vom 26.09.2026, siehe `build/testfaelle.md`: BASTET bleibt bei GdB/MdE grundsätzlich konservativ, da reale BG-Gutachten strukturell eher zu niedrig als zu hoch ausfallen und ein zusätzlicher Aufschlag hier ohne eigenen VersMedV-Punkt nicht belastbar wäre). |
 
 ## 9. Dauer und beruflicher Kontext (Rahmenbedingungen, kein CCC-Punkt)
 

@@ -164,5 +164,35 @@ checkRange(
   40
 );
 
+console.log("\n=== Medikation/Therapieansprechen wirkt nur dokumentierend, nie auf die GdB-Zahlen ===");
+// Bewusste Design-Entscheidung (siehe scoring.ts-Kommentar zum Medikations-
+// Block): "keine Besserung trotz Medikation" ist laut Kalibrierungsmatrix
+// (ccc-fragenkatalog-kalibrierung.md Abschnitt 8) ein Hinweis auf eine
+// höhere Einstufung, wird hier aber bewusst NICHT als eigener numerischer
+// Erhöhungsfaktor verrechnet. Dieser Test hält fest, dass sich die
+// GdB-Spanne durch keine Kombination aus medikation/medikationWirkung
+// ändert - falls das künftig geändert wird, muss dieser Test bewusst
+// angepasst werden, statt unbemerkt durchzurutschen.
+const milde = computeTriage(MILD_BASELINE);
+checkRange("Milde Baseline ohne Medikationsangabe (Referenzwert)", milde, 30, 40);
+checkRange(
+  "Milde Baseline + keine Medikation",
+  computeTriage({ ...MILD_BASELINE, medikation: "nein" }),
+  30,
+  40
+);
+checkRange(
+  "Milde Baseline + Medikation ohne Besserung",
+  computeTriage({ ...MILD_BASELINE, medikation: "ja", medikationWirkung: "keine-besserung" }),
+  30,
+  40
+);
+checkRange(
+  "Milde Baseline + Medikation mit deutlicher Besserung",
+  computeTriage({ ...MILD_BASELINE, medikation: "ja", medikationWirkung: "deutliche-besserung" }),
+  30,
+  40
+);
+
 console.log(`\n${failures === 0 ? "Alle Checks bestanden." : `${failures} Check(s) fehlgeschlagen.`}`);
 process.exit(failures === 0 ? 0 : 1);
