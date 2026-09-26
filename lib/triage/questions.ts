@@ -1,4 +1,5 @@
 import type { Answers, Question } from "./types";
+import { BELL_SCORE_DE } from "../bellScore";
 
 /** Für showIf("schmerzschwere") - dieselbe "mindestens ein relevanter Wert
  *  außer dem Ausschlusswert"-Logik wie countRelevant() in scoring.ts, hier
@@ -188,12 +189,13 @@ export const QUESTIONS: Question[] = [
     id: "bellScore",
     prompt: "Können Sie Ihren Bell-Score schätzen?",
     hint:
-      "Der Bell-Score (0–100) beschreibt Ihr allgemeines Leistungsniveau bei ME/CFS/Fatigue — 100 = keine Einschränkung, 0 = schwerste Einschränkung. Falls Ihnen die Skala nicht geläufig ist, nutzen Sie die deutsche Tabelle unten oder überspringen Sie die Frage.",
-    type: "number",
-    options: [],
-    placeholder: "z. B. 45",
-    min: 0,
-    max: 100,
+      "Der Bell-Score wird in 10er-Schritten vergeben (0, 10, 20, … 100) und beschreibt Ihr allgemeines Leistungsniveau bei ME/CFS/Fatigue — 100 = keine Einschränkung, 0 = schwerste Einschränkung. Die deutsche Tabelle unten hilft bei der Einordnung; wählen Sie den Wert, der am ehesten passt, oder überspringen Sie die Frage.",
+    // Feste 10er-Schritte statt Freitext-Zahl (Bugfix: ein Freitextfeld
+    // erlaubte zuvor z. B. "45", das der Bell-Score als Instrument gar nicht
+    // kennt - er ist ausschließlich in diesen elf Stufen definiert, siehe
+    // lib/bellScore.ts).
+    type: "single",
+    options: BELL_SCORE_DE.map((row) => ({ value: String(row.score), label: String(row.score) })),
     optional: true,
   },
   {
