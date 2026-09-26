@@ -358,18 +358,32 @@ export default function App() {
   }
 
   /**
-   * Einziger Netzwerk-Call der gesamten Tier-1-Triage - reine anonyme
-   * Zählung (siehe app/api/track-tier1, lib/userCount.ts), kein
-   * Anthropic-Call. Fire-and-forget: ein Fehler hier darf den Tier-1-Flow
-   * nie stören, deshalb wird das Ergebnis bewusst nicht abgewartet/geworfen.
+   * Reine anonyme Zählung (siehe app/api/track-usage, lib/userCount.ts),
+   * kein Anthropic-Call. Fire-and-forget: ein Fehler hier darf den Flow nie
+   * stören, deshalb wird das Ergebnis bewusst nicht abgewartet/geworfen.
    */
-  function trackTier1(event: "started" | "completed") {
-    fetch("/api/track-tier1", {
+  function trackUsage(arm: "tier1" | "landing", event: "started" | "completed") {
+    fetch("/api/track-usage", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ event }),
+      body: JSON.stringify({ arm, event }),
       keepalive: true,
     }).catch(() => {});
+  }
+
+  function trackTier1(event: "started" | "completed") {
+    trackUsage("tier1", event);
+  }
+
+  /**
+   * Klick auf "Starte BASTET" (Landing-Screen) - der früheste trackbare
+   * Schritt im gesamten Web-Arm, noch vor der Diagnose-Gate-/Warnhinweis-
+   * Frage. Ohne diesen Zähler war unsichtbar, wie viele Personen schon hier
+   * abspringen bzw. auf den folgenden Bildschirmen aussteigen ("Ich möchte
+   * erst zum Arzt"), statt je bei Tier 1 anzukommen.
+   */
+  function trackLandingClick() {
+    trackUsage("landing", "started");
   }
 
   function startChat(confirmed: boolean) {
@@ -701,7 +715,13 @@ export default function App() {
             </div>
 
             <div style={styles.landingButtonCol}>
-              <button style={styles.landingPrimaryButton} onClick={() => setPhase("gate")}>
+              <button
+                style={styles.landingPrimaryButton}
+                onClick={() => {
+                  trackLandingClick();
+                  setPhase("gate");
+                }}
+              >
                 Starte BASTET
               </button>
               <button style={styles.landingSecondaryButton} onClick={() => setAboutOpen((o) => !o)}>

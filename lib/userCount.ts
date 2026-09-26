@@ -25,9 +25,15 @@ function getRedis(): Redis {
  * "wie oft insgesamt", nie "von wem". "started" minus "completed" ergibt
  * später die Abbruchrate.
  */
-export type UserCountArm = "web" | "doc" | "telegram" | "tier1";
+// "landing": Klick auf den "Starte BASTET"-Button (app/page.tsx) - der
+// früheste trackbare Schritt im gesamten Web-Arm, noch VOR der Diagnose-
+// Gate-/Warnhinweis-Frage. Nur "started" wird hier je gesetzt (ein Klick ist
+// ein einmaliges Ereignis, kein "completed" im eigentlichen Sinn) - siehe
+// handleStats() in lib/adminCommands.ts, das tier1:started stattdessen als
+// den "wie viele kamen wirklich bis Tier 1"-Vergleichswert nutzt.
+export type UserCountArm = "web" | "doc" | "telegram" | "tier1" | "landing";
 
-const ARMS: UserCountArm[] = ["web", "doc", "telegram", "tier1"];
+const ARMS: UserCountArm[] = ["web", "doc", "telegram", "tier1", "landing"];
 
 function startedKey(arm: UserCountArm): string {
   return `bastet:usercount:${arm}:started`;
