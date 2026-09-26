@@ -26,6 +26,7 @@ const FILES = [
   "scheibenbogen-aerztliche-begutachtung.md",
   "postcovid-symptomliste.md",
   "symptomliste-gdb-mde-abgleich.md",
+  "medikamentoese-therapie-postcovid.md",
   "ccc-fragenkatalog-kalibrierung.md",
   "nervensystem-psyche-herz-gdb.md",
   "neurologie-vergleichsfaelle.md",
