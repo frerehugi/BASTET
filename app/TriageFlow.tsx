@@ -86,6 +86,13 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
       </div>
       <p style={styles.prompt}>{current.prompt}</p>
       {current.hint && <p style={styles.hint}>{current.hint}</p>}
+      {current.hintLink && (
+        <p style={styles.hint}>
+          <a href={current.hintLink.url} target="_blank" rel="noreferrer" style={styles.hintLink}>
+            {current.hintLink.label}
+          </a>
+        </p>
+      )}
 
       {current.type === "single" && (
         <>
@@ -193,6 +200,7 @@ const styles: Record<string, React.CSSProperties> = {
   progressLine: { fontSize: 13.5, color: "var(--text-faint)", marginBottom: 14, letterSpacing: 0.1 },
   prompt: { fontSize: 17, lineHeight: 1.6, fontWeight: 600, margin: 0, color: "var(--text)" },
   hint: { fontSize: 13.5, lineHeight: 1.5, color: "var(--text-muted)", marginTop: 6 },
+  hintLink: { color: "var(--gold-light)", textDecoration: "underline" },
   optionGrid: { display: "flex", flexDirection: "column", gap: 10, marginTop: 18 },
   optionButton: {
     background: "rgba(255,255,255,.05)",

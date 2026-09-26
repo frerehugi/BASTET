@@ -292,6 +292,20 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    id: "funcapScore",
+    prompt: "Haben Sie einen aktuellen FUNCAP55 oder FUNCAP27 Score?",
+    hint:
+      "FUNCAP ist ein Fragebogen zur Funktionskapazität bei ME/CFS und eignet sich neben dem Bell-Score als Verlaufsinstrument, z. B. für einen Kostenübernahmeantrag. Falls Sie noch keinen haben, können Sie ihn hier online ausfüllen:",
+    hintLink: { url: "https://raffbenato.github.io/funcap55/", label: "FUNCAP55-Fragebogen online ausfüllen" },
+    type: "single",
+    options: [
+      { value: "ja-funcap55", label: "Ja, FUNCAP55" },
+      { value: "ja-funcap27", label: "Ja, FUNCAP27" },
+      { value: "beides", label: "Beides" },
+      { value: "nein", label: "Nein" },
+    ],
+  },
+  {
     id: "beruflicherKontext",
     prompt:
       "Ist Ihre Erkrankung durch die Berufsgenossenschaft/gesetzliche Unfallversicherung als Berufskrankheit (z. B. BK-Nr. 3101), Arbeits- oder Wegeunfall anerkannt?",
@@ -318,8 +332,8 @@ export function nextQuestion(answers: Answers): Question | null {
 }
 
 /**
- * Für die Fortschrittsanzeige: feste Gesamtzahl (alle 24 Fragen inkl. aller
- * bedingten Folgefragen), damit sich die Anzeige beim Beantworten nie mehr
+ * Für die Fortschrittsanzeige: feste Gesamtzahl (alle Fragen inkl. aller
+ * bedingten Folgefragen, siehe QUESTIONS.length), damit sich die Anzeige beim Beantworten nie mehr
  * erhöht - nur die "noch übrig"-Zahl fällt. Frühere Version zählte nur die
  * jeweils aktuell relevanten Fragen (z. B. 16 ganz am Anfang) und ließ diese
  * Zahl mitten im Ablauf nach OBEN springen, sobald ein bedingter Zweig (z. B.
