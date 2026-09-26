@@ -33,7 +33,12 @@ Frage markiert:
 1. **Self Protocol als Gatekeeper für Tier 2 UND den Doc-Arm** — beide laufen
    über echte Anthropic-API-Calls und bekommen dieselbe
    Verifizierungs-/Cooldown-Schicht vorgeschaltet. Telegram bleibt außen vor
-   (siehe Punkt 5).
+   (siehe Punkt 5). **Rollout-Reihenfolge (26.09.2026, Florian)**: zunächst
+   nur der Doc-Arm (9d), der Web-Arm bleibt vorerst unangetastet, obwohl die
+   Grundinfrastruktur (9b) für beide bereitliegt. Dafür ein eigener,
+   unabhängiger Ein-/Ausschalter pro Arm statt eines gemeinsamen
+   (`lib/selfFeatureFlag.ts`, `SelfArm`) — "doc an" darf Tier 2 nicht
+   mitschalten.
 2. **Universal-Link-/Deeplink-Flow statt erzwungenem QR-Code**
    (`getUniversalLink()` + `deeplinkCallback` aus `@selfxyz/core`) — löst
    konkret den Fall "Nutzer:in hat nur ein Handy und keine Möglichkeit, einen
@@ -236,10 +241,20 @@ angegangen werden — siehe Reihenfolge im Phasenplan unten.
 - **9c — Redis-Cooldown-Gate**: Nullifier → Redis-Key nach demselben Muster
   wie `lib/userCount.ts`, gegated auf abgeschlossene Sitzungen, gleitendes
   1-Stunden-Fenster.
-- **9d — Doc-Arm-Anbindung**: dieselbe persönliche Self-Verifizierung wie
-  Tier 2 (entschieden, siehe Architekturentscheidungen Punkt 8) — technisch
-  identisch zu 9b/9c, nur auf `doc.bastet-covid.org` statt
-  `bastet-covid.org` verankert.
+- **9d — Doc-Arm-Anbindung** ✅ **umgesetzt (26.09.2026)**: dieselbe
+  persönliche Self-Verifizierung wie Tier 2 (entschieden, siehe
+  Architekturentscheidungen Punkt 8) — technisch identisch zu 9b, nur auf
+  `app/doc/page.tsx` verankert (erreichbar über `doc.bastet-covid.org` UND
+  `bastet-covid.org/doc`, siehe `middleware.ts`). Gate sitzt vor der
+  eigentlichen Einschätzung (`submitActual()`), nicht vor dem reinen
+  Seitenaufruf — Formulartext übersteht den Self-Redirect-Roundtrip über
+  sessionStorage, Anhänge bewusst NICHT (Größenrisiko, kein stiller
+  erneuter Versand ohne sie). Eigener Schalter `self doc an/aus`
+  (Telegram-Admin), unabhängig vom (weiterhin ausgeschalteten) Web-Arm-
+  Schalter `self web an/aus`. **9c (Redis-Cooldown/Nullifier-Rate-Limit)
+  ist damit noch nicht enthalten** — der Doc-Arm hat aktuell nur die reine
+  Verifizierung, noch keine Abkling-/Wiederholungssperre; nachzuholen,
+  falls sich das als nötig erweist.
 - **9e — Telegram-Reduktion**: Tier-2-Pfad aus `app/api/telegram/route.ts`
   / `lib/telegramSession.ts` entfernen, feste Website-Verweis-Nachricht nach
   Tier-1-Abschluss, Admin-Befehle unverändert lassen.
