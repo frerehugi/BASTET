@@ -30,7 +30,7 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
   const [numberDraft, setNumberDraft] = useState("");
 
   const current = nextQuestion(answers);
-  const { done, total } = progress(answers);
+  const { remaining, total } = progress(answers);
 
   function answerSingle(id: QuestionId, value: string) {
     const next = { ...answers, [id]: value };
@@ -82,7 +82,7 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
   return (
     <div style={styles.card}>
       <div style={styles.progressLine}>
-        Frage {done + 1} von {total}
+        Noch {remaining} von {total} Fragen
       </div>
       <p style={styles.prompt}>{current.prompt}</p>
       {current.hint && <p style={styles.hint}>{current.hint}</p>}
