@@ -430,7 +430,10 @@ export default function App() {
 
   /**
    * Optionales Self-Verifizierungs-Gate vor beginDetailanalyseActual() (build/
-   * phase9-bastet-2.0-self-gatekeeper.md, 9b). Ist Self serverseitig
+   * phase9-bastet-2.0-self-gatekeeper.md, 9b). arm: "web" - seit 9d hat der
+   * Doc-Arm (app/doc/page.tsx) einen eigenen, unabhängigen Schalter
+   * (lib/selfFeatureFlag.ts), Florian wollte Self zunächst nur dort
+   * aktivieren, nicht hier. Ist Self für diesen Arm serverseitig
    * ausgeschaltet oder nicht konfiguriert, liefert /api/self/create-session
    * `{ enabled: false }` und hier passiert exakt das, was vor der Self-
    * Integration passierte: sofortiger Start ohne jeden Verifizierungsschritt.
@@ -444,7 +447,7 @@ export default function App() {
       const res = await fetch("/api/self/create-session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ arm: "web" }),
       });
       const data: { enabled: boolean; id?: string; verificationUrl?: string } = await res.json();
       if (!data.enabled || !data.id || !data.verificationUrl) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { isSelfEnabled } from "@/lib/selfFeatureFlag";
+import { isSelfEnabled, type SelfArm } from "@/lib/selfFeatureFlag";
 import { createSelfVerificationSession } from "@/lib/self";
 
 export const runtime = "nodejs";
@@ -8,6 +8,16 @@ export const runtime = "nodejs";
 interface CreateSessionBody {
   /** Pfad auf DERSELBEN Domain, zu dem nach der Verifizierung zurückgesprungen wird (Default "/"). */
   returnPath?: string;
+  /** Welcher Arm gated werden soll - Web (Tier 2) und Doc-Arm haben seit
+   *  9d getrennte Ein-/Ausschalter (siehe lib/selfFeatureFlag.ts), da
+   *  Florian den Doc-Arm zuerst und unabhängig vom Web-Arm aktivieren
+   *  wollte. Kein gültiger Wert -> wie ausgeschaltet behandeln, nicht als
+   *  Fehler (fail-safe wie überall sonst in dieser Route). */
+  arm?: string;
+}
+
+function parseArm(raw: string | undefined): SelfArm | null {
+  return raw === "web" || raw === "doc" ? raw : null;
 }
 
 // Nur ein relativer, eigener Pfad ist erlaubt - niemals ungeprüft aus dem
@@ -28,12 +38,17 @@ function sanitizeReturnPath(raw: string | undefined): string {
  * dieser Rückfall ist das gewünschte "schalte Self aus -> alter Zustand".
  */
 export async function POST(request: NextRequest) {
-  const enabled = await isSelfEnabled();
+  const body: CreateSessionBody = await request.json().catch(() => ({}));
+  const arm = parseArm(body.arm);
+  if (!arm) {
+    return NextResponse.json({ enabled: false });
+  }
+
+  const enabled = await isSelfEnabled(arm);
   if (!enabled) {
     return NextResponse.json({ enabled: false });
   }
 
-  const body: CreateSessionBody = await request.json().catch(() => ({}));
   const returnPath = sanitizeReturnPath(body.returnPath);
   const origin = request.nextUrl.origin;
   const externalUuid = randomUUID();
