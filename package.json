@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test:regression": "node scripts/regression-test.mts"
+    "test:regression": "node scripts/regression-test.mts",
+    "test:triage": "node scripts/triage-scoring-selftest.mts"
   },
   "dependencies": {
     "@selfxyz/enterprise-sdk": "^0.4.1",

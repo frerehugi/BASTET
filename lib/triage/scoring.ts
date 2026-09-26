@@ -222,8 +222,13 @@ export function computeTriage(answers: Answers): TriageResult {
       atemBis = 40;
       atemLabel = "geringen Grades (Atemnot bei mittelschwerer Belastung)";
     }
-    if (atemVon > gdbVon) {
-      gdbVon = atemVon;
+    // Beide Grenzen prüfen, nicht nur die untere: sonst würde ein Fall wie
+    // "Baseline 50-60, Atembeschwerden 50-70" fälschlich als "kein Effekt"
+    // behandelt, obwohl die Obergrenze (70) über der bisherigen (60) liegt -
+    // beim synthetischen Kombinationstest entdeckt, siehe scoring.ts-Historie
+    // zum gleichen Fix beim Parästhesien-Block.
+    if (atemVon > gdbVon || atemBis > gdbBis) {
+      gdbVon = Math.max(gdbVon, atemVon);
       gdbBis = Math.max(gdbBis, atemBis);
       gdbBegruendung.push(
         `Atemwegsbeeinträchtigung ${atemLabel} — nach VersMedV 8.3 eigenständig mit GdB ${atemVon}–${atemBis} zu bewerten, hebt die Gesamtspanne entsprechend an (Gesamt-GdB-Prinzip, keine Addition).`
@@ -255,8 +260,9 @@ export function computeTriage(answers: Answers): TriageResult {
       diabBis = 10;
       diabLabel = "mit Medikamenten ohne erhöhte Unterzuckerungsneigung eingestellt";
     }
-    if (diabVon > gdbVon) {
-      gdbVon = diabVon;
+    // Gleicher Fix wie beim Atembeschwerden-Block oben: beide Grenzen prüfen.
+    if (diabVon > gdbVon || diabBis > gdbBis) {
+      gdbVon = Math.max(gdbVon, diabVon);
       gdbBis = Math.max(gdbBis, diabBis);
       gdbBegruendung.push(
         `Diabetes mellitus, ${diabLabel} — nach VersMedV 15.1 eigenständig mit GdB ${diabVon}${diabBis > diabVon ? `–${diabBis}` : ""} zu bewerten, hebt die Gesamtspanne entsprechend an (Gesamt-GdB-Prinzip, keine Addition).`
