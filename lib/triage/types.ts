@@ -27,6 +27,7 @@ export type QuestionId =
   | "alltagsverrichtungen"
   | "arbeitsfaehigkeit"
   | "objektiveTests"
+  | "funcapScore"
   | "beruflicherKontext";
 
 export interface ChoiceOption {
@@ -40,6 +41,11 @@ export interface Question {
   showIf?: (answers: Answers) => boolean;
   prompt: string;
   hint?: string;
+  /** Optionaler klickbarer Link direkt unter dem Hint (z.B. zu einem externen
+   *  Selbsttest-Tool) - der Hint-Text selbst wird als reiner String gerendert
+   *  (kein Markdown/HTML), daher dieser separate, strukturierte Weg für einen
+   *  echten <a>-Link statt einer nur sichtbaren, aber nicht klickbaren URL. */
+  hintLink?: { url: string; label: string };
   /** "number" = freies Zahlenfeld statt Auswahlbuttons (siehe TriageFlow.tsx) -
    *  nur für echte, feingranulare Zahlenangaben. Für Werte, die (wie der
    *  Bell-Score) nur auf einer festen, kleinen Stufenskala definiert sind,
