@@ -1,5 +1,5 @@
 import type { Answers, Question } from "./types";
-import { BELL_SCORE_DE } from "../bellScore";
+import { BELL_SCORE_DE } from "../bellScore.ts";
 
 /** Für showIf("schmerzschwere") - dieselbe "mindestens ein relevanter Wert
  *  außer dem Ausschlusswert"-Logik wie countRelevant() in scoring.ts, hier
@@ -317,9 +317,27 @@ export function nextQuestion(answers: Answers): Question | null {
   return null;
 }
 
-/** Für die Fortschrittsanzeige: wie viele der aktuell relevanten Fragen sind schon beantwortet. */
-export function progress(answers: Answers): { done: number; total: number } {
-  const relevant = QUESTIONS.filter((q) => !q.showIf || q.showIf(answers));
-  const done = relevant.filter((q) => answers[q.id] !== undefined).length;
-  return { done, total: relevant.length };
+/**
+ * Für die Fortschrittsanzeige: feste Gesamtzahl (alle 24 Fragen inkl. aller
+ * bedingten Folgefragen), damit sich die Anzeige beim Beantworten nie mehr
+ * erhöht - nur die "noch übrig"-Zahl fällt. Frühere Version zählte nur die
+ * jeweils aktuell relevanten Fragen (z. B. 16 ganz am Anfang) und ließ diese
+ * Zahl mitten im Ablauf nach OBEN springen, sobald ein bedingter Zweig (z. B.
+ * PEM = "Ja") weitere Fragen freischaltete (16 → 20) - von Florian als für
+ * neurodivergente Nutzer:innen irritierend gemeldet.
+ *
+ * Neue Logik: "remaining" nutzt die Position der aktuell anstehenden Frage
+ * im Gesamtarray. Alle Fragen davor sind zu diesem Zeitpunkt entweder schon
+ * beantwortet oder (weil ihr showIf mit den bisherigen Antworten fehlschlägt)
+ * endgültig übersprungen - für die Anzeige zählt nur die Position, nicht die
+ * genaue Aufteilung. Damit fällt die Zahl garantiert monoton, mit größeren
+ * Sprüngen nach UNTEN, wenn ein ganzer Fragenzweig übersprungen wird (z. B.
+ * PEM = "Nein" überspringt 4 Folgefragen auf einen Schlag) - nie nach oben.
+ */
+export function progress(answers: Answers): { remaining: number; total: number } {
+  const total = QUESTIONS.length;
+  const current = nextQuestion(answers);
+  if (!current) return { remaining: 0, total };
+  const index = QUESTIONS.indexOf(current);
+  return { remaining: total - index, total };
 }
