@@ -32,6 +32,26 @@ Aktuelle Forschung (Charlton et al., *Nature Communications* 17, 9125, veröffen
 
 **Praktischer Nutzen für BASTET**: Objektivierbares Gegenargument gegen eine "reine Schonverhalten"-Argumentation in Gutachten oder Widerspruchsverfahren — mit dem Vorbehalt, dass die Studie selbst nur für mobilere Patient:innen validiert ist und nicht unkritisch auf schwerste Verläufe übertragen werden sollte.
 
+## 2b. Pathophysiologie: dopaminerge Schädigung im Striatum (PET-Bildgebung)
+
+Ergänzt Abschnitt 2 um einen zweiten, unabhängigen objektiven Befund — diesmal zum "Brain Fog"/Motivationsverlust-Komplex statt zur muskulären Belastungsintoleranz. Primärquelle direkt verifiziert (nicht nur Sekundärberichterstattung übernommen): Liu YK, Persaud D, Vieira EL, Braga J, Rusjan P, Miler L, Rabin JS, McCluskey T, Boileau I, Chao T, Bagby M, Narciso L, Gray LR, Vasdev N, Desmond K, Kloiber S, Warsh J, Husain MI, Smart K, Wang W, Meyer JH: "Loss of vesicular monoamine transporter 2 in striatum of long COVID and relationship to neuropsychiatric symptoms", *eBioMedicine* 2026:106339, doi: 10.1016/j.ebiom.2026.106339 (PMID 42431745) — Centre for Addiction and Mental Health (CAMH)/University of Toronto, Letztautor Jeffrey H. Meyer.
+
+**Studiendesign**: Fall-Kontroll-Studie, Rekrutierung 08/2022–04/2025. PET-Bildgebung von VMAT2 (vesikulärer Monoamin-Transporter 2 — Marker für die Dichte dopaminerger Nervenendigungen, nicht die Diagnose "Long COVID" selbst) bei 24 Erwachsenen mit Long COVID und anhaltenden neuropsychiatrischen Symptomen, verglichen mit 24 altersgematchten gesunden Kontrollpersonen.
+
+**Zentrale Befunde**:
+- VMAT2-Bindung in allen drei Hauptregionen des Striatums signifikant reduziert (je nach Region 16–20 % niedriger, im Schnitt ca. 18 %).
+- Regionsspezifische Symptomkorrelation: niedrigere Werte im **ventralen Striatum** ↔ stärkerer Motivationsverlust/Apathie; im **dorsalen Putamen** ↔ verlangsamte motorische Leistung; im **kaudaten Putamen** ↔ schlechtere Gedächtnisleistung (**explorative Analyse** — schwächere Evidenzstufe als die beiden anderen Korrelationen, nicht gleich gewichten).
+- Befund fügt sich zu einer bereits vorbeschriebenen Neuroinflammation in denselben Hirnregionen (dieselbe Arbeitsgruppe) — stützt ein Erklärungsmodell "Immunaktivität schädigt dopaminerge Neurone", ohne dass diese Kausalkette in der vorliegenden Studie selbst geprüft wurde.
+- Begleitkommentar im selben Heft (eBioMedicine, PII 00252-5, "Dopaminergic vulnerability in long COVID: striatal PET imaging at the brain-body interface") ordnet den Befund ein, liefert aber keine eigenen Daten.
+
+**Wichtige Limitationen**:
+- Kleine Stichprobe (n=24 pro Gruppe) — Einzelstudie, keine Leitlinien-Ebene.
+- Querschnitts-Fall-Kontroll-Design — keine Aussage über Kausalität oder zeitlichen Verlauf.
+- Memory-Korrelation ausdrücklich explorativ (siehe oben) — nicht mit derselben Sicherheit wie Motivation/Motorik zitieren.
+- Klinische Konsequenz (Dopamin-Wirkstoffe) noch ungeprüft: CAMH kündigt gemeinsam mit dem University Health Network klinische Studien zu vorhandenen dopaminwirksamen Medikamenten an — bislang **kein** Wirksamkeitsnachweis, nur Ankündigung.
+
+**Praktischer Nutzen für BASTET**: Ein weiterer objektiver, bildgebender Beleg dafür, dass Motivationsverlust, psychomotorische Verlangsamung und Gedächtnisprobleme bei Long COVID einen nachweisbaren neurobiologischen Unterbau haben können — relevant als Gegenargument, wenn diese Symptome in einem Gutachten pauschal als "primär psychisch/depressiv" statt als organisch mitverursacht eingeordnet werden (vgl. `haltung-mecfs-stellungnahme.md`, `kritik-cfs-psychologisierung-vt-manual.md`, sowie SG Speyer 2025 in `symptomliste-gdb-mde-abgleich.md`, das ebenfalls ausdrücklich gegen eine primär-psychische Einordnung entschied). Wie bei Charlton et al. oben: aktuelle Forschung mit kleiner Stichprobe, kein etablierter Konsens — als solche kennzeichnen, nicht als bewiesenen Mechanismus darstellen.
+
 ## 3. Diagnosekriterien
 
 ### ME/CFS: Kanadische Konsenskriterien (CCC), von D-A-CH-Konsensusstatement 2024 (Hoffmann et al.) für Diagnostik und Begutachtung empfohlen
@@ -113,6 +133,7 @@ Grundlage: Stellungnahme von über 140 selbst betroffenen Ärzt:innen/Psychother
 | Diagnosekriterien ME/CFS | Kanadische Konsenskriterien (CCC), PEM zwingend, DSQ-PEM zur Objektivierung |
 | Diagnosekriterien Long/Post-COVID | AWMF S1-Leitlinie (Stand 05/2024), klinische Diagnose, kein Laborausschluss möglich |
 | Gegenargument zu "nur Schonverhalten" | Charlton et al. 2026 (Nature Communications): Muskelbefunde bei ME/CFS/Long COVID unterscheiden sich von reiner Bettruhe-Dekonditionierung (Abschnitt 2) |
+| Gegenargument zu "nur psychisch/depressiv" bei Brain Fog/Motivationsverlust | Liu et al. 2026 (eBioMedicine): PET-Nachweis reduzierter dopaminerger Nervenendigungen (VMAT2) im Striatum bei Long COVID, korreliert mit Motivationsverlust/psychomotorischer Verlangsamung/Gedächtnisproblemen (Abschnitt 2b) |
 | Pacing korrekt erklären, GET/KVT-Evidenz einordnen | Abschnitt 4a: Pacing ≠ Aktivierung, GET kontraindiziert (NICE 2021, IQWiG 2023, PACE widerlegt), Reha-Risiko (Kedor et al. 2026: ~45 % Verschlechterung) |
 | Erholungsprognose Fatigue ohne PEM | Maffitt et al. 2024: deutliche Besserung über 12 Monate bei post-COVID fatigue ohne PEM-Nachweis — relevant für Heilungsbewährung (Abschnitt 3, Abschnitt 5) |
 | Schweregrad-Einschätzung | Bell-Score (0–100, kein direktes GdB-Äquivalent), FUNCAP55 (55 Fragen) |
