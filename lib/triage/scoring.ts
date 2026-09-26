@@ -39,6 +39,11 @@ export function computeTriage(answers: Answers): TriageResult {
   const autonomHfDokumentiert = answers.autonomHfDokumentiert as string | undefined;
   const atembeschwerden = answers.atembeschwerden as string | undefined;
   const diabetesStatus = answers.diabetesStatus as string | undefined;
+  const paraesthesien = answers.paraesthesien as string | undefined;
+  const schmerzausbreitung = answers.schmerzausbreitung as string | undefined;
+  // pemTriggerart wird bewusst NICHT destrukturiert - fließt nur über
+  // answersToContextText() (lib/triage/context.ts) als reines Kontext-Signal
+  // in Tier 2 ein, ohne eigene Scoring-Logik in diesem Schritt.
   const bellScoreRaw = answers.bellScore as string | undefined;
   const bellScoreNum = bellScoreRaw && bellScoreRaw.trim() !== "" ? Number(bellScoreRaw) : NaN;
   const bellScoreValid = !Number.isNaN(bellScoreNum) && bellScoreNum >= 0 && bellScoreNum <= 100;
@@ -263,6 +268,43 @@ export function computeTriage(answers: Answers): TriageResult {
     }
   }
 
+  // Periphere Dys-/Parästhesien (VersMedV 3.11, Polyneuropathie-Analogie) -
+  // gleiches Prinzip wie Atembeschwerden/Diabetes oben: eigenständiger Boden,
+  // keine Addition, keine Änderung von globalfunktionSchweregrad. Laut
+  // Recherche eines der häufigsten Post-COVID-Symptome (gepoolte Prävalenz
+  // ca. 33 %), kalibriert in schmerz-neuro-kardio-erweiterung.md inkl. eines
+  // realen Gerichtsfalls (Hochstufung 20→30 bei zusätzlicher Kraftminderung/
+  // Gangunsicherheit/therapieresistenten Schmerzen).
+  if (paraesthesien && paraesthesien !== "keine") {
+    let paraVon = 0;
+    let paraBis = 0;
+    let paraLabel = "";
+    if (paraesthesien === "deutlich-mit-schwaeche") {
+      paraVon = 30;
+      paraBis = 30;
+      paraLabel = "deutlich, mit zusätzlicher Kraftminderung/Gangunsicherheit";
+    } else if (paraesthesien === "deutlich") {
+      paraVon = 20;
+      paraBis = 20;
+      paraLabel = "deutlich, ohne motorische Begleitsymptome";
+    } else if (paraesthesien === "leicht") {
+      paraVon = 10;
+      paraBis = 10;
+      paraLabel = "leicht bis gelegentlich";
+    }
+    if (paraVon > gdbVon) {
+      gdbVon = paraVon;
+      gdbBis = Math.max(gdbBis, paraBis);
+      gdbBegruendung.push(
+        `Periphere Dys-/Parästhesien, ${paraLabel} — nach VersMedV 3.11 (Polyneuropathie-Analogie) eigenständig mit GdB ${paraVon} zu bewerten${paraesthesien === "deutlich-mit-schwaeche" ? " (Hochstufung bei zusätzlicher Kraftminderung/Gangunsicherheit, vgl. schmerz-neuro-kardio-erweiterung.md)" : ""}, hebt die Gesamtspanne entsprechend an (Gesamt-GdB-Prinzip, keine Addition).`
+      );
+    } else {
+      gdbBegruendung.push(
+        `Periphere Dys-/Parästhesien, ${paraLabel} — nach VersMedV 3.11 eigenständig mit GdB ${paraVon} zu bewerten, liegt hier unterhalb der ohnehin bereits höheren Gesamteinschätzung.`
+      );
+    }
+  }
+
   // Erhöhungsfaktoren (keine Addition, aber Anhebung der Spanne plausibel),
   // siehe versmedv-gdb-gds.md Gesamt-GdB-Prinzip.
   let erhoehungsfaktoren = 0;
@@ -278,12 +320,14 @@ export function computeTriage(answers: Answers): TriageResult {
       "Eigenständige, fachärztlich gesicherte psychiatrische Komorbidität — kann als Erhöhungsfaktor in die Gesamt-GdB-Bildung einfließen (keine Addition, VersMedV Teil A Nr. 3)."
     );
   }
-  if (schmerzCount >= 3 || schmerzschwere === "kaum-auszuhalten") {
+  if (schmerzCount >= 3 || schmerzschwere === "kaum-auszuhalten" || schmerzausbreitung === "generalisiert") {
     erhoehungsfaktoren++;
     gdbBegruendung.push(
-      schmerzCount >= 3
-        ? "Breites Schmerzbild (≥3 Lokalisationen) — je nach Charakter ggf. zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie) zu prüfen."
-        : "Selbst berichtete Schmerzintensität \"kaum auszuhalten\" — spricht auch bei weniger Lokalisationen für eine zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie)."
+      schmerzausbreitung === "generalisiert"
+        ? "Schmerzen nahezu am ganzen Körper spürbar — entspricht dem für die Fibromyalgie-Analogie verlangten, über mehrere Körperregionen verteilten Schmerzbild (schmerz-neuro-kardio-erweiterung.md), Einordnung über 18.4/3.7."
+        : schmerzCount >= 3
+          ? "Breites Schmerzbild (≥3 Lokalisationen) — je nach Charakter ggf. zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie) zu prüfen."
+          : "Selbst berichtete Schmerzintensität \"kaum auszuhalten\" — spricht auch bei weniger Lokalisationen für eine zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie)."
     );
   }
   if (pemAusloeseschwelle === "leichteste-alltagsbelastung") {
