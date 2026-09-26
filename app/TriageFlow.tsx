@@ -88,17 +88,34 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
       {current.hint && <p style={styles.hint}>{current.hint}</p>}
 
       {current.type === "single" && (
-        <div style={styles.optionGrid}>
-          {current.options.map((opt) => (
-            <button
-              key={opt.value}
-              style={styles.optionButton}
-              onClick={() => answerSingle(current.id, opt.value)}
-            >
-              {opt.label}
+        <>
+          <div style={styles.optionGrid}>
+            {current.options.map((opt) => (
+              <button
+                key={opt.value}
+                style={styles.optionButton}
+                onClick={() => answerSingle(current.id, opt.value)}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+          {current.id === "bellScore" && (
+            <BellScoreReference
+              linkStyle={styles.bellScoreLink}
+              panelStyle={styles.bellScorePanel}
+              rowStyle={styles.bellScoreRow}
+              valueStyle={styles.bellScoreValue}
+              textStyle={styles.bellScoreText}
+              sourceStyle={styles.bellScoreSource}
+            />
+          )}
+          {current.optional && (
+            <button style={styles.skipButton} onClick={() => answerSingle(current.id, "")}>
+              Weiß ich nicht
             </button>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {current.type === "multi" && (
@@ -140,16 +157,6 @@ export default function TriageFlow({ onComplete }: TriageFlowProps) {
             value={numberDraft}
             onChange={(e) => setNumberDraft(e.target.value)}
           />
-          {current.id === "bellScore" && (
-            <BellScoreReference
-              linkStyle={styles.bellScoreLink}
-              panelStyle={styles.bellScorePanel}
-              rowStyle={styles.bellScoreRow}
-              valueStyle={styles.bellScoreValue}
-              textStyle={styles.bellScoreText}
-              sourceStyle={styles.bellScoreSource}
-            />
-          )}
           <div style={styles.numberButtonRow}>
             <button
               style={styles.continueButton}

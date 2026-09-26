@@ -35,8 +35,11 @@ export interface Question {
   showIf?: (answers: Answers) => boolean;
   prompt: string;
   hint?: string;
-  /** "number" = freies Zahlenfeld statt Auswahlbuttons (siehe TriageFlow.tsx),
-   *  bislang nur für "bellScore" genutzt. */
+  /** "number" = freies Zahlenfeld statt Auswahlbuttons (siehe TriageFlow.tsx) -
+   *  nur für echte, feingranulare Zahlenangaben. Für Werte, die (wie der
+   *  Bell-Score) nur auf einer festen, kleinen Stufenskala definiert sind,
+   *  "single" mit den Stufen als Optionen verwenden statt "number" - ein
+   *  Freitextfeld würde sonst Werte erlauben, die die Skala gar nicht kennt. */
   type: "single" | "multi" | "number";
   options: ChoiceOption[];
   /** Bei Mehrfachauswahl: Wert, der sich mit allen anderen gegenseitig
@@ -47,8 +50,9 @@ export interface Question {
   /** Nur für type "number": Grenzen für die Eingabevalidierung im UI. */
   min?: number;
   max?: number;
-  /** Nur für type "number": zeigt einen "Weiß ich nicht"-Button, der die
-   *  Frage ohne Wert überspringt (Answers[id] wird dann "" statt einer Zahl). */
+  /** Zeigt einen "Weiß ich nicht"-Button, der die Frage ohne Wert überspringt
+   *  (Answers[id] wird dann "" statt eines echten Werts) - für "number" und
+   *  "single" nutzbar. */
   optional?: boolean;
 }
 
