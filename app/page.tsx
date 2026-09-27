@@ -934,7 +934,17 @@ export default function App() {
                           )}
                         </div>
                       ))}
-                    {refs && isMdeEinschlaegig(body) && (
+                    {refs && isMdeEinschlaegig(body) && i > 0 && (
+                      // i > 0 (nicht die Tier-1-Zusammenfassung bei Index 0):
+                      // dieser Mini-Chat löst einen echten, kostenpflichtigen
+                      // Claude-Call aus (app/api/bg-help, siehe
+                      // runBgHelpStream in lib/chat.ts) - anders als der
+                      // BG-Brief direkt darüber (reine Vorlage, kein API-
+                      // Call) darf er nicht schon in der ungegateten Tier-1-
+                      // Auswertung erscheinen. Jede Nachricht mit i > 0
+                      // entsteht erst nach beginDetailanalyseActual(), das
+                      // seinerseits erst nach dem Self-Gate in
+                      // beginDetailanalyse() läuft (arm "web") - siehe dort.
                       <div style={styles.bgHelpArea}>
                         {!bgHelpOpen[i] && (
                           <button style={styles.refsButton} onClick={() => openBgHelp(i, body)}>
