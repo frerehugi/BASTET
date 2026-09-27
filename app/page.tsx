@@ -659,8 +659,8 @@ export default function App() {
                 Erwerbsleben spürbar eingeschränkt sind.
               </p>
               <p style={{ ...styles.heroText, marginBottom: 0 }}>
-                Demgegenüber stehen allein 2024 rund 536 neu bewilligte
-                BK-3101-Renten (2025: 603, weiter steigend)
+                Demgegenüber wurden 2024 und 2025 jeweils nur eine mittlere
+                dreistellige Anzahl an neuen BK-3101-Renten bewilligt
                 <sup style={styles.foot}>4</sup> — die BGW selbst weist auf eine
                 begrenzte Zahl unabhängiger, fachlich versierter Gutachter:innen
                 hin<sup style={styles.foot}>7</sup>. Bei der Rentenversicherung
