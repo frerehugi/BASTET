@@ -157,7 +157,8 @@ export async function POST(request: Request): Promise<Response> {
     // "Sitzung gestartet" = erste echte Interview-Runde (nur die
     // OPENING_QUESTION steht bislang in session.messages) - siehe
     // lib/userCount.ts. Vor dem Push prüfen, sonst zählt jede Runde als Start.
-    if (session.messages.length === 1) void incrementStarted("telegram");
+    // AWAIT statt void, siehe Begründung bei incrementCompleted weiter unten.
+    if (session.messages.length === 1) await incrementStarted("telegram");
     // War in einer vorherigen Runde schon eine vollständige Auswertung mit
     // REFERENZEN-Block dabei? Nur dann NICHT noch einmal als "completed"
     // zählen, wenn diese Runde erneut einen liefert (gleiches Prinzip wie
@@ -196,8 +197,12 @@ export async function POST(request: Request): Promise<Response> {
     session.messages.push({ role: "assistant", content: cleaned });
     await saveSession(chatId, session);
 
+    // AWAIT statt void: derselbe Serverless-Teardown-Fallstrick wie in
+    // app/api/chat/route.ts/app/api/doc/route.ts - hier zwar mit
+    // nachfolgendem sendTelegramMessage() als zusätzlichem Zeitpuffer, aber
+    // ohne Garantie, dass die Function-Instanz solange am Leben bleibt.
     if (!alreadyCompleted && cleaned.includes(REFERENZEN_MARKER)) {
-      void incrementCompleted("telegram");
+      await incrementCompleted("telegram");
     }
 
     const { body, refs } = splitReferences(cleaned);

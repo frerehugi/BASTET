@@ -46,8 +46,11 @@ export async function POST(request: Request) {
   const turnCount = typeof body.turnCount === "number" ? body.turnCount : 0;
   // "Sitzung gestartet" = erster echter Backend-Call (die Tier-1-Triage davor
   // läuft rein clientseitig, siehe app/page.tsx) - siehe lib/userCount.ts.
-  // Fire-and-forget, blockiert die eigentliche Anfrage nicht.
-  if (turnCount === 0) void incrementStarted("web");
+  // AWAIT statt void: der nachfolgende Anthropic-Call verzögert sich dadurch
+  // nicht spürbar (Redis-INCR ist sehr schnell), garantiert aber, dass der
+  // Write wirklich passiert ist - siehe incrementCompleted weiter unten für
+  // den Grund, warum void hier riskant wäre.
+  if (turnCount === 0) await incrementStarted("web");
   // War in einer vorherigen Runde (z.B. vor einer Rückfrage) schon eine
   // vollständige Auswertung mit REFERENZEN-Block dabei? Nur dann NICHT noch
   // einmal als "completed" zählen, wenn diese Runde erneut einen liefert.
@@ -108,9 +111,15 @@ export async function POST(request: Request) {
       // Erst NACH controller.close() zählen (siehe lib/userCount.ts) - eine
       // Auswertung gilt erst als "completed", wenn diese Runde tatsächlich
       // (erstmals) einen vollständigen REFERENZEN-Block geliefert hat, ohne
-      // Stream-Fehler mittendrin.
+      // Stream-Fehler mittendrin. AWAIT statt void: das ist die letzte
+      // Aktion in start() - ohne await kann die Serverless-Function-Instanz
+      // (Vercel) beendet werden, sobald der Stream als abgeschlossen gilt,
+      // noch bevor der fire-and-forget-Redis-Write beim Provider ankommt.
+      // Der Stream selbst ist zu diesem Zeitpunkt schon vollständig an die
+      // Person ausgeliefert (controller.close() lief bereits) - das await
+      // hier verzögert also nichts Sichtbares, sichert nur den Zähler ab.
       if (!streamErrored && !alreadyCompleted && full.includes(REFERENZEN_MARKER)) {
-        void incrementCompleted("web");
+        await incrementCompleted("web");
       }
     },
   });

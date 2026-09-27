@@ -27,14 +27,19 @@ export async function POST(request: NextRequest) {
   const arm = body.arm ?? "tier1";
 
   // Unbekannter/fehlerhafter arm-Wert wird still ignoriert statt einen
-  // Fehler zu werfen - fire-and-forget-Prinzip wie überall in dieser Route,
-  // ein kaputter Aufruf darf dem Frontend nie auffallen.
+  // Fehler zu werfen - ein kaputter Aufruf darf dem Frontend nie auffallen.
+  // AWAIT bewusst statt void/fire-and-forget: diese Route hat danach keine
+  // weitere Arbeit mehr, die den Redis-Write "nebenbei" Zeit geben würde -
+  // ohne await kann die Serverless-Function-Instanz beendet werden, bevor
+  // der INCR beim Provider ankommt (beobachtet: Web-Arm "abgeschlossen"
+  // blieb trotz erfolgreicher Auswertung bei 0, siehe dieselbe Korrektur in
+  // app/api/chat/route.ts, app/api/doc/route.ts, app/api/telegram/route.ts).
   if (TRACKABLE_ARMS.includes(arm as UserCountArm)) {
     const validArm = arm as UserCountArm;
     if (body.event === "started") {
-      void incrementStarted(validArm);
+      await incrementStarted(validArm);
     } else if (body.event === "completed") {
-      void incrementCompleted(validArm);
+      await incrementCompleted(validArm);
     }
   }
 

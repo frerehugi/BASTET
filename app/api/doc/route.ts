@@ -73,8 +73,9 @@ export async function POST(request: Request) {
 
   // "Sitzung gestartet" = jeder valide /api/doc-Call - der Doc-Arm ist
   // einmalig/formularartig, keine Mehrfachrunden wie im Web-Chat-Arm (siehe
-  // lib/userCount.ts). Fire-and-forget, blockiert die Anfrage nicht.
-  void incrementStarted("doc");
+  // lib/userCount.ts). AWAIT statt void, siehe Begründung bei
+  // incrementCompleted weiter unten in dieser Datei.
+  await incrementStarted("doc");
 
   const generator = runDocAssessmentStream(body.userInput, files);
 
@@ -120,9 +121,16 @@ export async function POST(request: Request) {
       }
       // Erst NACH controller.close() zählen (siehe lib/userCount.ts) - nur
       // eine tatsächlich fertiggestellte Auswertung mit REFERENZEN-Block
-      // ohne Stream-Fehler zählt als "completed".
+      // ohne Stream-Fehler zählt als "completed". AWAIT statt void: das ist
+      // die letzte Aktion in start() - ohne await kann die Serverless-
+      // Function-Instanz beendet werden, sobald der Stream als
+      // abgeschlossen gilt, noch bevor der fire-and-forget-Redis-Write beim
+      // Provider ankommt (beobachtet: Web-Arm "abgeschlossen" blieb trotz
+      // erfolgreicher Auswertung bei 0). Der Stream ist zu diesem Zeitpunkt
+      // schon vollständig ausgeliefert, das await verzögert also nichts
+      // Sichtbares.
       if (!streamErrored && full.includes(REFERENZEN_MARKER)) {
-        void incrementCompleted("doc");
+        await incrementCompleted("doc");
       }
     },
   });
