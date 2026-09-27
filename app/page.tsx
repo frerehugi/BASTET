@@ -715,7 +715,12 @@ export default function App() {
                 BASTET besteht aus zwei Teilen: einem einfachen Fragenkatalog zum
                 Anklicken und einem kurzen Dialog mit der BASTET-KI in eigenen
                 Worten. Stichpunkte reichen — je mehr Sie schildern, desto
-                genauer die Einschätzung.
+                genauer die Einschätzung. Um die BASTET-KI vor Bot-Angriffen und
+                vor Missbrauch zu schützen, nutzen wir für den Zugang zur
+                BASTET-KI das SELF-Protokoll, über welches sich Nutzer:innen
+                kostenlos und anonym via ZK-Technologie als Menschen
+                authentifizieren können. Für den 1. Teil ist keine
+                SELF-Authentifizierung notwendig.
               </p>
               <p style={{ ...styles.warningText, marginBottom: 0 }}>
                 BASTET speichert Ihren Gesprächsverlauf nicht. Einmal geschlossen
