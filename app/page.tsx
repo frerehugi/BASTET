@@ -720,7 +720,8 @@ export default function App() {
                 BASTET-KI das SELF-Protokoll, über welches sich Nutzer:innen
                 kostenlos und anonym via ZK-Technologie als Menschen
                 authentifizieren können. Für den 1. Teil ist keine
-                SELF-Authentifizierung notwendig.
+                SELF-Authentifizierung notwendig, auch dieser führt bereits zu
+                einer relativ detaillierten Einschätzung.
               </p>
               <p style={{ ...styles.warningText, marginBottom: 0 }}>
                 BASTET speichert Ihren Gesprächsverlauf nicht. Einmal geschlossen
