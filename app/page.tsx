@@ -965,6 +965,19 @@ export default function App() {
                                 )}
                               </div>
                             ))}
+                            {/* Deckt die Lücke zwischen Klick auf "Senden" und dem ersten
+                                Stream-Chunk ab, analog zum Haupt-Chat (siehe oben,
+                                isStreamingPlaceholder-Block): bgHelpLoading[i] wird sofort
+                                gesetzt, die leere Assistent-Platzhalter-Nachricht kommt aber
+                                erst nach den Response-Headern (app/page.tsx, sendBgHelpMessage)
+                                - bis dahin steht hier noch keine Nachricht, auf die sich das
+                                "…" oben stützen könnte. */}
+                            {bgHelpLoading[i] &&
+                              bgHelpMessages[i]?.[bgHelpMessages[i].length - 1]?.role === "user" && (
+                                <div style={styles.bgHelpAssistantBubble}>
+                                  <span style={{ opacity: 0.6 }}>…</span>
+                                </div>
+                              )}
                             {bgHelpError[i] && <div style={styles.errorBox}>{bgHelpError[i]}</div>}
                             <div style={styles.bgHelpInputRow}>
                               <input
