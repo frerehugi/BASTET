@@ -1,6 +1,6 @@
 import { sendTelegramMessage } from "./telegram";
 import { approvePendingItem, getPendingItems, rejectPendingItem, type PendingItem } from "./reviewQueue";
-import { getUserCounts, setStartedCount, setCompletedCount } from "./userCount";
+import { getUserCounts, setStartedCount, setCompletedCount, resetAllCounts, type UserCounts } from "./userCount";
 import { getSelfToggleState, hasSelfConfig, setSelfEnabled, type SelfArm } from "./selfFeatureFlag";
 
 /**
@@ -40,31 +40,45 @@ function formatPendingItem(item: PendingItem, index: number): string {
 
 /**
  * Rein anonyme Nutzungszähler (siehe lib/userCount.ts) - "gestartet" minus
- * "abgeschlossen" ergibt die grobe Abbruchrate je Arm.
+ * "abgeschlossen" ergibt die grobe Abbruchrate je Arm. Layout bewusst als
+ * EIN Trichter (Landing -> Tier 1 -> Tier 2) plus zwei separate, eigene
+ * Kanäle (Doc-Arm, Telegram-Arm) - deckt sich mit dem tatsächlichen
+ * Nutzungsweg (siehe app/page.tsx: arztVerweis ist ein Ausstieg AUS dem
+ * Trichter, kein Schritt "davon weiter zu Tier 1"; Doc-/Telegram-Arm haben
+ * keinen Landing-/Tier-1-Vorlauf). "Tier 1" wird nur einmal gezeigt (vorher
+ * doppelt: einmal als "davon bis Tier 1 gekommen", einmal als eigene
+ * Zeile) - reine Anzeige-Redundanz, keine Datenredundanz.
  */
 async function handleStats(chatId: number): Promise<void> {
   const counts = await getUserCounts();
-  // Tier 1 ist strukturell IMMER Voraussetzung für einen Web-Arm-Start (siehe
-  // handleBackfillTier1 oben) - completed darf also nie unter web.started
-  // liegen. Tut es das doch, ist der Tier-1-Zähler veraltet (Zählung startete
-  // erst mit 9a) - Hinweis auf die Korrektur statt stillschweigend falscher
-  // Zahlen.
+  await sendTelegramMessage(chatId, formatStats(counts));
+}
+
+/**
+ * Reiner Formatierungsschritt, getrennt von handleStats() getestet/nutzbar
+ * (kein Redis/Telegram-Aufruf nötig) - Text bewusst ohne Markdown/HTML, da
+ * sendTelegramMessage() ohne parse_mode sendet (siehe lib/telegram.ts).
+ */
+function formatStats(counts: UserCounts): string {
+  // Tier 1 ist strukturell IMMER Voraussetzung für einen Web-Arm-Start
+  // (siehe handleBackfillTier1 unten) - completed darf also nie unter
+  // web.started liegen. Tut es das doch, ist der Tier-1-Zähler veraltet
+  // (Zählung startete erst mit 9a) - Hinweis auf die Korrektur statt
+  // stillschweigend falscher Zahlen.
   const tier1Veraltet = counts.tier1.completed < counts.web.started;
-  await sendTelegramMessage(
-    chatId,
+
+  return (
     `📊 Nutzungszähler (anonym, seit Zählbeginn)\n\n` +
-      `Landing ("Starte BASTET" geklickt): ${counts.landing.started}\n` +
-      `davon "Ich möchte erst zum Arzt" geklickt: ${counts.arztVerweis.started}\n` +
-      `davon bis Tier 1 gekommen: ${counts.tier1.started}\n` +
-      `Web-Arm (Tier 2): ${counts.web.started} gestartet, ${counts.web.completed} abgeschlossen\n` +
-      `Doc-Arm: ${counts.doc.started} gestartet, ${counts.doc.completed} abgeschlossen\n` +
-      `Telegram-Arm: ${counts.telegram.started} gestartet, ${counts.telegram.completed} abgeschlossen\n` +
-      `Tier 1 (regelbasiert, Web): ${counts.tier1.started} gestartet, ${counts.tier1.completed} abgeschlossen` +
-      (tier1Veraltet
-        ? `\n\n⚠️ Tier-1-Zähler liegt unter Web-Arm gestartet (${counts.web.started}) - das ist strukturell unmöglich ` +
-          `(jeder Web-Start setzt einen abgeschlossenen Tier-1-Durchlauf voraus). Zählung begann erst mit dem ` +
-          `9a-Rollout. "backfill tier1" hebt ihn auf eine begründete Mindestschätzung an.`
-        : "")
+    `Web-Trichter\n` +
+    `  Start: ${counts.landing.started}\n` +
+    `  → Arzt empfohlen statt Selbsttest: ${counts.arztVerweis.started}\n` +
+    `  → Tier 1 (regelbasiert): ${counts.tier1.started} gestartet, ${counts.tier1.completed} abgeschlossen\n` +
+    `  → Tier 2 (KI-Chat): ${counts.web.started} gestartet, ${counts.web.completed} abgeschlossen\n\n` +
+    `Doc-Arm: ${counts.doc.started} gestartet, ${counts.doc.completed} abgeschlossen\n` +
+    `Telegram-Arm: ${counts.telegram.started} gestartet, ${counts.telegram.completed} abgeschlossen` +
+    (tier1Veraltet
+      ? `\n\n⚠️ Tier-1-Zähler unter Web-Arm gestartet (${counts.web.started}) - strukturell unmöglich. "backfill tier1" korrigiert das.`
+      : "")
   );
 }
 
@@ -114,6 +128,23 @@ async function handleBackfillTier1(chatId: number): Promise<void> {
       `dem 9a-Rollout bleiben unbekannt):\n` +
       `gestartet: ${counts.tier1.started} → ${newStarted}\n` +
       `abgeschlossen: ${counts.tier1.completed} → ${newCompleted}`
+  );
+}
+
+/**
+ * Kompletter, irreversibler Reset aller Nutzungszähler auf 0 (siehe
+ * lib/userCount.ts, resetAllCounts()) - für einen bewussten Neustart der
+ * Zählung, z.B. unmittelbar vor der Aktivierung von Self für einen neuen
+ * Arm, damit Testläufe aus der Einrichtungsphase die späteren echten
+ * Nutzungszahlen nicht verfälschen. Zeigt den alten Stand VOR dem Reset,
+ * damit er nicht ersatzlos verloren geht, falls er doch noch gebraucht wird.
+ */
+async function handleResetStats(chatId: number): Promise<void> {
+  const before = await getUserCounts();
+  await resetAllCounts();
+  await sendTelegramMessage(
+    chatId,
+    `Alle Nutzungszähler auf 0 zurückgesetzt. Stand davor:\n\n${formatStats(before)}`
   );
 }
 
@@ -269,6 +300,11 @@ export async function handleAdminCommand(chatId: number, text: string): Promise<
 
   if (/^backfill\s+tier1\b/i.test(text)) {
     await handleBackfillTier1(chatId);
+    return true;
+  }
+
+  if (/^z(ä|ae)hler\s+nullen\b/i.test(text)) {
+    await handleResetStats(chatId);
     return true;
   }
 

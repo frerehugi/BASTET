@@ -38,7 +38,7 @@ function getRedis(): Redis {
 // Tier-1-Start, gleiches Prinzip wie "landing": nur "started" wird gesetzt.
 export type UserCountArm = "web" | "doc" | "telegram" | "tier1" | "landing" | "arztVerweis";
 
-const ARMS: UserCountArm[] = ["web", "doc", "telegram", "tier1", "landing", "arztVerweis"];
+export const USER_COUNT_ARMS: UserCountArm[] = ["web", "doc", "telegram", "tier1", "landing", "arztVerweis"];
 
 function startedKey(arm: UserCountArm): string {
   return `bastet:usercount:${arm}:started`;
@@ -79,10 +79,11 @@ export async function incrementCompleted(arm: UserCountArm): Promise<void> {
 
 /**
  * Direktes Setzen (kein INCR) - NUR für die einmalige rückwirkende Tier-1-
- * Korrektur gedacht (lib/adminCommands.ts, Befehl "backfill tier1"), sonst
- * nirgends aufrufen: jeder normale Zähl-Vorgang läuft über
- * incrementStarted()/incrementCompleted() oben, damit kein Turn versehentlich
- * einen ganzen Zählerstand überschreibt statt ihn nur zu erhöhen.
+ * Korrektur (lib/adminCommands.ts, Befehl "backfill tier1") und den
+ * expliziten Reset (Befehl "zähler nullen") gedacht, sonst nirgends
+ * aufrufen: jeder normale Zähl-Vorgang läuft über incrementStarted()/
+ * incrementCompleted() oben, damit kein Turn versehentlich einen ganzen
+ * Zählerstand überschreibt statt ihn nur zu erhöhen.
  */
 export async function setStartedCount(arm: UserCountArm, value: number): Promise<void> {
   await getRedis().set(startedKey(arm), value);
@@ -92,13 +93,27 @@ export async function setCompletedCount(arm: UserCountArm, value: number): Promi
   await getRedis().set(completedKey(arm), value);
 }
 
+/**
+ * Setzt ALLE Zähler (alle Arme, started+completed) auf 0 zurück - für den
+ * bewussten Neustart der Zählung (lib/adminCommands.ts, Befehl "zähler
+ * nullen"), z.B. unmittelbar vor der Aktivierung von Self für einen neuen
+ * Arm, damit die Vorher-/Nachher-Nutzungszahlen nicht durch die Testläufe
+ * aus der Einrichtungsphase verfälscht sind. Irreversibel - der Aufrufer
+ * muss die alten Werte vorher selbst auslesen/anzeigen, falls sie noch
+ * gebraucht werden.
+ */
+export async function resetAllCounts(): Promise<void> {
+  const redis = getRedis();
+  await Promise.all(USER_COUNT_ARMS.flatMap((arm) => [redis.set(startedKey(arm), 0), redis.set(completedKey(arm), 0)]));
+}
+
 export type UserCounts = Record<UserCountArm, { started: number; completed: number }>;
 
 /** Für den Admin-Stats-Überblick (siehe lib/adminCommands.ts, /stats). */
 export async function getUserCounts(): Promise<UserCounts> {
   const redis = getRedis();
   const perArm = await Promise.all(
-    ARMS.map(async (arm) => {
+    USER_COUNT_ARMS.map(async (arm) => {
       const [started, completed] = await Promise.all([
         redis.get<number>(startedKey(arm)),
         redis.get<number>(completedKey(arm)),
