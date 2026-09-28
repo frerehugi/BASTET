@@ -26,37 +26,73 @@ Abgrenzung unten) BK-3101-Verfahren.
 
 ## Fall 1: VG Düsseldorf — unbefristete Berufsunfähigkeitsrente
 
-**VG Düsseldorf, Urteil vom 04.03.2026, Az. 20 K 5030/25** (abrufbar über die
-Rechtsprechungsdatenbank NRW-Justiz unter Eingabe des Aktenzeichens).
+**VG Düsseldorf, Urteil vom 04.03.2026, Az. 20 K 5030/25, ECLI:DE:VGD:2026:0304.20K5030.25.00,
+rechtskräftig** (Volltext liegt vor; abrufbar über die Rechtsprechungsdatenbank NRW-Justiz unter
+Eingabe des Aktenzeichens). Streitwert: 41.158,68 Euro (Jahresbetrag der BU-Rente, da nur die
+Befristung streitig war).
 
-Ein an Post-COVID-Syndrom/ME/CFS erkrankter Steuerberater beantragte bei seinem
-berufsständischen Versorgungswerk eine Berufsunfähigkeitsrente. Zwei neurologische
-Gutachter:innen hatten bereits außergerichtlich ein Leistungsvermögen weder im Beruf noch auf
-dem allgemeinen Arbeitsmarkt verneint und eine positive Entwicklung als wissenschaftlich nicht
-belegt eingestuft. Das Versorgungswerk gewährte dennoch nur eine auf drei Jahre befristete Rente,
-mit der Begründung, Post-COVID sei eine neuartige, in ihren Langzeitfolgen noch nicht
-vollständig erforschte Erkrankung.
+**Wichtige Einordnung der Anspruchsgrundlage**: Es geht hier NICHT um die gesetzliche
+Erwerbsminderungsrente nach § 43 SGB VI (DRV), sondern um eine **berufsständische
+Versorgung** — die Berufsunfähigkeitsrente nach § 17 der Satzung des Versorgungswerks der
+Steuerberater im Land Nordrhein-Westfalen (StBVS). Eigenes Satzungsrecht, eigene
+Anspruchsvoraussetzungen (u. a. "Dauerhaftigkeit" als eigenständig auszulegendes
+Tatbestandsmerkmal, s. u.) — die Übertragbarkeit auf § 43 SGB VI oder auf BK-3101-Verfahren ist
+daher eine Analogie zu einem inhaltlich ähnlichen, aber rechtlich eigenständigen
+Prüfungsmaßstab, keine unmittelbare Präzedenzwirkung.
 
-Der Kläger obsiegte. Das Gericht verpflichtete das Versorgungswerk zur unbefristeten Zahlung und
-stellte fest:
+Der Kläger, ein Steuerberater, erkrankte 2022 an Post-COVID-Syndrom/ME/CFS, stellte seine
+Tätigkeit ein und gab seine Bestellung zurück. Zwei unabhängige Gutachter (Dr. V., Facharzt für
+Neurologie/Geriatrie; Dr. M., Facharzt für Neurologie und Psychiatrie, Universitätsklinikum)
+verneinten in Gutachten vom 11.09.2024 und 08.02.2025 übereinstimmend jedes Leistungsvermögen —
+weder im Beruf noch auf dem allgemeinen Arbeitsmarkt — und hielten eine positive Entwicklung für
+"nach derzeitigem Wissensstand in keiner Weise absehbar". Das Versorgungswerk gewährte trotzdem
+nur eine bis 31.07.2027 befristete Rente (3 Jahre, 3.379,20 Euro/Monat), mit Verweis auf das
+Lebensalter des Klägers und darauf, Post-/Long-COVID sei eine neuartige, in ihren Langzeitfolgen
+noch nicht vollständig erforschte Erkrankung.
 
+Der Kläger obsiegte vollständig. Zentrale Feststellungen des Gerichts:
+
+- **Rechtlicher Maßstab "Dauerhaftigkeit"** (mit Verweis auf OVG NRW, Beschluss vom 25.02.2016,
+  17 A 2456/14): Dauerhaftigkeit liegt vor, wenn die Einschränkung "nicht nur vorübergehender
+  Natur ist und erfolgversprechende, zumutbare Therapiemöglichkeiten ausgeschöpft sind".
+  "Erfolgversprechend" ist dabei bewusst weit gefasst — schon eine "unterdurchschnittliche, aber
+  nicht völlig unbedeutende Erfolgsprognose" innerhalb eines "überschaubaren" (realistisch
+  prognostizierbaren) Zeitraums genügt. Entscheidend im vorliegenden Fall: Diese (niedrige) Hürde
+  ändert nichts, wenn schlicht **gar keine** solche Therapie existiert — dann gibt es nichts
+  "auszuschöpfen".
 - **Kein Verweis auf Therapien möglich**: Für ME/CFS gebe es keine erfolgversprechenden, auf
-  Wiederherstellung der Berufsfähigkeit in überschaubarer Zeit zielenden Therapieansätze — deckungsgleich
-  mit den (auch von der Deutschen Gesellschaft für ME/CFS auf ihrer Infoseite "Therapie von
-  ME/CFS" wiedergegebenen) aktuellen medizinischen Erkenntnissen.
+  Wiederherstellung der Berufsfähigkeit in überschaubarer Zeit zielenden Therapieansätze — dies
+  entspreche den derzeit veröffentlichten allgemeinen medizinischen Erkenntnissen (das Urteil
+  zitiert dazu ausdrücklich die Infoseite "Therapie von ME/CFS" der Deutschen Gesellschaft für
+  ME/CFS, mecfs.de/therapie-von-me-cfs/).
 - **Keine Befristung durch laufende Forschung gerechtfertigt**: Dass zahlreiche Studien zum
-  Krankheitsbild und seiner Behandelbarkeit laufen, ändere nichts am aktuellen Fehlen von
-  Therapieansätzen; Zeitpunkt und Ergebnis dieser Studien stünden nicht fest.
-- **Ergo-/Physiotherapie zielt nicht auf Wiederherstellung**: Solche Maßnahmen dienten der
-  Verhinderung weiterer Verschlimmerung, nicht der Wiederherstellung der Berufsfähigkeit — ihre
-  Inanspruchnahme begründet daher keine Befristung.
-- **Wiederholungsbegutachtungstermine (Pflegekasse/Versorgungsamt) sind kein Indiz für positive
-  Prognose**: Weder Pflegekasse noch Versorgungsamt träfen im Rahmen ihrer eigenen Begutachtungen
-  Feststellungen zur Berufsfähigkeit; solche Termine seien in der Regel routinemäßige
-  Anordnungen, keine individuelle Prognosestellung.
+  Krankheitsbild und seiner Behandelbarkeit laufen, ändere nichts an der Tatsache, dass im
+  maßgeblichen Zeitpunkt der mündlichen Verhandlung kein auf Wiederherstellung der Berufsfähigkeit
+  gerichteter Therapieansatz existiere.
+- **Akuttherapie zählt nicht als "nicht ausgeschöpfte" Therapiemöglichkeit für die chronische
+  Folgeerkrankung**: Die Beklagtenseite verwies auf eine im Verwaltungsverfahren angebotene,
+  nicht wahrgenommene Dexamethason-Therapie. Das Gericht: diese betraf die akute
+  COVID-19-Symptomatik (August 2022), nicht das spätere Post-COVID/ME/CFS — ein konkretes,
+  übertragbares Argumentationsmuster gegen den Einwand "Sie haben doch nicht alle Therapien
+  ausgeschöpft", wenn die genannte Therapie einer anderen Krankheitsphase galt.
+- **Ergo-/Physiotherapie/Pacing zielt nicht auf Wiederherstellung, sondern auf
+  Verschlimmerungsvermeidung**: Beide Gutachter empfahlen solche Begleitmaßnahmen ausdrücklich nur,
+  um weiteren Inaktivitätsatrophien vorzubeugen — nicht als Ansatz zur Wiederherstellung der
+  Berufsfähigkeit. Ihre Inanspruchnahme begründet daher keine Befristung.
+- **Wiederholungsbegutachtungstermine (Pflegegrad/Grad der Behinderung) sind kein Indiz für
+  positive Prognose**: Die dortigen Feststellungen erfolgen unter einem anderen Blickwinkel
+  (Pflegegradrelevanz/GdB) und lassen keinen Rückschluss auf eine berufsfähigkeitsrelevante
+  Verbesserung zu; es spreche einiges dafür, dass es sich um routinemäßige, nicht anlassbezogene
+  Anordnungen handele.
 - **Punktuelle Handlungsfähigkeit widerlegt keine Berufsunfähigkeit**: Dass der Kläger im
-  Verfahren einzelne Schriftsätze verfassen konnte, stehe der gutachterlich festgestellten
-  Berufsunfähigkeit nicht entgegen.
+  Verfahren einzelne, zeitnah verfasste Schriftsätze einreichen konnte, lässt keinen Rückschluss
+  auf seine Berufsfähigkeit zu — diese Schlussfolgerung würde die den Gutachtern vorbehaltene
+  tatsächliche Bewertung durch eine eigene, nicht fundierte Einschätzung ersetzen.
+- **Anforderungen an ein verwertbares Gutachten** (mit Verweis auf OVG NRW, Urteil vom 11.03.1997,
+  25 A 3536/94): Eine ärztliche Stellungnahme muss substantiiert benennen, welche konkreten
+  beruflichen Tätigkeiten infolge des Defizits nicht mehr zumutbar sind — eine bloße Diagnose plus
+  unbegründete Schlussfolgerung "daher berufsunfähig" genügt nicht. Relevant für die Qualität
+  ärztlicher Stellungnahmen, die im Doc-Arm erstellt/eingeordnet werden.
 
 ## Fall 2: LSG Niedersachsen-Bremen — Kostenerstattung Nahrungsergänzungs-/Arzneimittel
 
@@ -108,6 +144,13 @@ inhaltlich identisch übertragbar, sofern im Gutachten/Gespräch entsprechend ei
 Präzedenzfälle aus verwandten, nicht identischen Verfahrensarten, nicht als BK-3101-Rechtsprechung
 selbst.
 
+**Zusätzliche Einschränkung bei Fall 1**: Die Anspruchsgrundlage dort ist Satzungsrecht eines
+berufsständischen Versorgungswerks (§ 17 StBVS), nicht § 43 SGB VI. Der "Dauerhaftigkeit"-Maßstab
+ist inhaltlich sehr ähnlich zu dem bei der gesetzlichen Erwerbsminderungsrente verwendeten, aber
+formal ein eigener Prüfungsmaßstab — bei einer Übertragung auf ein SGB-VI-Verfahren daher als
+"vergleichbare Wertung aus einem verwandten Regelwerk" einordnen, nicht als identische Norm
+zitieren.
+
 ## Praktischer Nutzen für BASTET
 
 - **Zitierfähige Antwort auf zwei häufige Ablehnungs-/Befristungsargumente**: sowohl im
@@ -123,5 +166,10 @@ selbst.
 
 - Deutsche Gesellschaft für ME/CFS: "Wegweisende Gerichtsentscheidungen zu Leistungsansprüchen bei
   ME/CFS", 11.07.2026.
-- VG Düsseldorf, Urteil vom 04.03.2026, Az. 20 K 5030/25.
-- LSG Niedersachsen-Bremen, Urteil vom 28.04.2026, Az. L 4 KR 401/21.
+- VG Düsseldorf, Urteil vom 04.03.2026, Az. 20 K 5030/25, ECLI:DE:VGD:2026:0304.20K5030.25.00
+  (Volltext liegt vor).
+- LSG Niedersachsen-Bremen, Urteil vom 28.04.2026, Az. L 4 KR 401/21 (Volltext noch nicht
+  verifiziert, s. Fall 2 oben — Details aus Sekundärquelle Deutsche Gesellschaft für ME/CFS).
+- Im VG-Düsseldorf-Urteil selbst zitierte Rechtsprechung: OVG NRW, Urteil vom 11.03.1997,
+  25 A 3536/94; OVG NRW, Urteil vom 01.04.1992, 5 A 2311/90; VG Düsseldorf, Urteil vom 02.03.2020,
+  20 K 12455/17 (n. v.); OVG NRW, Beschluss vom 25.02.2016, 17 A 2456/14.
