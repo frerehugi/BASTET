@@ -40,6 +40,18 @@ Begleitend zu § 142a SGB XI läuft/lief das vom GKV-Spitzenverband geförderte 
 4. **Bei Ablehnung**: Widerspruch mit Verweis auf § 65 Abs. 2 SGB I möglich; findet der Hausbesuch dennoch statt und kommt es nachweisbar zu einer Verschlechterung (PEM-Episode), dies für ein Folgeverfahren dokumentieren.
 5. **Kein Automatismus in beide Richtungen**: weder besteht ein genereller Anspruch auf ein Telefoninterview anstelle eines Hausbesuchs (Ausschlussgründe § 142a Abs. 2), noch eine generelle Möglichkeit, jede Form der Begutachtung abzulehnen — außer bei eindeutiger Aktenlage (§ 18a Abs. 2 Satz 5 Nr. 1).
 
+## 6. Belege für das PEM-Risiko durch Hausbesuch/Krankenhausaufenthalt
+
+Die Aussage "Hausbesuch/stationärer Aufenthalt kann PEM auslösen bzw. den Zustand verschlechtern" wurde bis 28.09.2026 in dieser Wissensbasis nur behauptet, nicht mit externen Quellen belegt. Nachträglich recherchierte Belege:
+
+1. **NICE-Leitlinie NG206** (UK, amtliche Leitlinie zu ME/CFS): Empfehlung 1.17.4 verlangt, jede Interaktion vorab auf PEM-Risiko zu prüfen ("Risk assess each interaction... in advance to ensure its benefits will outweigh the risks"); Empfehlung 1.17.7 verlangt explizit, PEM beim Krankenhaustransfer zu minimieren ("aim to minimise discomfort and post-exertional malaise during transfer to hospital" — Routenplanung vorab, Vermeidung lauter Bereiche, direkte Stationsaufnahme); Empfehlung 1.17.5 sieht Hausbesuche für schwer/sehr schwer Betroffene ausdrücklich als Alternative vor.
+2. **Hermisson, Schreiner, Weichselbaumer et al. (2026)**, Wiener Medizinische Wochenschrift, "Transdisziplinäres Experten:innen-Statement: Pflegeleitfaden für Menschen mit schwerem ME/CFS in der häuslichen Versorgung": externe Belastungen (inkl. Arztbesuche) akkumulieren über den Tag und können einen Crash auslösen — Pacing erfordert, den übrigen Tag um einen geplanten Arztbesuch herum strikt zu schonen.
+3. **Baxter, Speight & Weir (2021)**, *Healthcare* (MDPI) 9(4):459, "Life-Threatening Malnutrition in Very Severe ME/CFS": *"travel to hospital and the hospital environment significantly exacerbates their condition"*; Krankenhausaufenthalt wird nur im Notfall empfohlen, mit Einzelzimmer und ME-kundigem Personal.
+4. **Coroner Deborah Archer**, Prevention of Future Deaths Report zu Maeve Boothby O'Neill (8.10.2024, judiciary.uk): *"being placed on a ward that did not have expertise in her condition made her admission to hospital exceedingly difficult for her to endure"* — offizieller britischer Coroner-Bericht zum Tod einer schwer ME-Betroffenen nach mehreren Krankenhausaufenthalten ohne ME-spezifische Versorgung.
+5. **Wormgoor & Rodenburg (2023)**, *Frontiers in Neurology* 14:1247698: quantitative Sekundäranalyse zweier Querschnittsstudien — wurde PEM bei Reha-/Krankenhausmaßnahmen nicht berücksichtigt, verdoppelte sich das Risiko einer gesundheitlichen Verschlechterung nahezu (**63,2 % vs. 40,1 %**, OR = 0,39).
+
+**Einordnung**: Quellen 1, 2 und 5 sind Leitlinien-/Fachliteratur mit z. T. quantitativen Angaben; Quellen 3 und 4 sind Fallbeschreibung bzw. offizielles Dokument zu einem Extremfall (sehr schweres ME/CFS) und nicht ohne Weiteres auf leichtere Verlaufsformen übertragbar — für eine PEM-Begründung im Einzelfall (Abschnitt 5, Punkt 2) bleibt daher primär die individuelle ärztliche Bescheinigung tragend, diese Quellen liefern die fachliche Untermauerung dafür, warum ein solches Risiko medizinisch plausibel ist.
+
 ## Bezug zu BASTET
 
 - **Kein GdB/MdE-Kalibrierungspunkt**, sondern SGB-XI-spezifisches Verfahrensrecht — ergänzt `bg-pflichten-mitwirkung.md` (SGB VII) und `sgb-verfahrensrecht-begutachtung.md` um das bislang fehlende Pflegebegutachtungsverfahren.
@@ -53,3 +65,8 @@ Begleitend zu § 142a SGB XI läuft/lief das vom GKV-Spitzenverband geförderte 
 - Stellungnahme des Medizinischen Dienstes Bund zum PUEG-Referentenentwurf (Bundestags-Drucksache 20/14, Ausschussdrucksache 20(14)0105-5)
 - GKV-Spitzenverband: Modellprojekt "ViBe-Pflege — die videobasierte Begutachtung zur Feststellung der Pflegebedürftigkeit nach dem SGB XI"
 - Medizinischer Dienst Bund, Pressemitteilung vom 25.9.2024: "Pflegebegutachtungen jetzt auch per Videotelefonie möglich"
+- NICE Guideline NG206 (2021, zuletzt aktualisiert): "Myalgic encephalomyelitis (or encephalopathy)/chronic fatigue syndrome: diagnosis and management", Empfehlungen 1.17.4/1.17.5/1.17.7
+- Hermisson J, Schreiner C, Weichselbaumer S et al. (2026): "Transdisziplinäres Experten:innen-Statement: Pflegeleitfaden für Menschen mit schwerem ME/CFS in der häuslichen Versorgung", Wiener Medizinische Wochenschrift, DOI 10.1007/s10354-026-01182-3
+- Baxter H, Speight N, Weir W (2021): "Life-Threatening Malnutrition in Very Severe ME/CFS", Healthcare (MDPI) 9(4):459
+- Coroner Deborah Archer (8.10.2024): Prevention of Future Deaths Report, Maeve Boothby O'Neill, Courts and Tribunals Judiciary (judiciary.uk)
+- Wormgoor MEA, Rodenburg SC (2023): "Focus on post-exertional malaise when approaching ME/CFS in specialist healthcare improves satisfaction and reduces deterioration", Frontiers in Neurology 14:1247698
