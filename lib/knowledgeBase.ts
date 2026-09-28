@@ -39,6 +39,7 @@ const FILES = [
   "unfallversicherung-psychische-stoerungen-dguv-leitfaden.md",
   "unfallversicherung-gutachter-befangenheit.md",
   "sgb-verfahrensrecht-begutachtung.md",
+  "pflegebegutachtung-sgb-xi-mitwirkung.md",
   "bg-pflichten-mitwirkung.md",
   "bg-behandlung-abrechnung.md",
   "gba-longcov-richtlinie-sapv-palliativversorgung.md",
