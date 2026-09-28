@@ -44,6 +44,7 @@ const FILES = [
   "gba-longcov-richtlinie-sapv-palliativversorgung.md",
   "behandlungsfehler-gutachterkommissionen.md",
   "haltung-mecfs-stellungnahme.md",
+  "gerichtsentscheidungen-leistungsansprueche-mecfs.md",
   "kritik-cfs-psychologisierung-vt-manual.md",
   "mecfs-krankheitslast-versorgungssituation.md",
   "quellen.md",
