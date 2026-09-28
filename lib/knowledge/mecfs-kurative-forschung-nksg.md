@@ -10,12 +10,12 @@ Die an der Charité von Prof. Dr. Carmen Scheibenbogen koordinierte NKSG verbind
 
 **Vaskulär/Sauerstoffversorgung:**
 - **VERI-LONG-Studie**: das gefäßerweiternde Medikament Vericiguat.
-- **HBOT-Studie**: hyperbare Sauerstofftherapie.
+- **HBOT-Studie**: hyperbare Sauerstofftherapie (ME/CFS-Studie: clinicaltrials.gov NCT06118138). Bislang nur kleine, nicht verblindete Studien bei ME/CFS; ein Preprint (Kim L. et al. 2025: "Hyperbaric oxygen therapy improves clinical symptoms and functional capacity and restores thalamic connectivity in ME/CFS", DOI: 10.1101/2025.10.29.25339096) berichtet positive Effekte auf Symptome, Funktionskapazität und thalamische Konnektivität — als Preprint noch nicht begutachtet, vor Zitat in einem Gutachten den Peer-Review-Status prüfen.
 - Ergebnisse beider Studien laut Quelle im Laufe des Jahres 2026 erwartet.
 
 **Autoimmunität/Autoantikörper:**
 - **IA-PACS-CFS-Studie** (placebokontrolliert): Immunadsorption — Filterung von Autoantikörpern aus dem Blut.
-- **RIA-Immunadsorptionsstudie** (Beobachtungsstudie, bereits veröffentlicht): Senkung des Autoantikörper-Spiegels ging bei vielen Patient:innen mit Besserung einher (Stein et al., 2024).
+- **RIA-Immunadsorptionsstudie** (Beobachtungsstudie, bereits veröffentlicht): Senkung des Autoantikörper-Spiegels ging bei vielen Patient:innen mit Besserung einher (Stein E. et al. 2023: "Observational Study of Repeat Immunoadsorption (RIA) in Post-COVID ME/CFS Patients with Elevated ß2-Adrenergic Receptor Autoantibodies — An Interim Report", J Clin Med. 12(19):6428, DOI: 10.3390/jcm12196428 — korrigiert 28.09.2026, Jahr/DOI erst durch den Praxisleitfaden der Deutschen Gesellschaft für ME/CFS verifizierbar, ursprünglich hier als "2024" ohne Quellenbeleg übernommen).
 - Da Antikörper-produzierende B- und Plasmazellen nach Immunadsorption weiter Autoantikörper bilden, zielen Folgestudien auf **B-Zell-Depletion** über monoklonale Antikörper gegen die Oberflächenproteine CD19, CD20 und CD38:
   - **Uplizna (Inebilizumab)**, gegen CD19 gerichtet: Phase-2-Studie, Förderung durch das **BMFTR** (Bundesministerium für Forschung, Technologie und Raumfahrt) im Januar 2026 angekündigt.
   - **Daratumumab**, gegen CD38 gerichtet: Beobachtungsstudie aus Norwegen ohne Kontrollgruppe zeigt Entfernung der Plasmazellen und rasche, gute Wirksamkeit bei 6 von 10 ME/CFS-Patient:innen (Fluge et al., 2025). Eine placebokontrollierte Studie rekrutiert bereits (Trial-ID **2024-520094-13-00**).
@@ -57,7 +57,7 @@ Relevant für die Bewertung von Verbesserungs- oder Heilungsbehauptungen (eigene
 
 ## Quellen (ergänzend zu `quellen.md`)
 - Deutsche Gesellschaft für ME/CFS: Website-Text "Therapie von ME/CFS" (Abschnitte Pacing, Off-Label-Therapie, klinische Forschung, begleitende Psychotherapie, schädliche Therapien, Spontanremission versus Therapieerfolg), Abruf 28.09.2026.
-- Stein E. et al. (2024): RIA-Immunadsorptionsstudie (Beobachtungsstudie) — im Ausgangstext ohne vollständige Publikationsangabe zitiert, vor Direktzitat verifizieren.
+- Stein E. et al. (2023): "Observational Study of Repeat Immunoadsorption (RIA) in Post-COVID ME/CFS Patients with Elevated ß2-Adrenergic Receptor Autoantibodies — An Interim Report." J Clin Med. 12(19):6428. DOI: 10.3390/jcm12196428. (Jahr/DOI verifiziert über den Praxisleitfaden ME/CFS der Deutschen Gesellschaft für ME/CFS, Abschnitt "Immunadsorptionsapherese".)
 - Fluge Ø. et al. (2025): Daratumumab-Beobachtungsstudie Norwegen — im Ausgangstext ohne vollständige Publikationsangabe zitiert, vor Direktzitat verifizieren.
 - Geraghty K. et al. (2019): Umfragedaten zu Zustandsverschlechterungen nach GET/KVT — im Ausgangstext als "Geragthy et al." zitiert (vermutlich Tippfehler für Geraghty), Publikationsangabe vor Direktzitat verifizieren.
 - König R. et al. (2024): Umfrage zu psychosomatischer Fehleinordnung als Suizidgedanken-Risikofaktor bei ME/CFS — im Ausgangstext ohne vollständige Publikationsangabe zitiert.

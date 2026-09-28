@@ -41,6 +41,7 @@ const FILES = [
   "sgb-verfahrensrecht-begutachtung.md",
   "pflegebegutachtung-sgb-xi-mitwirkung.md",
   "mecfs-kurative-forschung-nksg.md",
+  "praxisleitfaden-mecfs-diagnostik-codierung-abrechnung.md",
   "bg-pflichten-mitwirkung.md",
   "bg-behandlung-abrechnung.md",
   "gba-longcov-richtlinie-sapv-palliativversorgung.md",
