@@ -49,6 +49,50 @@ PubMed/Health-Rising-Berichterstattung):
 Deutschland/die EU übertragbar — als Beleg für eine **strukturelle**, international beobachtete
 Unterfinanzierung der ME/CFS-Forschung aber gut geeignet.
 
+### 3a. Deutschland: Krankheitslast vs. Forschungsförderung (Daniell et al. 2025/2026)
+
+**Daniell, Brand, Paessler et al., Risklayer GmbH & ME/CFS Research Foundation gGmbH**: "The
+rising cost of Long COVID and ME/CFS in Germany" (Mai 2025) und "…: 2026 update" (April 2026,
+Volltext im Chat bereitgestellt) — ein dynamisches Monte-Carlo-Modell über die gesamte deutsche
+Bevölkerung, das auch RKI-Untererfassung korrigiert (2025 laut Modell 13–15 Mio. tatsächliche
+SARS-CoV-2-Infektionen p. a., 80–200-fach höher als die offizielle Meldezahl).
+
+**Krankheitslast (Ende 2025, Modellschätzung)**:
+- Aktive Fälle: ca. 757.000 Long COVID + 657.000 ME/CFS = **über 1,4 Mio. Menschen** insgesamt
+  (deckt sich mit der bereits auf der BASTET-Landingpage zitierten Zahl).
+- Geschätzte volkswirtschaftliche Kosten 2025: **64,4 Mrd. € gesamt** (Long COVID 31,6 Mrd. €,
+  ME/CFS 32,8 Mrd. € — ME/CFS liegt damit 2025 erstmals über Long COVID), entsprechend **1,44 %
+  des deutschen BIP**. Kumuliert 2020–2025: **318,8 Mrd. €**.
+
+**Forschungs-Förderlücke** (zentraler Befund des 2026-Updates): Von insgesamt 221 Mio. €
+Bundesforschungsförderung für Long COVID/ME/CFS seit 2022 flossen nur **22 % (ca. 50 Mio. €)** in
+Biomarker/Diagnostik/Therapieforschung im weiteren Sinn, davon höchstens **18 % (35–40 Mio. €)**
+in eigentliche biomedizinische Forschung (Pathophysiologie, Genetik, Pharmakologie, Immunologie
+u. Ä.). **71 % (ca. 157 Mio. €)** gingen stattdessen in Versorgungsforschung (u. a. Reha,
+Psychotherapie) — Maßnahmen, die zwar einzelnen Betroffenen im Alltag helfen können, aber laut
+den Autor:innen den Krankheitszustand nicht verändern, "insbesondere bei PEM-geprägten
+Verläufen" (ausdrücklicher Verweis auf dieselbe PEM-Argumentationslinie wie oben in Abschnitt 5).
+
+**Politische Reaktion**: Im November 2025 kündigte die Bundesregierung die "Nationale Dekade
+gegen Postinfektiöse Erkrankungen" an (BMFTR, 2026) — 500 Mio. € Forschungsförderung über
+2026–2036 (50 Mio. €/Jahr), fokussiert auf Pathophysiologie/Immunologie, Diagnostik/Biomarker,
+Neurologie, psychische Gesundheit und Langzeitfolgen. Laut den Autor:innen hat ihr Erstbericht
+von 2025 zu dieser Initiative beigetragen; zum Zeitpunkt des Updates (April 2026) waren
+Umsetzungsstrategie, Zeitplan und genaue Mittelverteilung noch nicht veröffentlicht.
+
+**Fünf Politik-Empfehlungen des Updates** (verkürzt): (1) in Biomarker/Diagnostik/Therapien
+investieren, (2) die biomedizinische Förderlücke schließen, (3) Forschung durch Lern-/
+Feedback-Schleifen beschleunigen, (4) Kollaboration/Open Science incentivieren, (5)
+Datenerhebung verbessern (u. a. Abwasserüberwachung/AMELAG fortführen), um langfristig
+belastbare Echtdaten statt Modellschätzungen zur Verfügung zu haben.
+
+**Einordnung für BASTET**: Ergänzt die US-NIH-Unterfinanzierung (oben) um einen
+**deutschlandspezifischen, aktuellen (April 2026) Beleg** — besonders nützlich als Antwort auf
+den Einwand "die Forschung wird doch jetzt großzügig gefördert" (Verweis auf die Nationale
+Dekade): Ja, aber bislang nur als Ankündigung, und selbst die bisherige Förderung floss ganz
+überwiegend NICHT in biomedizinische Forschung. Kein GdB/MdE-Kalibrierungspunkt, reines
+Argumentationswissen für Tier 2/Doc-Arm.
+
 ## 4. Diagnoseverzögerung und Fehlversorgung
 
 **Tschopp, König, Rejmer, Paris (2023)**, Journal of Taibah University Medical Sciences 18(4):
@@ -120,6 +164,10 @@ gezielt nachschlagen.
 
 ## Quellen (neu, unabhängig verifiziert)
 
+- Daniell, J., Brand, J., Paessler, D., Heydecke, J., Schoening, S., Nikoloudis, M. L., Manser, V.,
+  McLennan, A. K. (2025/2026): "The rising cost of Long COVID and ME/CFS in Germany" (Mai 2025)
+  und "…: 2026 update" (April 2026). Hamburg und Karlsruhe: ME/CFS Research Foundation und
+  Risklayer. mecfs-research.org
 - Bell, D. S.: *The Doctor's Guide to Chronic Fatigue Syndrome*, S. 122 f., Addison-Wesley
   Publishing Company, Reading, MA — Grundlage des Bell-Score (siehe auch die deutsche
   Bell-Score-Tabelle im Doc-Arm, Quelle Charité Fatigue Centrum, Bell-Score 1995).
