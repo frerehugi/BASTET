@@ -25,6 +25,7 @@ const FILES = [
   "postcovid-mecfs.md",
   "scheibenbogen-aerztliche-begutachtung.md",
   "scheibenbogen-cme-differentialdiagnostik-therapie-2021.md",
+  "euromene-expert-konsensus-diagnostik-versorgung.md",
   "postcovid-symptomliste.md",
   "symptomliste-gdb-mde-abgleich.md",
   "medikamentoese-therapie-postcovid.md",
