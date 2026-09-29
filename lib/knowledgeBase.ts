@@ -24,6 +24,7 @@ const FILES = [
   "versmedv-gdb-gds.md",
   "postcovid-mecfs.md",
   "scheibenbogen-aerztliche-begutachtung.md",
+  "scheibenbogen-cme-differentialdiagnostik-therapie-2021.md",
   "postcovid-symptomliste.md",
   "symptomliste-gdb-mde-abgleich.md",
   "medikamentoese-therapie-postcovid.md",
