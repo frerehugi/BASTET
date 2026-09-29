@@ -55,15 +55,20 @@ const FILES = [
 ];
 
 /**
- * Reine Ablauf-/Kontakthilfen (BG-Adressen, Standardbrief-Vorlage) - erst
- * relevant, wenn tatsächlich ein BK-3101-Verfahren betrieben wird. Einziges
- * konkret umgesetztes Selektionskriterium aus build/effizienz-plan.md
- * Abschnitt 2 (bewusst konservativ: nur diese 2 von 21 Dateien, nur bei
- * eindeutig fehlendem Berufsbezug - siehe getStaticKnowledgeBase() unten).
- * Die übrigen BG-Dateien (Kausalitätsstufen, Verfahrensrecht) bleiben immer
- * drin, da sie auch die korrekte Begründung von "nicht einschlägig" stützen.
+ * Reine Ablauf-/Kontakthilfen (BG-Adressen, Standardbrief-Vorlage,
+ * Gutachterauswahl/Vorschlagsrecht) - erst relevant, wenn tatsächlich ein
+ * BK-3101-Verfahren betrieben wird. Konkret umgesetztes Selektionskriterium
+ * aus build/effizienz-plan.md Abschnitt 2 (bewusst konservativ: nur eine
+ * kleine Teilmenge aller Dateien, nur bei eindeutig fehlendem Berufsbezug -
+ * siehe getStaticKnowledgeBase() unten). Die übrigen BG-Dateien
+ * (Kausalitätsstufen, Verfahrensrecht) bleiben immer drin, da sie auch die
+ * korrekte Begründung von "nicht einschlägig" stützen.
  */
-const BG_KONTAKT_FILES = ["bg-kontaktdaten.md", "standardbrief-bgw.md"];
+const BG_KONTAKT_FILES = [
+  "bg-kontaktdaten.md",
+  "standardbrief-bgw.md",
+  "bg-gutachterverzeichnis-vorschlagsrecht.md",
+];
 
 const staticCached: { full: string | null; standard: string | null } = { full: null, standard: null };
 
