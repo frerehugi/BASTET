@@ -36,6 +36,7 @@ const FILES = [
   "nervensystem-psyche-herz-gdb.md",
   "neurologie-vergleichsfaelle.md",
   "neurologie-mde-guv-tabellen.md",
+  "mde-expertengruppe-gliedmassenverlust-2019.md",
   "schmerz-neuro-kardio-erweiterung.md",
   "schlaf-schwindel-kognitiv-faelle.md",
   "gutachten-stilvorlage-neuropsychiatrisch.md",
