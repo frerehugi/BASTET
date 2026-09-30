@@ -23,6 +23,7 @@ const FILES = [
   "begutachtung-rechtsgrundlagen-awmf094.md",
   "versmedv-gdb-gds.md",
   "postcovid-mecfs.md",
+  "kedor-peters-mecfs-reha-studie-2026.md",
   "scheibenbogen-aerztliche-begutachtung.md",
   "scheibenbogen-cme-differentialdiagnostik-therapie-2021.md",
   "euromene-expert-konsensus-diagnostik-versorgung.md",
