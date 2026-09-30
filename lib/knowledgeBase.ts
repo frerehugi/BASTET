@@ -37,6 +37,7 @@ const FILES = [
   "neurologie-vergleichsfaelle.md",
   "neurologie-mde-guv-tabellen.md",
   "mde-expertengruppe-gliedmassenverlust-2019.md",
+  "mde-kommission-muskuloskelettal-2025.md",
   "schmerz-neuro-kardio-erweiterung.md",
   "schlaf-schwindel-kognitiv-faelle.md",
   "gutachten-stilvorlage-neuropsychiatrisch.md",
