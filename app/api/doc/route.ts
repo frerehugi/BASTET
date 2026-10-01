@@ -77,7 +77,20 @@ export async function POST(request: Request) {
   // incrementCompleted weiter unten in dieser Datei.
   await incrementStarted("doc");
 
-  const generator = runDocAssessmentStream(body.userInput, files);
+  // Weiche Deadline deutlich VOR `maxDuration` (oben, 150s): wird diese
+  // überschritten, bricht runDocAssessmentStream() den Anthropic-Call selbst
+  // sauber ab (STREAM_ERROR_MARKER, siehe weiter unten) - ohne dieses Signal
+  // würde stattdessen irgendwann die Vercel-Function selbst hart beendet,
+  // OHNE jede Chance auf eigenen Code (kein catch, kein finally): der beim
+  // Client bereits angekommene Teiltext bliebe dann unkommentiert stehen und
+  // sähe wie eine vollständige, aber mitten im Satz endende Einschätzung aus
+  // (inkl. fehlendem MdE-/EMR-Block) - genau das beobachtete Verhalten, das
+  // zu dieser Änderung geführt hat. 15s Puffer für den Rest von start()
+  // (Fehler-Marker schreiben, Stream schließen, Vercel-Overhead).
+  const deadline = new AbortController();
+  const deadlineTimer = setTimeout(() => deadline.abort(), 135_000);
+
+  const generator = runDocAssessmentStream(body.userInput, files, deadline.signal);
 
   // Erstes Chunk manuell abrufen, BEVOR die Response erstellt wird: ein
   // Fehler VOR Stream-Start (fehlender ANTHROPIC_API_KEY, ungültiger
@@ -89,6 +102,7 @@ export async function POST(request: Request) {
   try {
     first = await generator.next();
   } catch (error) {
+    clearTimeout(deadlineTimer);
     const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
@@ -117,6 +131,7 @@ export async function POST(request: Request) {
         const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
         controller.enqueue(encoder.encode(STREAM_ERROR_MARKER + message));
       } finally {
+        clearTimeout(deadlineTimer);
         controller.close();
       }
       // Erst NACH controller.close() zählen (siehe lib/userCount.ts) - nur
