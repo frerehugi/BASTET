@@ -24,6 +24,7 @@ const FILES = [
   "versmedv-gdb-gds.md",
   "postcovid-mecfs.md",
   "leopoldina-stellungnahme-postinfektioese-erkrankungen-2026.md",
+  "faraj-hannover-pcc-4jahre-kohorte-2026.md",
   "kedor-peters-mecfs-reha-studie-2026.md",
   "scheibenbogen-aerztliche-begutachtung.md",
   "scheibenbogen-cme-differentialdiagnostik-therapie-2021.md",
