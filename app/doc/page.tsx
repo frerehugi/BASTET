@@ -10,12 +10,12 @@ import { PATIENT_ABOUT_TEXT as ABOUT_TEXT } from "@/lib/content";
 // Self-Verifizierungs-Gate vor der eigentlichen Einschätzung (build/phase9-
 // bastet-2.0-self-gatekeeper.md, 9d) - der Doc-Arm hatte bislang KEINERLEI
 // Zugriffsschutz. Gleiches Muster wie beim Web-Arm-Gate in app/page.tsx
-// (eigener Redirect-Roundtrip über sessionStorage, siehe dortige
+// (eigener Redirect-Roundtrip über Browser-Storage, siehe dortige
 // Kommentare), zwei bewusste Abweichungen:
 // - Eigener Schalter (arm: "doc", lib/selfFeatureFlag.ts) statt des Web-Arm-
 //   Schalters - Florian wollte Self zunächst NUR für den Doc-Arm aktivieren.
 // - Anhänge (attachedFiles, teils mehrere MB Base64) werden bewusst NICHT
-//   über den Redirect-Roundtrip mitgeschickt (sessionStorage-Quote-Risiko),
+//   über den Redirect-Roundtrip mitgeschickt (Storage-Quote-Risiko),
 //   und nach erfolgreicher Verifizierung wird NICHT automatisch erneut
 //   gesendet wie beim Web-Arm - sonst könnte eine Einschätzung
 //   stillschweigend ohne die ursprünglich beigefügten Befunde entstehen.
@@ -27,6 +27,20 @@ import { PATIENT_ABOUT_TEXT as ABOUT_TEXT } from "@/lib/content";
 //   Prinzip aus dem Plan, ohne dass es dafür ein eigenes Login-System gibt.
 const SELF_DOC_STORAGE_PREFIX = "bastet:self:doc:pending:";
 const SELF_DOC_VERIFIED_KEY = "bastet:self:doc:verified";
+// Beobachtet (Chrome/iPhone): die Rückleitung von der Self-Verifizierung
+// landet auf iOS nicht zuverlässig im selben Tab, sondern teils in einem
+// NEUEN Tab (Universal-Link-Verhalten) - sessionStorage ist aber strikt
+// pro Tab gescopet, war in dem neuen Tab also leer, und der gesamte
+// Formularinhalt ging verloren. localStorage ist originweit (über Tabs
+// hinweg) geteilt und überlebt das. Da reines localStorage wiederum dem
+// "Daten überleben die Sitzung nicht"-Prinzip widerspräche, bewusster
+// Kompromiss: in BEIDE Stores schreiben, bei der Wiederherstellung zuerst
+// sessionStorage (Normalfall: selber Tab) und sonst localStorage lesen,
+// anschließend IMMER beide Einträge löschen, und zusätzlich jeden
+// localStorage-Eintrag automatisch verwerfen, der älter als
+// PENDING_STATE_MAX_AGE_MS ist (deckt den Fall ab, dass jemand die
+// Verifizierung abbricht und nie zurückkehrt).
+const PENDING_STATE_MAX_AGE_MS = 30 * 60 * 1000;
 
 interface PersistedDocState {
   values: { beruf: string; anamnese: string; untersuchung: string; befunde: string };
@@ -35,24 +49,70 @@ interface PersistedDocState {
   hadAttachments: boolean;
 }
 
-function persistDocStateForSelf(id: string, state: PersistedDocState) {
+interface PersistedDocStateEnvelope {
+  savedAt: number;
+  state: PersistedDocState;
+}
+
+function pruneStalePendingDocState() {
   try {
-    sessionStorage.setItem(SELF_DOC_STORAGE_PREFIX + id, JSON.stringify(state));
+    const now = Date.now();
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(SELF_DOC_STORAGE_PREFIX)) continue;
+      let stale = true;
+      try {
+        const raw = localStorage.getItem(key);
+        const parsed = raw ? (JSON.parse(raw) as PersistedDocStateEnvelope) : null;
+        stale = !parsed || now - parsed.savedAt > PENDING_STATE_MAX_AGE_MS;
+      } catch {
+        stale = true; // kaputter/unlesbarer Eintrag - lieber entfernen
+      }
+      if (stale) localStorage.removeItem(key);
+    }
+  } catch {
+    // localStorage nicht verfügbar (privater Modus o.Ä.) - Pruning überspringen
+  }
+}
+
+function persistDocStateForSelf(id: string, state: PersistedDocState) {
+  const json: string = JSON.stringify({ savedAt: Date.now(), state } satisfies PersistedDocStateEnvelope);
+  try {
+    sessionStorage.setItem(SELF_DOC_STORAGE_PREFIX + id, json);
   } catch {
     // sessionStorage kann fehlschlagen (privater Modus, voller Speicher) -
-    // dann geht beim Rücksprung nur der Formularinhalt verloren, die
-    // Verifizierung selbst bleibt davon unberührt (wie in app/page.tsx).
+    // der localStorage-Schreibversuch unten bleibt davon unberührt.
+  }
+  try {
+    pruneStalePendingDocState();
+    localStorage.setItem(SELF_DOC_STORAGE_PREFIX + id, json);
+  } catch {
+    // Schlägt auch das fehl, geht beim Rücksprung nur der Formularinhalt
+    // verloren - die Verifizierung selbst bleibt davon unberührt (wie in
+    // app/page.tsx).
   }
 }
 
 function readAndClearDocStateForSelf(id: string): PersistedDocState | null {
+  const key = SELF_DOC_STORAGE_PREFIX + id;
+  let envelope: PersistedDocStateEnvelope | null = null;
   try {
-    const raw = sessionStorage.getItem(SELF_DOC_STORAGE_PREFIX + id);
-    sessionStorage.removeItem(SELF_DOC_STORAGE_PREFIX + id);
-    return raw ? (JSON.parse(raw) as PersistedDocState) : null;
+    const raw = sessionStorage.getItem(key);
+    sessionStorage.removeItem(key);
+    if (raw) envelope = JSON.parse(raw) as PersistedDocStateEnvelope;
   } catch {
-    return null;
+    // ignorieren - localStorage-Fallback unten greift
   }
+  try {
+    if (!envelope) {
+      const raw = localStorage.getItem(key);
+      if (raw) envelope = JSON.parse(raw) as PersistedDocStateEnvelope;
+    }
+    localStorage.removeItem(key);
+  } catch {
+    // beide Stores nicht verfügbar - Formularinhalt bleibt leer
+  }
+  return envelope?.state ?? null;
 }
 
 function isSelfVerifiedThisTab(): boolean {

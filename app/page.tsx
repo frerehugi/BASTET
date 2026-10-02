@@ -38,11 +38,21 @@ type Phase = "landing" | "gate" | "warned" | "triage" | "triageResult" | "chat" 
 // Überbrückt den vollständigen Seiten-Neuaufbau beim Self-Verifizierungs-
 // Roundtrip (app/page.tsx -> verify.self.xyz -> zurück zu app/page.tsx):
 // React-State geht dabei verloren, sessionStorage (nur dieses Browser-Tab,
-// nie an BASTET-Server übertragen) überlebt ihn. Bewusst sessionStorage statt
-// localStorage - die Daten sollen nicht über das Ende der Sitzung hinaus
-// bestehen bleiben, ganz im Sinne des "wir speichern nichts darüber hinaus"-
-// Prinzips aus STORAGE_NOTICE oben.
+// nie an BASTET-Server übertragen) überlebt ihn normalerweise. Beobachtet
+// (Chrome/iPhone): die Rückleitung landet auf iOS nicht zuverlässig im
+// selben Tab, sondern teils in einem NEUEN Tab (Universal-Link-Verhalten) -
+// sessionStorage ist aber strikt pro Tab gescopet und war dort leer,
+// wodurch der gesamte bisherige Gesprächsverlauf verloren ging.
+// localStorage ist originweit (über Tabs hinweg) geteilt und überlebt das.
+// Da reines localStorage wiederum dem "Daten überleben die Sitzung nicht"-
+// Prinzip aus STORAGE_NOTICE widerspräche, bewusster Kompromiss: in BEIDE
+// Stores schreiben, bei der Wiederherstellung zuerst sessionStorage
+// (Normalfall: selber Tab) und sonst localStorage lesen, anschließend IMMER
+// beide Einträge löschen, und zusätzlich jeden localStorage-Eintrag
+// automatisch verwerfen, der älter als PENDING_STATE_MAX_AGE_MS ist (deckt
+// den Fall ab, dass jemand die Verifizierung abbricht und nie zurückkehrt).
 const SELF_STORAGE_PREFIX = "bastet:self:pending:";
+const PENDING_STATE_MAX_AGE_MS = 30 * 60 * 1000;
 
 interface PersistedTriageState {
   messages: Message[];
@@ -51,24 +61,70 @@ interface PersistedTriageState {
   beruflicherKontextNein: boolean;
 }
 
-function persistStateForSelf(id: string, state: PersistedTriageState) {
+interface PersistedTriageStateEnvelope {
+  savedAt: number;
+  state: PersistedTriageState;
+}
+
+function pruneStalePendingTriageState() {
   try {
-    sessionStorage.setItem(SELF_STORAGE_PREFIX + id, JSON.stringify(state));
+    const now = Date.now();
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (!key || !key.startsWith(SELF_STORAGE_PREFIX)) continue;
+      let stale = true;
+      try {
+        const raw = localStorage.getItem(key);
+        const parsed = raw ? (JSON.parse(raw) as PersistedTriageStateEnvelope) : null;
+        stale = !parsed || now - parsed.savedAt > PENDING_STATE_MAX_AGE_MS;
+      } catch {
+        stale = true; // kaputter/unlesbarer Eintrag - lieber entfernen
+      }
+      if (stale) localStorage.removeItem(key);
+    }
+  } catch {
+    // localStorage nicht verfügbar (privater Modus o.Ä.) - Pruning überspringen
+  }
+}
+
+function persistStateForSelf(id: string, state: PersistedTriageState) {
+  const json: string = JSON.stringify({ savedAt: Date.now(), state } satisfies PersistedTriageStateEnvelope);
+  try {
+    sessionStorage.setItem(SELF_STORAGE_PREFIX + id, json);
   } catch {
     // sessionStorage kann in seltenen Fällen (privater Modus, voller
-    // Speicher) fehlschlagen - dann geht beim Rücksprung nur der Tier-1-
-    // Kontext verloren, die Verifizierung selbst bleibt davon unberührt.
+    // Speicher) fehlschlagen - der localStorage-Schreibversuch unten bleibt
+    // davon unberührt.
+  }
+  try {
+    pruneStalePendingTriageState();
+    localStorage.setItem(SELF_STORAGE_PREFIX + id, json);
+  } catch {
+    // Schlägt auch das fehl, geht beim Rücksprung nur der Tier-1-Kontext
+    // verloren - die Verifizierung selbst bleibt davon unberührt.
   }
 }
 
 function readAndClearPersistedStateForSelf(id: string): PersistedTriageState | null {
+  const key = SELF_STORAGE_PREFIX + id;
+  let envelope: PersistedTriageStateEnvelope | null = null;
   try {
-    const raw = sessionStorage.getItem(SELF_STORAGE_PREFIX + id);
-    sessionStorage.removeItem(SELF_STORAGE_PREFIX + id);
-    return raw ? (JSON.parse(raw) as PersistedTriageState) : null;
+    const raw = sessionStorage.getItem(key);
+    sessionStorage.removeItem(key);
+    if (raw) envelope = JSON.parse(raw) as PersistedTriageStateEnvelope;
   } catch {
-    return null;
+    // ignorieren - localStorage-Fallback unten greift
   }
+  try {
+    if (!envelope) {
+      const raw = localStorage.getItem(key);
+      if (raw) envelope = JSON.parse(raw) as PersistedTriageStateEnvelope;
+    }
+    localStorage.removeItem(key);
+  } catch {
+    // beide Stores nicht verfügbar - Gesprächsverlauf bleibt leer
+  }
+  return envelope?.state ?? null;
 }
 
 function useAutoScroll(dep: number) {

@@ -205,7 +205,8 @@ export interface UploadedFile {
  */
 export async function* runDocAssessmentStream(
   userInput: string,
-  files: UploadedFile[] = []
+  files: UploadedFile[] = [],
+  signal?: AbortSignal
 ): AsyncGenerator<string, void, unknown> {
   const system = await buildSystemBlocks();
   const content: ContentBlock[] = [{ type: "text", text: userInput }];
@@ -216,5 +217,5 @@ export async function* runDocAssessmentStream(
         : { type: "image", source: { type: "base64", media_type: file.mediaType, data: file.data } }
     );
   }
-  yield* streamClaude(system, [{ role: "user", content }], 16000);
+  yield* streamClaude(system, [{ role: "user", content }], 16000, false, false, signal);
 }

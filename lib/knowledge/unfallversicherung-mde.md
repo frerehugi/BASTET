@@ -82,9 +82,13 @@ Konkrete Formularbeispiele der DGUV für die verschiedenen Stadien der Rentenbeg
 | Formular | Bezeichnung | Verwendung |
 |---|---|---|
 | A 4200 | Erstes Rentengutachten | erstmalige Rentenfeststellung nach Ablauf der 26-Wochen-Frist (§ 56 Abs. 1 SGB VII, siehe oben) |
-| A 4500 | Zweites Rentengutachten | Folgebegutachtung nach dem ersten Rentengutachten, typischerweise vor Umwandlung einer vorläufigen in eine Dauerrente |
-| A 4510 | Gutachten Nachprüfung MdE | Nachprüfung bei behaupteter/vermuteter wesentlicher Änderung — unmittelbar der oben beschriebene § 73 Abs. 3 SGB VII/§ 48 SGB X-Fall |
 | A 4520 | Gutachten Rente nach Gesamtvergütung | Begutachtung bei Abfindung der Rente durch Gesamtvergütung (Einmalzahlung) statt laufender Rentenzahlung |
+| A 4500 | Zweites Rentengutachten | Gutachten zur Rente auf unbestimmte Zeit (RuZ), spätestens 3 Jahre nach dem Versicherungsfall |
+| A 4510 | Gutachten Nachprüfung MdE | Nachprüfung bei behaupteter/vermuteter wesentlicher Änderung — unmittelbar der oben beschriebene § 73 Abs. 3 SGB VII/§ 48 SGB X-Fall |
+
+**Rente als vorläufige Entschädigung (RvE) vs. Rente auf unbestimmte Zeit (RuZ)** (DGUV-Quelle, Abschnitt 4.1.1): In den ersten drei Jahren nach dem Versicherungsfall wird die Rente grundsätzlich als **vorläufige Entschädigung (RvE)** festgesetzt — der Begriff bringt zum Ausdruck, dass der Unfallfolgenzustand bei Wiedereintritt der Arbeitsfähigkeit meist noch kein Endzustand ist. Innerhalb der RvE-Phase kann die MdE jederzeit ohne Rücksicht auf die Dauer der Veränderung neu festgestellt werden (§ 62 Abs. 1 SGB VII). Spätestens nach Ablauf von drei Jahren wird die vorläufige Entschädigung zur **Rente auf unbestimmte Zeit (RuZ)** — signalisiert einen gewissen Dauerzustand, schließt künftige Änderungen (Besserung/Verschlimmerung) aber nicht aus. Bei der RuZ ist eine Änderung zugunsten der Versicherten frühestens nach Ablauf des sogenannten "Schutzjahres" möglich (Fristbeginn: Beginn der RuZ); Änderungen müssen wesentlich sein, d. h. die MdE muss sich um mehr als 5 Prozentpunkte geändert haben (siehe oben, § 73 Abs. 3 SGB VII).
+
+**Gutachten nach Gesamtvergütung (A 4520)**: Ergibt die erstmalige Feststellung der RvE, dass ein Rentenanspruch nur für eine absehbare Dauer innerhalb der ersten drei Jahre bestehen wird, kann die Rente stattdessen in Form einer **Gesamtvergütung** (Einmalzahlung) gewährt werden. Eine Gesamtvergütung ist immer dann angezeigt, wenn (a) die Untersuchung Befunde ergibt, die einer MdE von 20 Prozent entsprechen, (b) die Aussicht auf eine weitere Besserung (spontan oder durch Therapiemaßnahmen) realistisch ist, **und** (c) für den Einzelfall der Zeitpunkt, zu dem die MdE-Änderung voraussichtlich eintreten wird, aufgrund medizinischer Erfahrungswerte abgeschätzt werden kann. Typische Beispiele: unkomplizierte körperferne Speichenbrüche, isolierte Ober-/Unterschenkelbrüche ohne Weichteilschäden/Gelenkbeteiligung, Hand-/Fußverletzungen.
 
 PDFs: https://www.dguv.de/medien/formtexte/aerzte/a_4200/a4200.pdf,
 https://www.dguv.de/medien/formtexte/aerzte/a_4500/a4500.pdf,
@@ -109,7 +113,7 @@ Statistisch sind Ablehnungsgründe bei Berufskrankheiten (BK-Liste, Anlage 1 BKV
 
 ## Die zwei Kausalitätsstufen im Detail — zentral für Post-COVID/ME-CFS als BK-3101-Folge
 
-Prüfungsstruktur nach ständiger BSG-Rechtsprechung (vgl. Vortrag Dr. Dirk Bieresborn, Richter am BSG, 2. Senat, DGUV BK-Tage):
+Prüfungsstruktur nach ständiger BSG-Rechtsprechung (vgl. Vortrag Dr. Dirk Bieresborn, Richter am BSG, 2. Senat, DGUV BK-Tage — deckungsgleich mit Abb. 4/5 in DGUV, "Grundlagen der Begutachtung von Arbeitsunfällen", Abschnitte 1.7/1.8, dort direkt bestätigt):
 
 | Prüfungsschritt | Beweismaßstab |
 |---|---|
@@ -119,7 +123,9 @@ Prüfungsstruktur nach ständiger BSG-Rechtsprechung (vgl. Vortrag Dr. Dirk Bier
 | 4. **Haftungsbegründende Kausalität** (Exposition → Krankheit/Primärschaden) | Hinreichende Wahrscheinlichkeit |
 | 5. Krankheit (Primärschaden) selbst | Vollbeweis |
 | 6. **Haftungsausfüllende Kausalität** (Primärschaden → weitere Erkrankungen/Folgeschäden) | Hinreichende Wahrscheinlichkeit |
-| 7. Folgeschaden selbst | Vollbeweis |
+| 7. Folgeschaden selbst (inkl. Gesundheitsfolgeschaden mit MdE ≥ 20 % über die 26. Woche hinaus, sofern Verletztenrente begehrt wird) | Vollbeweis |
+
+**Die drei Beweismaßstäbe im Einzelnen** (DGUV-Quelle, Abschnitt 1.8): Sachverständige müssen sich an drei Ebenen orientieren — **"Möglichkeit"** (Vermutung, Spekulation, Unterstellung: es kann etwas nicht ausgeschlossen werden — **genügt nicht** für einen Entschädigungsanspruch); **"hinreichende Wahrscheinlichkeit"** (es sprechen mehr bzw. gewichtigere Gründe für den Zusammenhang als dagegen — Maßstab für alle Kausalzusammenhänge, Zeilen 3/4/6 oben); **"Vollbeweis"** (eine so hohe Wahrscheinlichkeit, dass keine vernünftigen Zweifel mehr bestehen — an Sicherheit grenzende Wahrscheinlichkeit, Maßstab für Tatsachen wie Unfallereignis, Gesundheitserst-/-folgeschaden selbst, Zeilen 1/2/5/7 oben). Die Beweiserleichterung auf "hinreichende Wahrscheinlichkeit" gilt nur für die Kausalzusammenhänge selbst, nicht für die in die Abwägung einfließenden Tatsachen (Anknüpfungstatsachen) selbst.
 
 **Praktisch entscheidend für Post-COVID/ME-CFS**: Ist die akute COVID-19-Erkrankung bereits als BK-3101 anerkannt (Primärschaden, Schritt 5 — bei dokumentierter beruflicher Exposition im Gesundheitsdienst oft weitgehend formal durchlaufen), gilt für den Zusammenhang zwischen dieser Infektion und heutiger Post-COVID/ME-CFS-Symptomatik (Schritt 6, haftungsausfüllende Kausalität) **derselbe abgesenkte Beweismaßstab** wie bei der Erstursache: hinreichende Wahrscheinlichkeit, **kein Vollbeweis**. Es braucht also keinen Labornachweis oder Sachverständigenbeweis "zweifelsfrei", sondern eine im Gesamtbild überwiegend wahrscheinliche Kausalkette.
 
@@ -128,6 +134,51 @@ Prüfungsstruktur nach ständiger BSG-Rechtsprechung (vgl. Vortrag Dr. Dirk Bier
 **Kein Automatismus — reale Gegenentscheidung als Kalibrierung**: LSG-Rechtsprechung zu einem strukturell vergleichbaren Fall (BK Nr. 3102, Q-Fieber-Infektion → geltend gemachtes chronisches Fatigue-Syndrom als Folgeschaden) zeigt, dass der abgesenkte Beweismaßstab kein Selbstläufer ist — die Vorinstanz (SG) hatte die Anerkennung bejaht, das LSG hob dies auf: die haftungsausfüllende Kausalität wurde als nicht hinreichend wahrscheinlich belegt angesehen. Eine lückenhafte oder unspezifische Symptomdarstellung reicht nicht; die Kette muss in sich stimmig sein.
 
 **Einordnung für Post-COVID speziell (anders als bei seltenen BKn wie Q-Fieber)**: Bei einer im Vergleich sehr hohen Fallzahl (BK-3101-Anerkennungen im hohen fünfstelligen bis sechsstelligen Bereich, siehe `postcovid-mecfs.md`) entsteht zwangsläufig eine deutlich dichtere sozialgerichtliche Fallpraxis als bei einer Rarität wie Q-Fieber (wenige Fälle/Jahr) — dort kann eine einzelne restriktive Entscheidung faktisch unwidersprochen stehen bleiben, bei Post-COVID ist eine konsistentere Linie über viele Verfahren hinweg wahrscheinlicher. Zusätzlich ist das Thema politisch sichtbar (Bundestags-Ausschussbefassung, BMFTR-Forschungsdekade "Nationale Dekade gegen Postinfektiöse Erkrankungen", 500 Mio. € 2026–2036) — eine sichtbare systematische Ablehnungspraxis wäre für einen Träger politisch riskant. Der wahrscheinlichere institutionelle Reflex bei Kostendruck ist eher Bearbeitungs-Reibung (hohe Dokumentationsanforderungen, lange Bearbeitungszeiten) als offene Ablehnung.
+
+## Vorschädigungen als konkurrierende Ursachen: Schadensanlage, Vorerkrankung, Verschlimmerungshaftung
+
+Quelle für diesen Abschnitt: DGUV, "Grundlagen der Begutachtung von Arbeitsunfällen — Erläuterungen für Sachverständige" (Ausgabe Okt. 2018, geänderte Neuauflage Sept. 2021), Abschnitte 1.3–1.9 — vom Nutzer als PDF bereitgestellt und direkt als Volltext ausgewertet. **Ersetzt/präzisiert eine frühere, allgemeiner gehaltene Fassung dieses Abschnitts**, die den Grundsatz zwar richtig benannte, aber die im Original entscheidende begriffliche Weiche (Schadensanlage vs. Vorerkrankung) noch nicht sauber wiedergab.
+
+**Grundsatz**: Die Leistungspflicht der GUV beschränkt sich nicht auf Fälle, in denen der Versicherungsfall eine völlig neue Erkrankung verursacht. Sie erstreckt sich ebenso auf die Verschlimmerung einer bereits vorher bestehenden, nicht arbeitsbedingten Erkrankung, wenn der Versicherungsfall dafür rechtlich wesentlich (mit-)ursächlich ist.
+
+### Schadensanlage vs. Vorerkrankung — die entscheidende begriffliche Weiche
+
+„Vorschädigung" ist der Oberbegriff für alle körperlichen Abweichungen von der Norm, die bereits vor dem Unfallereignis bestanden (die Begriffe "Vorschaden"/"Schadensanlage"/"Vorerkrankung" werden in Literatur/Rechtsprechung uneinheitlich verwendet — die DGUV-Quelle verwendet sie wie folgt). Entscheidend ist die Unterscheidung zwischen zwei Fällen mit **grundlegend unterschiedlicher Rechtsfolge**:
+
+| | Schadensanlage | Vorerkrankung |
+|---|---|---|
+| Definition | etwas Angelegtes, bisher klinisch **Stummes**, das erst eines äußeren Anstoßes bedarf, um krankhaft (funktionell symptomatisch) zu werden | etwas Krankhaftes, das bereits **manifest** (funktionell symptomatisch) war oder bereits behandelt wurde |
+| Betrifft die Frage | Entstehung/erstmaliges Auftreten des Schadens | Verschlimmerung einer bereits vorbestehenden Erkrankung |
+| Prinzip | **"Alles-oder-Nichts"** | nur der unfallbedingte **Verschlimmerungsanteil** wird entschädigt |
+
+- **Bei einer Schadensanlage** gilt das Alles-oder-Nichts-Prinzip: Ist das Unfallereignis und nicht die Schadensanlage die (rechtlich wesentliche) Ursache für den Gesundheitserstschaden, besteht Anspruch auf **den gesamten** Gesundheitsschaden — **ohne jeden Abzug** wegen der Schadensanlage. Überwiegt umgekehrt die Schadensanlage, entfällt der Anspruch ganz (Beispiel aus der Quelle: Sturz aus 2 m Höhe mit Lendenwirbelkörperbruch — ob gleichzeitig eine Osteoporose vorlag, ist regelmäßig nicht relevant, weil der Sturz auch den Bruch eines gesunden Wirbelkörpers verursacht hätte).
+- **Bei einer Vorerkrankung** ist zu prüfen, ob das Unfallereignis die rechtlich wesentliche Ursache für die **Verschlimmerung** dieser Vorerkrankung ist. Liegt eine unfallbedingte Verschlimmerung vor, wird **grundsätzlich nur der unfallbedingte Verschlimmerungsanteil** entschädigt (dauernd oder zeitlich begrenzt, je nachdem ob die Verschlimmerung dauerhaft oder nur vorübergehend ist; mündet sie später wieder in den unfallunabhängig zu erwartenden Krankheitsverlauf ein, enden zu diesem Zeitpunkt auch die Entschädigungsleistungen).
+- **Wichtige, für Betroffene günstige Ausnahme**: **Ist eine Trennung zwischen unfallbedingtem und unfallunabhängigem Anteil nicht möglich, ist das Gesamtleiden voll zu entschädigen** — bislang nicht dokumentierte, praktisch bedeutsame Regel.
+- **Vorschaden kann die MdE auch erhöhen, nicht nur reduzieren**: zwei konkrete, generalisierbare
+  Fallbeispiele (Verlust des letzten funktionsfähigen Auges bei bereits bestehender
+  Einäugigkeit → höhere MdE wegen fehlender Kompensationsreserve; unfallbedingter
+  Oberschenkelverlust bei bereits bestehender kontralateraler Unterschenkelamputation → geringere
+  MdE, weil die Erwerbsmöglichkeiten bereits vorher eingeschränkt waren) in
+  `mde-kommission-muskuloskelettal-2025.md`, Abschnitt 3 — dort mit weiterer Einordnung als
+  Doppelrichtung der Vorschaden-Wirkung.
+
+**Bezug zu BASTET/Post-COVID**: Bei bereits vor der beruflich bedingten COVID-19-Infektion bestehenden Erkrankungen (Asthma, Migräne, Fibromyalgie, PoTS u. Ä. — siehe `cdc-track-pcc-verschlimmerung-vorerkrankungen.md`) ist zunächst zu klären, ob eine **Schadensanlage** (klinisch stumm, z. B. eine bislang unbemerkte autonome Dysregulationsneigung) oder eine **Vorerkrankung** (bereits manifest, z. B. bereits diagnostiziertes Asthma) vorlag — das entscheidet, ob im Erfolgsfall der **gesamte** heutige Gesundheitsschaden (Schadensanlage, kein Abzug) oder **nur der Verschlimmerungsanteil** (Vorerkrankung) zu entschädigen ist. Das ist rechtlich und beweistechnisch von der Frage der **Neuerkrankung** ME/CFS/Post-COVID zu unterscheiden (siehe Kausalitätsstufen oben) — im Einzelfall können beide Anspruchsgrundlagen nebeneinander vorliegen.
+
+### Abgrenzung wesentliche Bedingung vs. Gelegenheitsursache — Quantifizierung der Mitwirkungsanteile
+
+- **Patt-Situation genügt für die Anerkennung**: Kann ein eindeutiges Überwiegen von Vorschädigung oder Unfallereignis nicht festgestellt werden, sind beide Ursachen als **gleichwertig** zu bewerten — das genügt bereits für die Anerkennung.
+- **Zeitliche Nähe allein reicht nicht**: Aus der engen zeitlichen Aufeinanderfolge von Unfallereignis und Gesundheitsschaden kann nicht automatisch auf die überragende Bedeutung des Unfallereignisses geschlossen werden.
+- **Alltägliche Belastung als Indiz gegen den Zusammenhang**: Entstand der Gesundheitsschaden im Rahmen einer betrieblichen äußeren Einwirkung, die einer alltäglichen Belastung entspricht, ist das Unfallereignis regelmäßig nur **Auslöser** und gegenüber der Vorschädigung von untergeordneter Bedeutung. Das Unfallereignis ist nur unwesentliche Teil-Ursache (**Gelegenheitsursache**), wenn die Vorerkrankung so leicht ansprechbar bzw. deren Verschlimmerungstendenz so stark ausgeprägt war, dass alltägliche Ereignisse wahrscheinlich ebenso geeignet gewesen wären, dieselbe Verschlimmerung herbeizuführen.
+- **Nicht nachgewiesene Vorschädigungen zählen nicht**: Nur **nachgewiesene** (nicht lediglich vermutete) Schadensanlagen oder Vorerkrankungen können als konkurrierende Ursache berücksichtigt werden — eine bloß vermutete Vorschädigung kann den ursächlichen Zusammenhang nicht verneinen.
+- **Wichtig für die Rolle der Sachverständigen**: Die Quantifizierung der Mitwirkungsanteile (Faktenfrage, 1. Stufe der bereits oben dokumentierten zweistufigen Kausalitätsprüfung — naturwissenschaftlich-philosophische Kausalität) ist Aufgabe der ärztlichen Sachverständigen. Die abschließende **rechtliche** Bewertung, ob eine Ursache "wesentlich" ist (2. Stufe), ist dagegen **keine Aufgabe der medizinischen Begutachtung**, sondern eine wertende Entscheidung, die ausschließlich dem UV-Träger bzw. dem Gericht vorbehalten ist. Praktisch bedeutsam für den Doc-Arm: Von einem ärztlichen Gutachten kann/darf keine abschließende Aussage zur "Wesentlichkeit" erwartet werden — nur zu den tatsächlichen Mitwirkungsanteilen.
+
+### Beweislast
+
+Die Versicherten tragen die Beweislast für **anspruchsbegründende** Tatsachen; die UV-Träger tragen die Beweislast für **anspruchshindernde** Tatsachen (insbesondere für das Vorliegen einer entgegenstehenden Schadensanlage/Vorerkrankung mit überwiegender Bedeutung) — ergänzt die bereits dokumentierte dreistufige Beweismaßstabs-Systematik (Möglichkeit/Vermutung genügt nicht — hinreichende Wahrscheinlichkeit für Kausalzusammenhänge — Vollbeweis für Tatsachen wie Unfallereignis und Gesundheitserstschaden selbst) um die Frage, wen die Beweislast bei Nichterweislichkeit trifft.
+
+**Praktische Relevanz für Post-COVID/ME-CFS bei BK 3101**: Betroffene, die bereits **vor** der beruflich bedingten, als BK 3101 anerkannten COVID-19-Infektion eine andere Erkrankung hatten (z. B. Asthma, Migräne, Fibromyalgie, PoTS, eine Angst-/depressive Symptomatik — gerade die Kategorien, die auch in `cdc-track-pcc-verschlimmerung-vorerkrankungen.md` als häufig durch COVID-19 verschlimmert dokumentiert sind), können einen Anspruch auf Entschädigung des **Verschlimmerungsanteils** dieser Vorerkrankung haben, wenn sich diese im zeitlichen und sachlichen Zusammenhang mit der anerkannten Infektion nachweisbar verschlechtert hat.
+
+**Beweispraktische Bedeutung von `cdc-track-pcc-verschlimmerung-vorerkrankungen.md`**: Die dort dokumentierte Studie liefert keinen Kausalitätsbeweis für den Einzelfall, aber einen **Plausibilitätsbaustein** — sie zeigt, dass eine Verschlimmerung bestehender Erkrankungen durch COVID-19 ein empirisch dokumentiertes, in einem relevanten Anteil Betroffener beobachtetes Muster ist (u. a. 68 % Verschlechterung bei vorbestehendem PoTS, ~80 % bei vorbestehendem Asthma in den dort zitierten externen Studien) — nützlich, um einer pauschalen gegnerischen Zurückweisung ("das ist reiner Zufall/Alterung/Zeitablauf") mit einer allgemein anerkannten Evidenzbasis zu begegnen, ersetzt aber nicht den im Einzelfall zu führenden Nachweis der wesentlichen Bedingung.
 
 ## Überblick über weitere Geldleistungen der GUV (neben der Verletztenrente)
 

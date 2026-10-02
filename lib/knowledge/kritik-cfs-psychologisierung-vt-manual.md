@@ -110,7 +110,7 @@ Anders als im Text behauptet „Für die mit ME/CFS verbundenen ätiologischen K
 
 7.7. Die Gefahr von Nocebo wird gegenüber der weit verbreiteten und dramatischeren Gefahr einer dauerhaften Schädigung durch Aktivitätsaufbau überschätzt. Fehlende Kenntnisse von Behandelnden oder Bagatellisierung von PEM/PENE verhindern weiterhin die angemessene Patient:innenschulung in der Frühphase der Erkrankung. Angemessene Aufklärung kann jedoch prognoseentscheidend sein und über frühzeitiges Pacing entweder zum Ausheilen beitragen oder mittels rechtzeitiger Hilfsmittelnutzung, Reduktion von Belastungen und Etablierung von Pflege und anderer Unterstützung die Exazerbation begrenzen, während falsche Konzepte Überlastungen begünstigen.
 
-7.8. Es gibt auch weiterhin keine sicheren Rehabilitationskonzepte, wie die Studie zur speziell auf ME/CFS angepassten Reha der Charité Berlin in Kooperation mit der Rehaklinik Kreischa gezeigt hat (Kedor et al., 2026, Preprint). Hier kam es trotz bester Bedingungen zu fast 45 % Verschlechterungen. Schädigungen auf Rehabilitationsbehandlungen sind also anders als im Text dargestellt keinesfalls ein Phänomen der Vergangenheit.
+7.8. Es gibt auch weiterhin keine sicheren Rehabilitationskonzepte, wie die Studie zur speziell auf ME/CFS angepassten Reha der Charité Berlin in Kooperation mit der Rehaklinik Kreischa gezeigt hat (Kedor Peters et al., 2026, *Am J Med*, mittlerweile peer-reviewed angenommen — ausführlich ausgewertet in `kedor-peters-mecfs-reha-studie-2026.md`). Hier kam es trotz bester Bedingungen bei 42/94 (45 %) Patient:innen zu einer Verschlechterung im Bell-Score. Schädigungen auf Rehabilitationsbehandlungen sind also anders als im Text dargestellt keinesfalls ein Phänomen der Vergangenheit.
 
 ### 8. Evidenzlage zur kognitiven Verhaltenstherapie
 
@@ -240,7 +240,7 @@ Hartwig, J. et al. (2020) 'IgG stimulated β2 adrenergic receptor activation is 
 
 Institut für Qualität und Wirtschaftlichkeit im Gesundheitswesen (IQWiG) (2023) 'Myalgische Enzephalomyelitis / Chronic Fatigue Syndrome (ME/CFS): Aktueller Kenntnisstand'. IQWIG-Berichte-Nr. 1539, Abschlussbericht N21-01. https://www.iqwig.de/download/n21-01_me-cfs-aktueller-kenntnisstand_abschlussbericht_v1-0.pdf.
 
-Kedor, C. et al. (2026) 'Evaluation of an Integrated Multidisciplinary Care Model for Myalgic Encephalomyelitis/Chronic Fatigue Syndrome: A Prospective, Open-label, Non-randomized Controlled Intervention Study'. Preprint. https://dx.doi.org/10.2139/ssrn.6989698.
+Kedor Peters, C. et al. (2026) 'Evaluation of an Integrated Multidisciplinary Care Model for Myalgic Encephalomyelitis/Chronic Fatigue Syndrome: A Prospective, Open-label, Non-randomized Controlled Intervention Study'. The American Journal of Medicine (Journal Pre-proof, angenommen 07.09.2026). https://doi.org/10.1016/j.amjmed.2026.09.013 (vormals als Preprint zitiert unter https://dx.doi.org/10.2139/ssrn.6989698).
 
 König, R.S. et al. (2024) 'Identifying the mental health burden in Myalgic Encephalomyelitis/Chronic Fatigue Syndrome (ME/CFS) patients in Switzerland: A pilot study', Heliyon, 10(5). https://doi.org/10.1016/j.heliyon.2024.e27031.
 

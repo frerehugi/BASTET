@@ -81,7 +81,7 @@ vergleichbar mit der bereits genutzten AWMF-Leitlinie 094/001.
   körperlichen Zusatzbefunden, siehe BSG-Rechtsprechung unten).
 - **Mitwirkungspflichten der Versicherten (§§ 62–66 SGB I)**: Zumutbar sind Untersuchungen,
   wenn sie nicht mit erheblichen Schmerzen verbunden sind und keinen erheblichen Eingriff in
-  die körperliche Unversehrtheit darstellen (§ 65 Abs. 1 SGB I). **Wichtige Klarstellung**:
+  die körperliche Unversehrtheit darstellen (§ 65 Abs. 2 SGB I). **Wichtige Klarstellung**:
   Psychologische Testverfahren, anerkannte Beschwerdenvalidierungsverfahren und das
   umfangreiche klinisch-psychologische Explorationsgespräch einschließlich der
   Verhaltensbeobachtung stellen **keinen** Eingriff in die körperliche Unversehrtheit dar —

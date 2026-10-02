@@ -223,21 +223,38 @@ export async function* streamClaude(
   messages: ChatMessage[],
   maxTokens: number,
   enableWebSearch: boolean = false,
-  cacheMessages: boolean = false
+  cacheMessages: boolean = false,
+  // Optionales Soft-Deadline-Signal (siehe app/api/doc/route.ts): die
+  // Vercel-Function wird bei Überschreiten von `maxDuration` ohne jede
+  // Chance auf eigenen Code hart beendet - dabei geht auch der bereits
+  // gestreamte Teiltext beim Client als scheinbar vollständige Antwort an,
+  // ohne STREAM_ERROR_MARKER (siehe dortigen Kommentar). Ein `signal`, das
+  // der Aufrufer rechtzeitig VOR dem harten Limit abbricht, verwandelt das
+  // in einen regulären, im Stream sichtbaren Fehler.
+  signal?: AbortSignal
 ): AsyncGenerator<string, void, unknown> {
   const apiKey = getApiKey();
   const body = buildRequestBody(system, messages, maxTokens, enableWebSearch, cacheMessages, true);
 
-  const response = await fetch(ANTHROPIC_API_URL, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      "x-api-key": apiKey,
-      "anthropic-version": ANTHROPIC_VERSION,
-      accept: "text/event-stream",
-    },
-    body: JSON.stringify(body),
-  });
+  let response: Response;
+  try {
+    response = await fetch(ANTHROPIC_API_URL, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-api-key": apiKey,
+        "anthropic-version": ANTHROPIC_VERSION,
+        accept: "text/event-stream",
+      },
+      body: JSON.stringify(body),
+      signal,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Zeitüberschreitung bei der Erstellung (vor Antwortbeginn).");
+    }
+    throw error;
+  }
 
   if (!response.ok || !response.body) {
     // Ein Fehler VOR Stream-Start (z.B. 400/401) liefert normales JSON, kein
@@ -265,6 +282,7 @@ export async function* streamClaude(
   // mehreren message_delta-Events immer mit dem jeweils neuesten Stand.
   let usage: UsageInfo = {};
 
+  let aborted = false;
   try {
     while (true) {
       const { done, value } = await reader.read();
@@ -304,15 +322,31 @@ export async function* streamClaude(
         }
       }
     }
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      aborted = true;
+    } else {
+      throw error;
+    }
   } finally {
     reader.releaseLock();
   }
 
-  // Auch bei einem anschließenden Fehler (max_tokens, midStreamError) loggen -
-  // die Tokens wurden so oder so verbraucht, und gerade eine abgeschnittene
-  // Antwort ist für die Kosteneinordnung relevant.
+  // Auch bei einem anschließenden Fehler (max_tokens, midStreamError,
+  // Abbruch) loggen - die Tokens wurden so oder so verbraucht, und gerade
+  // eine abgeschnittene Antwort ist für die Kosteneinordnung relevant.
   logUsage("streamClaude", usage);
 
+  if (aborted) {
+    // Bewusster, rechtzeitiger Abbruch über `signal` (siehe Parameter-
+    // Kommentar oben) statt eines externen Hard-Kills durch die Vercel-
+    // Function - dadurch sieht der Client einen klaren Fehler statt einer
+    // still abgeschnittenen, aber als vollständig wirkenden Teilantwort.
+    throw new Error(
+      "Zeitüberschreitung bei der Erstellung — die Anfrage war vermutlich sehr umfangreich. " +
+        "Bitte in ein bis zwei Minuten erneut versuchen, ggf. mit kürzeren Angaben."
+    );
+  }
   if (midStreamError) {
     throw new Error(midStreamError);
   }

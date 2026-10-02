@@ -23,15 +23,23 @@ const FILES = [
   "begutachtung-rechtsgrundlagen-awmf094.md",
   "versmedv-gdb-gds.md",
   "postcovid-mecfs.md",
+  "leopoldina-stellungnahme-postinfektioese-erkrankungen-2026.md",
+  "kedor-peters-mecfs-reha-studie-2026.md",
   "scheibenbogen-aerztliche-begutachtung.md",
+  "scheibenbogen-cme-differentialdiagnostik-therapie-2021.md",
+  "euromene-expert-konsensus-diagnostik-versorgung.md",
+  "cdc-track-pcc-verschlimmerung-vorerkrankungen.md",
   "postcovid-symptomliste.md",
   "symptomliste-gdb-mde-abgleich.md",
   "medikamentoese-therapie-postcovid.md",
+  "bfarm-therapie-kompass-long-covid.md",
   "emoprom-lcn-proms-battery.md",
   "ccc-fragenkatalog-kalibrierung.md",
   "nervensystem-psyche-herz-gdb.md",
   "neurologie-vergleichsfaelle.md",
   "neurologie-mde-guv-tabellen.md",
+  "mde-expertengruppe-gliedmassenverlust-2019.md",
+  "mde-kommission-muskuloskelettal-2025.md",
   "schmerz-neuro-kardio-erweiterung.md",
   "schlaf-schwindel-kognitiv-faelle.md",
   "gutachten-stilvorlage-neuropsychiatrisch.md",
@@ -40,6 +48,8 @@ const FILES = [
   "unfallversicherung-gutachter-befangenheit.md",
   "sgb-verfahrensrecht-begutachtung.md",
   "pflegebegutachtung-sgb-xi-mitwirkung.md",
+  "mecfs-kurative-forschung-nksg.md",
+  "praxisleitfaden-mecfs-diagnostik-codierung-abrechnung.md",
   "bg-pflichten-mitwirkung.md",
   "bg-behandlung-abrechnung.md",
   "gba-longcov-richtlinie-sapv-palliativversorgung.md",
@@ -53,15 +63,20 @@ const FILES = [
 ];
 
 /**
- * Reine Ablauf-/Kontakthilfen (BG-Adressen, Standardbrief-Vorlage) - erst
- * relevant, wenn tatsächlich ein BK-3101-Verfahren betrieben wird. Einziges
- * konkret umgesetztes Selektionskriterium aus build/effizienz-plan.md
- * Abschnitt 2 (bewusst konservativ: nur diese 2 von 21 Dateien, nur bei
- * eindeutig fehlendem Berufsbezug - siehe getStaticKnowledgeBase() unten).
- * Die übrigen BG-Dateien (Kausalitätsstufen, Verfahrensrecht) bleiben immer
- * drin, da sie auch die korrekte Begründung von "nicht einschlägig" stützen.
+ * Reine Ablauf-/Kontakthilfen (BG-Adressen, Standardbrief-Vorlage,
+ * Gutachterauswahl/Vorschlagsrecht) - erst relevant, wenn tatsächlich ein
+ * BK-3101-Verfahren betrieben wird. Konkret umgesetztes Selektionskriterium
+ * aus build/effizienz-plan.md Abschnitt 2 (bewusst konservativ: nur eine
+ * kleine Teilmenge aller Dateien, nur bei eindeutig fehlendem Berufsbezug -
+ * siehe getStaticKnowledgeBase() unten). Die übrigen BG-Dateien
+ * (Kausalitätsstufen, Verfahrensrecht) bleiben immer drin, da sie auch die
+ * korrekte Begründung von "nicht einschlägig" stützen.
  */
-const BG_KONTAKT_FILES = ["bg-kontaktdaten.md", "standardbrief-bgw.md"];
+const BG_KONTAKT_FILES = [
+  "bg-kontaktdaten.md",
+  "standardbrief-bgw.md",
+  "bg-gutachterverzeichnis-vorschlagsrecht.md",
+];
 
 const staticCached: { full: string | null; standard: string | null } = { full: null, standard: null };
 
