@@ -113,21 +113,27 @@ function toDisplay(baseUnits: string): string {
 }
 
 /**
- * Liest den `?wallet=0x...`-Query-Parameter aus dem rohen Request-Pfad, den
- * HTTPRequestContext.path liefert. Reiner Identifikator, KEINE vertrauens-
- * würdige Preisbehauptung - der tatsächliche Preis entscheidet sich allein
- * über isReturningWallet() (lib/x402Pricing.ts), das nur nach einer echten,
- * verifizierten Settlement geschrieben wird. Ungültige/fehlende Adresse
- * -> null, fällt dann auf den vollen Preis zurück (sicherer Default).
+ * Liest den `?wallet=0x...`-Query-Parameter. Reiner Identifikator, KEINE
+ * vertrauenswürdige Preisbehauptung - der tatsächliche Preis entscheidet
+ * sich allein über isReturningWallet() (lib/x402Pricing.ts), das nur nach
+ * einer echten, verifizierten Settlement geschrieben wird. Ungültige/
+ * fehlende Adresse -> null, fällt dann auf den vollen Preis zurück
+ * (sicherer Default).
+ *
+ * WICHTIG: `context.path` enthält laut der tatsächlichen @x402/hono-
+ * Adapter-Implementierung (node_modules/@x402/hono/dist/cjs/index.js,
+ * getPath() -> c.req.path) NIEMALS den Query-String - ein erster Versuch,
+ * den Hint per `new URL(context.path, ...)` zu parsen, konnte den
+ * Parameter deshalb nie finden (realer Bug, per echtem Testlauf entdeckt:
+ * der ermäßigte Preis griff trotz korrekt gesendetem ?wallet= nie). Richtig
+ * ist `context.adapter.getQueryParam("wallet")` - eine von HTTPAdapter
+ * optional deklarierte, von Hono tatsächlich implementierte Methode
+ * (dieselbe Datei, getQueryParam() -> c.req.queries()).
  */
 function extractWalletHint(context: HTTPRequestContext): string | null {
-  try {
-    const url = new URL(context.path, "http://bastet.internal");
-    const hint = url.searchParams.get("wallet");
-    return hint && isAddress(hint) ? getAddress(hint) : null;
-  } catch {
-    return null;
-  }
+  const raw = context.adapter.getQueryParam?.("wallet");
+  const hint = Array.isArray(raw) ? raw[0] : raw;
+  return hint && isAddress(hint) ? getAddress(hint) : null;
 }
 
 /**
