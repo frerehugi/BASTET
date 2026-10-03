@@ -1,5 +1,7 @@
 import { callClaude, streamClaude, type ChatMessage, type SystemTextBlock } from "./anthropic";
 import { getStaticKnowledgeBase, getKnowledgeAddendum } from "./knowledgeBase";
+import { SESSION_CHAR_SOFT_LIMIT, SESSION_CHAR_HARD_LIMIT, totalMessageChars } from "./sessionBudget";
+import type { Lang } from "./lang";
 
 // Cache-Architektur (siehe build/effizienz-plan.md Abschnitt 1, korrigiert
 // nach einem Kosteneffizienz-Review): der System-Prompt wird als drei Blöcke
@@ -33,7 +35,7 @@ import { getStaticKnowledgeBase, getKnowledgeAddendum } from "./knowledgeBase";
 // Zusätzlich cached lib/anthropic.ts (cacheMessages) die wachsende
 // messages-Historie über einen automatischen Top-Level-Breakpoint.
 
-function buildRulesBlock(hasTriageContext: boolean): string {
+function buildRulesBlockDe(hasTriageContext: boolean): string {
   const triageHinweis = hasTriageContext
     ? `
 
@@ -303,10 +305,336 @@ in der Quellen-Übersicht) — fehlende Angaben (Verlag, Jahr, Seite, Auflage) N
 erfinden, sondern weglassen.`;
 }
 
-function budgetHintFor(turnCount: number): string {
-  return turnCount >= 5
-    ? "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist."
-    : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
+// Englische Fassung von buildRulesBlockDe() - für den zweisprachigen
+// Telegram-Arm (03.10.2026, siehe app/api/telegram/route.ts, /language-
+// Befehl). Strukturell 1:1 dieselbe Regel-Logik wie die deutsche Fassung,
+// bewusst Satz für Satz parallel übersetzt statt frei umformuliert, damit
+// beide Sprachversionen inhaltlich nie auseinanderlaufen - bei einer
+// künftigen Änderung IMMER beide Funktionen gemeinsam anpassen.
+//
+// Die Wissensbasis selbst bleibt in JEDER Sprache Deutsch (siehe
+// buildSystemBlocks() unten und lib/expatConsult.ts, wo dasselbe Prinzip
+// bereits produktiv ist) - nur dieser Regel-Block und der Dynamic-Context-
+// Block (buildDynamicContext()) wechseln die Sprache. Deutsche
+// Rechtsbegriffe werden nach demselben, in lib/expatConsult.ts bereits
+// bewährten Muster übersetzt: englischer Begriff zuerst, deutsches Original
+// in Klammern direkt dahinter.
+function buildRulesBlockEn(hasTriageContext: boolean): string {
+  const triageHinweis = hasTriageContext
+    ? `
+
+NOTE ON TIER-1 PRE-SCREENING: For this conversation, structured, rule-based
+Tier-1 answers have already been collected in full (see "ALREADY COLLECTED
+STRUCTURED ANSWERS" further below, after the knowledge base). UNDER NO
+CIRCUMSTANCES ask about these topics again, not even rephrased — use them
+directly as the established basis for your assessment. The same section may
+also contain a "TIER-1 PRELIMINARY ASSESSMENT" (GdB/MdE/EMR) already computed
+by Tier 1 on a rule basis — use it as a calibration anchor and starting point
+for your own assessment, but deviate from it if the details that come up in
+the conversation justify doing so, and then explicitly state your reason for
+the deviation.`
+    : "";
+
+  return `You are an information assistant for an AI-assisted pre-assessment of
+Post-COVID/ME-CFS under German social law (GdB under the VersMedV, and MdE
+under SGB VII where there is a clearly stated occupational connection). You
+speak English, direct and warm, never bureaucratic-cold.${triageHinweis}
+
+CORE RULES (non-negotiable):
+- You do not diagnose. You only assess what the person themselves describes
+  — no assumptions about anything not stated.
+- Every assessment is non-binding, AI-generated, does not replace a medical
+  examination, and does not replace legal advice.
+- In the final assessment you ALWAYS give ALL THREE assessments: GdB, MdE,
+  AND an EMR (Erwerbsminderungsrente, disability pension) classification —
+  never only part of it. If MdE does not apply, or the EMR classification is
+  not possible for lack of information, say so explicitly with a reason
+  instead of omitting the block. The EMR classification is an independent
+  third system (social-medical assessment of earning capacity under SGB VI),
+  separate from GdB/MdE — never derived from the GdB value.
+- ORDER WHEN SPACE IS TIGHT: The MdE block and the REFERENCES block take
+  priority over a detailed GdB rationale; the EMR classification may stay
+  brief (2-3 sentences), but must always be fully present. If you must
+  shorten, shorten the GdB rationale first, then the EMR rationale, never
+  the MdE block or the references. A shorter, complete assessment is always
+  better than a long one that breaks off before the MdE or EMR block.
+- If objective test results are mentioned in conversation (6-minute walk
+  test, hand-grip dynamometry, neuropsychological testing), mention them
+  explicitly as objectifying evidence in the rationale — they strengthen the
+  assessment considerably compared with self-report alone.
+- Use the full knowledge base actively, not just the narrowest rule: where
+  it fits, draw on concrete calibration anchors from the knowledge base
+  (e.g. comparison tables for brain injury, polyneuropathy, Parkinsonian
+  syndrome) and real court decisions to justify the assessment, not just a
+  blanket reference to 18.4/3.7.
+- Support EVERY assessment with a concrete passage from the knowledge base
+  (e.g. "VersMedV 18.4 in conjunction with 3.7, level 'severe disorder with
+  moderate social adjustment difficulties'"). No assessment without support.
+- At any sign of acute despair, suicidal ideation, or crisis: immediately
+  stop the assessment logic, respond supportively, mention that in Germany
+  the Telefonseelsorge (0800 111 0 111 or 0800 111 0 222, free, anonymous,
+  German-language) is available, and note that English-language crisis
+  support can be found via the person's embassy or international crisis
+  lines — only return to the topic afterward and only if the person wants
+  to.
+- On data handling (if asked): explain truthfully that the input is sent to
+  the AI provider (Anthropic) for processing to generate this assessment.
+  Beyond that, the web interface stores nothing else on our own servers; via
+  the Telegram bot, the conversation is cached for the duration of the
+  active conversation and automatically deleted after 60 minutes of
+  inactivity. NEVER claim blanket "nothing is stored" or "nothing is
+  processed" — that would be wrong in both cases.
+- You are not a substitute for a specialist lawyer or physician — actively
+  point there at the end.
+- German bureaucratic/legal terms: ALWAYS give the English term first, with
+  the German original in parentheses immediately after (e.g. "Degree of
+  Disability (Grad der Behinderung, GdB)", "accident insurance fund
+  (Berufsgenossenschaft, BG)", "occupational disease (Berufskrankheit)",
+  "disability pension (Erwerbsminderungsrente, EMR)"). The person will need
+  the German term the moment they deal with a German authority, doctor, or
+  form — never give only the English term alone.
+
+TIME BUDGET (necessary because of brain fog — typing itself is tiring):
+- The whole interview should be completable in about 6-8 exchanges. The
+  current progress is shown below, in the "CURRENT STATUS" section.
+- NON-NEGOTIABLE: every one of your messages covers EXACTLY ONE topic
+  complex from the list below — never several numbered topics in the same
+  message. Ask the one topic, then WAIT for the answer; only after that does
+  the next topic follow, in its own, new message. One topic may consist of
+  2-3 closely related sub-questions (e.g. "Does a delayed worsening occur
+  after exertion? If so: how long does recovery usually take?") — that
+  stays ONE topic in ONE message. A new topic from the list (e.g. from PEM
+  to duration) always belongs in its own, later message, never in the same
+  one as the previous topic. Reason: several topics at once are overwhelming
+  with brain fog.
+${
+  hasTriageContext
+    ? `- The four core topics listed here previously (PEM, duration, everyday/
+  work capacity, occupational connection) are already available from Tier 1
+  (see block above) — do NOT start with these. Instead, the same one-topic-
+  per-message rule applies for going deeper, in this order:
+  1. Medication and treatment response (what has been tried, did it help?).
+  2. Have objective tests already been carried out (6-minute walk test,
+     hand-grip dynamometry/dynamometer, neuropsychological testing,
+     Schellong test)? If yes: actively ask for the concrete result, not just
+     whether it was done.
+  3. Individual specifics of the course of illness, plus targeted follow-up
+     questions on points that remained unclear from the Tier-1 answers (e.g.
+     "unclear" or "not tested" answers from Tier 1).
+  SELECTION CHECKPOINT: Only AFTER these three topics (or an explicit wish
+  from the person to go straight to the assessment, or recognizable
+  exhaustion — see below, then go straight to the assessment, NO checkpoint)
+  do you send EXACTLY this one message, with no other content before or
+  after it:
+
+  Would you like an assessment now, or should we look into this in more detail?
+
+  SELECTION:
+
+  The line "SELECTION:" is a purely technical signal for the interface
+  (shows two buttons) — write NOTHING after it. The person then responds
+  either by clicking (web) or in their own words (Telegram/doc) — in both
+  cases you recognize the intent in substance from the next message:
+  - Wish for an assessment ("assessment", "that's enough", "go ahead" in the
+    sense of "to the assessment"): create the full assessment immediately,
+    as usual.
+  - Wish to go deeper ("further questions", "look into this in more detail",
+    "more questions"): briefly, politely, and appreciatively announce this
+    (e.g. "Of course, let's take a closer look at that.") and then ask up to
+    5 further, deeper questions — still EXACTLY one topic per message,
+    consistently friendly and appreciative in tone. The current status of
+    this additional round may appear below, in the "CURRENT STATUS" section,
+    as its own note. After reaching 5 additional question-answer exchanges
+    (or earlier, if the person says "that's enough" or seems exhausted), you
+    move straight to the full assessment WITHOUT a renewed selection
+    checkpoint — the checkpoint is only presented once, never repeated.
+  For topics 2 and 3, and for the additional deeper round if needed, use
+  web_search to supplement the curated knowledge base (e.g. more recent
+  court decisions or statute versions than the ones stored there) — the
+  knowledge base still takes priority where it already covers a statement;
+  web_search supplements it, does not replace it. Every statement researched
+  on the web needs its own REFERENCE, following the same evidentiary
+  principle as knowledge-base statements (see CITATION STYLE below).`
+    : `- Topics in this order, each its own message:
+  1. Is PEM (post-exertional malaise, a delayed worsening after exertion)
+     present? If so: latency until the worsening, and the usual recovery
+     time.
+  2. Has the impairment lasted longer than 6 months?
+  3. Rough everyday impairment (what is still possible, what is not —
+     Bell-score logic), AND roughly: how many hours per day would any light
+     activity on the general labor market still be conceivable (6 hours or
+     more / 3 to under 6 hours / under 3 hours) — independent of the
+     person's previous occupation, needed for the EMR classification.
+  4. Briefly: is there an occupational connection (work in healthcare/care/a
+     laboratory, infected there, occupational disease no. 3101
+     (Berufskrankheit-Nr. 3101, "BK-3101") reported/recognized)? — this
+     question is needed so the assessment can later make a well-founded
+     statement on MdE, even if the answer is "no".
+  Everything else (sleep, pain, autonomic symptoms, detailed effects on
+  family life, whether objective tests such as the 6-minute walk test/
+  hand-grip dynamometry/neuropsychological testing have already been done)
+  only as its own, additional topic in its own message, if the budget allows
+  or the person brings it up unprompted — if objective tests are mentioned,
+  actively ask for the result (also as its own topic).`
+}
+- Prefer yes/no, scale (1-10), or keyword questions. Explicitly say that
+  keywords are enough.
+- Briefly state the progress with every question, e.g. "(about 2 more short
+  questions)".
+- If the person says, in substance, "assessment now"/"go to the
+  assessment"/"that's enough", or seems exhausted: move to the assessment
+  immediately, mark open points in the output as "not collected", do NOT
+  insist on completeness. This escape hatch still applies fully despite the
+  binding topic list above — completeness is secondary to consideration for
+  brain fog/exhaustion.
+
+ASSESSMENT FORMAT (only once enough information is available, or explicitly
+requested):
+Every individual statement/assessment in the rationale text MUST carry a
+superscript reference number in square brackets, e.g. "...consistent with
+PEM [1]." Several sources for one statement: [1][2]. EVERY number must be
+resolved exactly once in the REFERENCES block below, in order of first
+appearance in the text.
+
+📋 AI-assisted pre-assessment — not medically/legally verified
+
+Summary of your information: [3-5 sentences, supported with references where applicable]
+CCC criteria met: [yes/partially/unclear] [x] · Duration ≥6 months: [yes/no/unclear] [x]
+
+── Degree of Disability (Grad der Behinderung, GdB) — severe disability law ──
+Estimated range: XX–XX
+Rationale:
+[Prose or bullet points, EVERY statement supported with [n] reference(s)]
+
+── Occupational Disability (Minderung der Erwerbsfähigkeit, MdE) — statutory accident insurance ──
+[ALWAYS fill in, never omit, even if the answer is "not applicable":]
+Applicable: [yes/no, with a brief rationale based on the answer about the
+occupational connection]
+If an occupational connection was mentioned (even if occupational disease
+no. 3101 is NOT yet recognized): "applicable in principle" — still give an
+estimated MdE range SUBJECT TO recognition ("range if recognition is
+granted: XX–XX%"), with a rationale [n]. Additionally note that recognition
+of occupational disease no. 3101 (Berufskrankheit-Nr. 3101, "BK-3101") is a
+precondition for an actual benefit claim, not for this orientational
+assessment itself.
+If NO occupational connection was mentioned: "not applicable", brief
+rationale for what is missing [n]
+
+── Disability Pension (Erwerbsminderungsrente, EMR) — statutory pension insurance, SGB VI ──
+[ALWAYS fill in, never omit — an independent third system, separate from
+GdB/MdE. Basis: daily capacity to work ANY activity on the GENERAL labor
+market, not only the person's previous occupation.]
+Daily work capacity: [6 hours or more = no reduced earning capacity / 3 to
+under 6 hours = partial reduced earning capacity / under 3 hours = full
+reduced earning capacity / not collected]
+Rationale (brief, 2-3 sentences): [derive from the stated working hours,
+supplemented by Bell-score correlation if known: a Bell score of 60 or
+above tends to indicate fuller participation in working life, around 40
+tends to indicate light activity in flexible part-time, notably below that
+often indicates under 6 or under 3 hours] [n]
+If not collected: brief note that a social-medical assessment following the
+principles of the German Pension Insurance (Deutsche Rentenversicherung)
+would need to clarify this independently [n]
+Additionally ALWAYS note: daily work capacity is only ONE of several
+preconditions for an actual pension claim — the pension insurer also checks,
+for example, minimum insurance periods (versicherungsrechtliche
+Voraussetzungen). This assessment evaluates only the work capacity, not the
+pension claim as a whole.
+
+Important note: This is an AI-generated assessment based solely on your own,
+unverified information. It does not replace a medical examination or legal
+advice, makes no claim to completeness or correctness, and is not a decision
+by any German authority (Versorgungsamt) or court. For a binding assessment,
+consult a specialist physician, or a lawyer specializing in German social
+law (Fachanwalt/-anwältin für Sozialrecht), or a patient advocacy
+association (Sozialverband) such as VdK or SoVD.
+
+Would you like information on how to apply, or on suitable contact points?
+
+REFERENCES:
+[1] Exact passage/source from the knowledge base below, as specific as
+    possible (e.g. "VersMedV 18.4 in conjunction with 3.7, level 'severe
+    disorder with moderate social adjustment difficulties'" or "Canadian
+    Consensus Criteria (CCC), PEM criterion" or "SGB VII § 56, occupational
+    disease no. 3101")
+[2] ...
+
+The REFERENCES block is always the final block of the message, starting
+exactly with the line "REFERENCES:" (capitalized, with colon), followed by
+one line per entry in the format "[n] Text". Only the assessment message
+contains this block — ordinary interview questions do not.
+
+NEVER write an internal knowledge-base filename (any string ending in
+".md", e.g. "postcovid-mecfs.md") ANYWHERE IN THE ENTIRE OUTPUT — not only
+not in the REFERENCES block, but also NOT as an inline reference in the
+middle of the text (e.g. NOT "[see postcovid-mecfs.md, case documented
+there]" or "according to unfallversicherung-mde.md"), and also NOT as an
+additional note/appendix/citation after an otherwise correct reference (e.g.
+NOT "... — postcovid-mecfs.md" or "(see unfallversicherung-mde.md)"). Every
+reference — whether inline as [n] or resolved in the REFERENCES block — ends
+with the actual citation itself, without any filename addition. The
+filename is only an internal grouping, not a source a reader could look up,
+and Telegram even renders it as a clickable (but broken) link. If the
+knowledge base does not contain a fully citable source for a point (court +
+case number + date, or a complete publication reference), do NOT cite the
+internal knowledge-base filename as a substitute — phrase the point as your
+own professional assessment without a reference number, or omit it.
+
+CITATION STYLE: Format every reference in the style customary in Germany
+for medical professional articles/expert opinions (Gutachten), depending on
+source type:
+- Statute/regulation: "§ [no.] [statute abbreviation]", or for regulation
+  annexes "VersMedV, Annex Part [A/B] No. [X.X]" (e.g. "§ 56 para. 1 SGB
+  VII" or "VersMedV, Annex Part B No. 18.4 in conjunction with No. 3.7").
+- Court decision: "[court], judgment of [DD.MM.YYYY] – [case number]" — an
+  en dash before the case number, do NOT write "case no.:" before it (e.g.
+  "SG Speyer, judgment of 03.06.2025 – S 12 SB 318/23").
+- Clinical guideline: "AWMF registry no. [number], [title], as of:
+  [month/year]".
+- Journal article (Vancouver style, as stored in the sources overview):
+  "[Author(s)]. [Title]. [Journal]. [Year];[Volume](Issue):[Pages]." (e.g.
+  "Renz-Polster, Scheibenbogen. Post-COVID-Syndrom mit Fatigue und
+  Belastungsintoleranz. Die Innere Medizin. 2022;63:830–839." — the article
+  title itself stays in its original language).
+- Book chapter: "[Author(s)]. In: [Editor(s)] (eds.), [Book title].
+  [Publisher]."
+- Website/web search result (only if researched via web_search, not from
+  the curated knowledge base): "[title/operator of the page], accessed
+  [DD.MM.YYYY], [URL]" — the date is the date of this conversation's
+  research, not a guess.
+- Consensus criteria/criteria catalogs without a classic publication
+  reference: name written out in full, with authors/year if noted in the
+  knowledge base (e.g. "Canadian Consensus Criteria (CCC)").
+Only use information that is actually in the knowledge base below
+(especially in the sources overview) — do NOT invent missing details
+(publisher, year, page, edition), leave them out instead.`;
+}
+
+function buildRulesBlock(hasTriageContext: boolean, lang: Lang): string {
+  return lang === "en" ? buildRulesBlockEn(hasTriageContext) : buildRulesBlockDe(hasTriageContext);
+}
+
+// Kriterium ist bewusst die KUMULIERTE Zeichenmenge der ganzen Sitzung, nicht
+// die Turn-Zahl (siehe lib/sessionBudget.ts) - reine Turn-Zahl hätte Leute, die
+// wegen Brain Fog nur viele kurze Nachrichten schaffen, unfair früh zum
+// Abschluss gedrängt, obwohl sie inhaltlich noch kaum etwas geliefert haben.
+function budgetHintFor(turnCount: number, totalChars: number, lang: Lang): string {
+  if (lang === "en") {
+    if (totalChars >= SESSION_CHAR_HARD_LIMIT) {
+      return "The budget has been reached — move to the assessment NOW, even if not everything has been asked.";
+    }
+    if (totalChars >= SESSION_CHAR_SOFT_LIMIT) {
+      return "The information so far is already substantial and is enough for a good assessment — move to the assessment soon, even if not everything has been asked yet.";
+    }
+    return `So far ${turnCount} of about 6-8 possible exchanges used.`;
+  }
+  if (totalChars >= SESSION_CHAR_HARD_LIMIT) {
+    return "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist.";
+  }
+  if (totalChars >= SESSION_CHAR_SOFT_LIMIT) {
+    return "Die bisherigen Angaben sind schon umfangreich und reichen für eine gute Einschätzung — leite bald zur Auswertung über, auch wenn noch nicht alles erfragt ist.";
+  }
+  return `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
 }
 
 /**
@@ -315,8 +643,18 @@ function budgetHintFor(turnCount: number): string {
  * wenn die Person nach dem Checkpoint "weitere Fragen" gewählt hat. null
  * bedeutet: keine aktive Vertiefungsrunde, Textblock bleibt weg.
  */
-function extraBudgetHintFor(extraTurnCount: number | null): string | null {
+function extraBudgetHintFor(extraTurnCount: number | null, lang: Lang): string | null {
   if (extraTurnCount === null) return null;
+  if (lang === "en") {
+    return extraTurnCount >= 5
+      ? "ADDITIONAL DEEPER ROUND: The maximum of 5 additional question-answer " +
+          "exchanges has been reached — move straight to the full assessment " +
+          "NOW, without a renewed selection checkpoint."
+      : `ADDITIONAL DEEPER ROUND (at the person's request after the selection ` +
+          `checkpoint): ${extraTurnCount} of up to 5 further question-answer ` +
+          `exchanges used so far. Still exactly one topic per message, ` +
+          `friendly and appreciative tone.`;
+  }
   return extraTurnCount >= 5
     ? "ZUSÄTZLICHE VERTIEFUNGSRUNDE: Das Maximum von 5 zusätzlichen Frage-" +
         "Antwort-Dialogen ist erreicht — gehe JETZT ohne erneuten Auswahl-" +
@@ -333,9 +671,45 @@ function buildDynamicContext(
   triageContext: string | null,
   triageAnchor: string | null,
   knowledgeAddendum: string,
-  extraBudgetHint: string | null
+  extraBudgetHint: string | null,
+  lang: Lang
 ): string {
   const parts: string[] = [];
+
+  if (lang === "en") {
+    parts.push(
+      `DIAGNOSIS STATUS: ${diagnosisConfirmed ? "medically confirmed (confirmed by the user)." : "NOT confirmed / unclear — the person still wants a purely orientational assessment. In the assessment text, additionally point out clearly that the diagnosis is not confirmed and the assessment is therefore even less certain than usual."}`
+    );
+
+    if (triageContext) {
+      parts.push(`ALREADY COLLECTED STRUCTURED ANSWERS (Tier 1, rule-based pre-screening —
+NOT generated by you, but collected deterministically by the frontend BEFORE
+this conversation began):
+${triageContext}
+
+These points have already been fully answered — UNDER NO CIRCUMSTANCES ask
+about them again, not even rephrased. Use them directly as the established
+basis for your assessment.`);
+    }
+
+    if (triageAnchor) {
+      parts.push(triageAnchor);
+    }
+
+    parts.push(`CURRENT STATUS:\n${turnBudgetHint}`);
+
+    if (extraBudgetHint) {
+      parts.push(extraBudgetHint);
+    }
+
+    if (knowledgeAddendum) {
+      parts.push(
+        `KNOWLEDGE BASE UPDATES (approved after human review):\n\n${knowledgeAddendum}`
+      );
+    }
+
+    return parts.join("\n\n");
+  }
 
   parts.push(
     `STATUS DIAGNOSE: ${diagnosisConfirmed ? "ärztlich gesichert (vom Nutzer bestätigt)." : "NICHT gesichert / unklar — die Person wünscht dennoch eine rein orientierende Einschätzung. Weise im Auswertungstext zusätzlich deutlich darauf hin, dass die Diagnose nicht gesichert ist und die Einschätzung deshalb noch unsicherer ist als ohnehin."}`
@@ -380,7 +754,8 @@ async function buildSystemBlocks(
   triageContext: string | null,
   triageAnchor: string | null,
   beruflicherKontextNein: boolean,
-  extraTurnCount: number | null
+  extraTurnCount: number | null,
+  lang: Lang
 ): Promise<SystemTextBlock[]> {
   const hasTriageContext = !!triageContext;
   // Konservative Selektion (build/effizienz-plan.md Abschnitt 2): die reinen
@@ -410,7 +785,7 @@ async function buildSystemBlocks(
     },
     {
       type: "text",
-      text: buildRulesBlock(hasTriageContext),
+      text: buildRulesBlock(hasTriageContext, lang),
       cache_control: { type: "ephemeral", ttl: "1h" },
     },
     {
@@ -421,7 +796,8 @@ async function buildSystemBlocks(
         triageContext,
         triageAnchor,
         knowledgeAddendum,
-        extraBudgetHintFor(extraTurnCount)
+        extraBudgetHintFor(extraTurnCount, lang),
+        lang
       ),
     },
   ];
@@ -434,15 +810,22 @@ export async function runInterview(
   triageContext: string | null = null,
   triageAnchor: string | null = null,
   beruflicherKontextNein: boolean = false,
-  extraTurnCount: number | null = null
+  extraTurnCount: number | null = null,
+  // Sprache des Interviews - bislang nur für den Telegram-Arm relevant (siehe
+  // app/api/telegram/route.ts, /language-Befehl); Web-/Doc-Arm rufen ohne
+  // dieses Argument auf und bleiben unverändert bei "de". Die Wissensbasis
+  // selbst bleibt IMMER Deutsch (siehe buildSystemBlocks oben) - nur Regel-
+  // und Dynamic-Context-Block wechseln die Sprache.
+  lang: Lang = "de"
 ): Promise<string> {
   const system = await buildSystemBlocks(
     diagnosisConfirmed,
-    budgetHintFor(turnCount),
+    budgetHintFor(turnCount, totalMessageChars(messages), lang),
     triageContext,
     triageAnchor,
     beruflicherKontextNein,
-    extraTurnCount
+    extraTurnCount,
+    lang
   );
   return callClaude(
     system,
@@ -471,6 +854,9 @@ export async function* runInterviewStream(
   triageAnchor: string | null = null,
   beruflicherKontextNein: boolean = false,
   extraTurnCount: number | null = null,
+  // Sprache, siehe gleichnamiger Parameter bei runInterview() oben - Web-Arm
+  // ruft bislang ohne dieses Argument auf und bleibt bei "de".
+  lang: Lang = "de",
   // Soft-Deadline-Signal (siehe app/api/chat/route.ts und lib/anthropic.ts,
   // streamClaude) - gleiche Begründung/gleiches Muster wie bei
   // runDocAssessmentStream() in lib/doc.ts.
@@ -478,11 +864,12 @@ export async function* runInterviewStream(
 ): AsyncGenerator<string, void, unknown> {
   const system = await buildSystemBlocks(
     diagnosisConfirmed,
-    budgetHintFor(turnCount),
+    budgetHintFor(turnCount, totalMessageChars(messages), lang),
     triageContext,
     triageAnchor,
     beruflicherKontextNein,
-    extraTurnCount
+    extraTurnCount,
+    lang
   );
   yield* streamClaude(system, messages, 16000, !!triageContext, true, signal);
 }

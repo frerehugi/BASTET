@@ -5,31 +5,25 @@
 
 export type QuestionId =
   | "pem"
-  | "pemTriggerart"
   | "pemAusloeseschwelle"
-  | "pemLatenz"
   | "pemErholung"
   | "dauer"
   | "schmerz"
-  | "schmerzausbreitung"
   | "schmerzschwere"
   | "kognitiv"
   | "autonom"
   | "autonomHfDokumentiert"
   | "schlaf"
   | "paraesthesien"
+  | "geruchGeschmack"
   | "atembeschwerden"
   | "diabetesStatus"
   | "psychKomorbid"
   | "medikation"
-  | "medikationWirkung"
   | "bellScore"
   | "alltagsverrichtungen"
   | "arbeitsfaehigkeit"
   | "objektiveTests"
-  | "funcapScore"
-  | "funcap55Value"
-  | "funcap27Value"
   | "beruflicherKontext";
 
 export interface ChoiceOption {
@@ -67,7 +61,7 @@ export interface Question {
    *  (Answers[id] wird dann "" statt eines echten Werts) - für "number" und
    *  "single" nutzbar. Verhindert bewusst eine Sackgasse bei Folgefragen wie
    *  "Bitte Score eingeben", die man ausgelöst hat, ohne den Wert parat zu
-   *  haben (z.B. FUNCAP55/27, siehe funcap55Value/funcap27Value). */
+   *  haben (z.B. beim Bell-Score). */
   optional?: boolean;
   /** Text auf dem Überspringen-Button, falls `optional`. Default "Weiß ich
    *  nicht" (siehe TriageFlow.tsx) - für Folgefragen, bei denen "kenne ich

@@ -3,6 +3,11 @@
  * damit sie nicht auseinanderlaufen: PATIENT_TITLE/-SUBTITLE und CRISIS_NOTE
  * für Web- und Telegram-Arm des Betroffenen-Zweigs, PATIENT_ABOUT_TEXT
  * (Rechtliches/Über-BASTET) zusätzlich auch für den Ärzte-Arm (app/doc/page.tsx).
+ *
+ * Die *_EN-Pendants (03.10.2026) sind für den zweisprachigen Telegram-Arm
+ * (app/api/telegram/route.ts, /language-Befehl) - bewusst nur dort genutzt,
+ * der Web-Arm (app/page.tsx) bleibt vorerst Deutsch-only und importiert
+ * weiterhin nur die deutschen Konstanten.
  */
 
 // Ohne "BASTET —"-Präfix, da der Web-Arm den Wordmark schon in der Kopfzeile
@@ -38,3 +43,30 @@ BASTET ist ein privates Community-Projekt von und für Post-COVID/MECFS Betroffe
 BASTET Ethereum Wallet (ETH, CELO, BASE etc): ${BASTET_WALLET_ADDRESS}
 
 Für Fragen und Anregungen benutzen Sie bitte diesen Telegram Kanal: https://t.me/bastet_covid`;
+
+// --- Englische Pendants (zweisprachiger Telegram-Arm, 03.10.2026) ----------
+
+export const PATIENT_TITLE_EN = "Post-COVID / ME-CFS Pre-Assessment";
+
+export const PATIENT_SUBTITLE_EN =
+  "An orientational, AI-assisted initial assessment — not a substitute for medical or legal advice.";
+
+export const DIAGNOSIS_WARNING_EN =
+  "This is not medical advice and cannot provide or replace a diagnosis. Without a confirmed diagnosis, a medical examination is required.";
+
+export const CRISIS_NOTE_EN =
+  "If you are currently in crisis or thinking about harming yourself: in Germany, the Telefonseelsorge is available free of charge and anonymously at 0800 111 0 111 or 0800 111 0 222 (German-language, around the clock). English-language crisis support can be found via your embassy or international crisis lines.";
+
+export const PATIENT_ABOUT_TEXT_EN = `BASTET is an orientation and support service and does not provide a binding assessment, medical diagnosis, or legal advice. It does not replace a medical examination or legal counsel, and does not bind any authority, court, or insurance carrier.
+
+BASTET is based on large language models (LLMs) and a curated knowledge base. It currently uses Anthropic's Claude API. This technology is under active research and development, is experimental, and faulty or incomplete output cannot be ruled out; its feature set and knowledge base keep evolving. No guarantee is given for the completeness, correctness, or currency of the content. All output serves purely as professional orientation — your own professional judgment remains decisive.
+
+Using BASTET is voluntary and should only happen with the above limitations in mind. To the extent legally permitted, liability for damages arising from the use of BASTET is excluded.
+
+BASTET is an open-source project — "open source" here refers to the underlying sources and data (among others the VersMedV, an official German work under § 5 UrhG, the Canadian Consensus Criteria, published German social-court decisions, etc.); their selection and combination within BASTET is an independent editorial effort.
+
+BASTET is a private community project by and for people affected by Post-COVID/ME-CFS; the costs of using the Anthropic services and web hosting are currently borne entirely privately. Under IDs 9817 and 9818, BASTET is listed as an ERC-8004 bot on Celo with its own wallet — if you would like to support the project, you can do so via the networks below.
+
+BASTET Ethereum wallet (ETH, Celo, Base etc.): ${BASTET_WALLET_ADDRESS}
+
+For questions and feedback, please use this Telegram channel: https://t.me/bastet_covid`;

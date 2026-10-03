@@ -77,6 +77,7 @@ export async function POST(request: Request) {
     typeof body.triageAnchor === "string" ? body.triageAnchor : null,
     !!body.beruflicherKontextNein,
     typeof body.extraTurnCount === "number" ? body.extraTurnCount : null,
+    "de", // Web-Arm bleibt vorerst Deutsch (siehe lib/chat.ts, Lang-Parameter)
     deadline.signal
   );
 

@@ -440,10 +440,58 @@ Signaturprüfung, kein Sonderfall nötig.
   sicherer Fallback auf vollen Preis, kein Absturz. Das eigentliche
   Rabatt-Szenario (zwei Zahlungen derselben Wallet < 55 Min. auseinander)
   ist erst gegen die echte Produktions-Redis-Instanz vollständig testbar.
-- **Temporär weiterhin abgesenkte Testpreise** für die laufende
-  BOTKOV-Testphase (`X402_PRICE_NEW_BASE_UNITS`/`_RETURNING_BASE_UNITS`
-  überschreibbar, Default-Werte in `lib/x402.ts` als TEMP markiert) - vor
-  Produktivbetrieb auf 4,99/0,99 USAT zurücksetzen.
+- **Testphase abgeschlossen**: Preise stehen wieder auf den echten Werten
+  4,99/0,99 USAT (`lib/x402.ts`-Defaults, `X402_PRICE_*_BASE_UNITS` bleiben
+  als Override verfügbar). Das zweistufige Modell wurde mit BOTKOV gegen
+  die echte Produktions-Redis-Instanz verifiziert: zweite Zahlung derselben
+  Wallet <55 Min. nach der ersten zeigte korrekt den Rabattpreis.
+
+---
+
+## 5. Cache-Warmhalten per zu-/abschaltbarem Vercel Cron Job (geplant, noch nicht umgesetzt)
+
+**Hintergrund**: Der Anthropic-Prompt-Cache auf der Wissensbasis ist global
+pro Account, nicht pro Wallet — jede Tier-2-Anfrage, über welchen Arm auch
+immer, hält ihn für die nächste Anfrage von irgendwem warm (siehe 4.1).
+Das wirkt ausschließlich auf **unsere** Kosten (cache_read $0,20/MTok statt
+cache_write $4/MTok bei 1h-TTL), nicht auf den Verkaufspreis — der
+Wallet-Rabatt aus Abschnitt 4 bleibt ein komplett separater, pro-Wallet
+geführter Zustand in `lib/x402Pricing.ts` und ist von der Anthropic-
+Cache-Warmhaltung unabhängig.
+
+**Verworfen**: BOTKOV (oder ein anderer zahlender Agent) alle ~50 Minuten
+eine echte x402-Zahlung auslösen zu lassen, nur um den Cache warmzuhalten.
+Unnötig teuer und fragil - echtes USAT, Facilitator-Abhängigkeit,
+Wallet-Guthabenrisiko - für einen Effekt, der serverseitig ganz ohne
+Zahlung erreichbar ist.
+
+**Geplanter Ansatz**: Ein Vercel Cron Job, der die interne Pipeline
+(`buildSystemBlocks` + `callClaude`, wie in `lib/expatConsult.ts`) direkt
+aufruft - **ohne** über die x402-Payment-Middleware zu laufen, also ohne
+Zahlung, ohne Wallet. Intervall ≤55 Minuten, konsistent mit dem
+Rabattfenster aus Abschnitt 4.1.
+
+- **Zu-/abschaltbar**: kein dauerhaft fest verdrahteter Cron, sondern über
+  einen Env-Flag (z.B. `KEEP_WARM_CRON_ENABLED`) steuerbar, den der
+  Endpunkt selbst prüft - ein deaktivierter Cron läuft zwar weiter (Vercel
+  Cron Schedules sind nicht laufzeit-konfigurierbar ohne Redeploy), die
+  Handler-Funktion antwortet dann aber sofort ohne jeden Anthropic-Call.
+  So lässt sich der Mechanismus jederzeit ohne Code-Änderung an-/ausschalten
+  (nur eine Env-Var in Vercel umstellen).
+- **Sicherung des Endpunkts**: wie bei Vercel-Cron-Routen üblich per
+  `CRON_SECRET`-Header-Check, damit der Endpunkt nicht von außen beliebig
+  getriggert werden kann (jeder Aufruf kostet echtes Geld).
+- **Kostenabschätzung**: ein Ping kostet ca. 0,07-0,15 $ (cache_read auf
+  die volle Wissensbasis + minimaler Output). Bei 24/7-Betrieb alle 50 Min.
+  (~29 Pings/Tag) macht das ~60-90 $/Monat - **nur sinnvoll für gezielte
+  Zeitfenster** (Demo-Tag, Hackathon-Judging, Marketing-Push), nicht als
+  Dauerlösung bei der aktuell geringen, unregelmäßigen Last. Bei
+  ausreichend dichtem echtem Traffic hält ohnehin schon die organische
+  Nutzung den Cache warm, ganz ohne Zusatzkosten.
+- **Noch offen / nicht Teil dieser Planung**: konkreter Dateiname/Pfad des
+  Cron-Handlers, `vercel.json`-Cron-Eintrag, genaue Entscheidung, wann der
+  Flag angeschaltet wird. Erst umsetzen, wenn ein konkreter Anlass
+  (anstehender Demo-/Judging-Termin) feststeht.
 
 ---
 
@@ -454,10 +502,9 @@ Signaturprüfung, kein Sonderfall nötig.
   3.1.1 — 365.735 Tokens gecacht — weitgehend überholt; `count_tokens`
   würde nur noch den exakten KB-Anteil separat von den Rules-Block-Tokens
   trennen).
-- **Zweistufiges Preismodell gegen die echte Produktions-Redis-Instanz
-  verifizieren**: zwei Zahlungen derselben Wallet <55 Min. auseinander
-  sollten `0,99`/Testpreis zeigen, nicht den vollen Preis.
 - Celo-Builders-Registrierung + `attributionTag`-Einbau (Abschnitt 1.5) —
   höchste Priorität vor dem Submission-Fenster (06.10.).
 - Bazaar-Registrierung (Abschnitt 2.1) — abhängig von Rückmeldung, ob
   gewünscht.
+- Cache-Warmhalten per Vercel Cron Job (Abschnitt 5) — nur geplant, noch
+  nicht gebaut; Umsetzung erst bei konkretem Anlass (Demo-/Judging-Termin).

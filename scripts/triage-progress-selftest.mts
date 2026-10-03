@@ -8,9 +8,10 @@
 // springen, sobald ein bedingter Zweig (z.B. PEM = "Ja") weitere Fragen
 // freischaltete (16 -> 20) - von Florian als für neurodivergente
 // Nutzer:innen irritierend gemeldet. Jetzt fest auf die Gesamtzahl aller
-// Fragen (24), die Anzeige zählt stattdessen rückwärts und darf dabei nur
-// nach unten springen (weniger übrig), nie nach oben. Dieses Skript hält das
-// dauerhaft fest.
+// Fragen (QUESTIONS.length, 21 seit der Tier-1-Kürzung auf 20 plus der neuen
+// Geruch-/Geschmacksfrage, beides vom 03.10.2026), die
+// Anzeige zählt stattdessen rückwärts und darf dabei nur nach unten springen
+// (weniger übrig), nie nach oben. Dieses Skript hält das dauerhaft fest.
 //
 // Ausführen: npx tsx scripts/triage-progress-selftest.mts (oder `npm run
 // test:triage-progress`) - kein Server, kein ANTHROPIC_API_KEY nötig.
@@ -59,35 +60,29 @@ check(
 
 console.log("\n=== Vollständiger Durchlauf: remaining fällt monoton, endet bei 0 ===");
 // Ein Pfad, der JEDEN bedingten Zweig nimmt (PEM=ja, Schmerz vorhanden,
-// Autonom mit Orthostase, Medikation=ja, FUNCAP=beides), damit alle 27
-// Fragen durchlaufen werden - strengster Test für Monotonie.
+// Autonom mit Orthostase), damit alle 21 Fragen durchlaufen werden -
+// strengster Test für Monotonie.
 const vollerPfad: Array<[keyof Answers, string | string[]]> = [
   ["pem", "ja"],
-  ["pemTriggerart", ["koerperlich"]],
   ["pemAusloeseschwelle", "mittelschwere-belastung"],
-  ["pemLatenz", "stunden"],
   ["pemErholung", "tage"],
   ["dauer", "ja"],
   ["schmerz", ["muskel"]],
-  ["schmerzausbreitung", "begrenzt"],
   ["schmerzschwere", "spuerbar"],
   ["kognitiv", []],
   ["autonom", ["orthostatisch"]],
   ["autonomHfDokumentiert", "nicht-getestet"],
   ["schlaf", ["unauffaellig"]],
   ["paraesthesien", "keine"],
+  ["geruchGeschmack", "keine"],
   ["atembeschwerden", "keine"],
   ["diabetesStatus", "nein"],
   ["psychKomorbid", "nein"],
-  ["medikation", "ja"],
-  ["medikationWirkung", "keine-besserung"],
+  ["medikation", "ja-keine-besserung"],
   ["bellScore", ""],
   ["alltagsverrichtungen", "selbststaendig"],
   ["arbeitsfaehigkeit", "ueber-6"],
   ["objektiveTests", "unbekannt"],
-  ["funcapScore", "beides"],
-  ["funcap55Value", "3.4"],
-  ["funcap27Value", ""],
   ["beruflicherKontext", "nein"],
 ];
 
@@ -105,7 +100,7 @@ for (const [id, value] of vollerPfad) {
   );
   vorherigesRemaining = remaining;
 }
-check("Nach vollständigem Durchlauf (alle 27 Fragen beantwortet): remaining = 0", vorherigesRemaining === 0, `${vorherigesRemaining}`);
+check("Nach vollständigem Durchlauf (alle 21 Fragen beantwortet): remaining = 0", vorherigesRemaining === 0, `${vorherigesRemaining}`);
 
 console.log(`\n${failures === 0 ? "Alle Checks bestanden." : `${failures} Check(s) fehlgeschlagen.`}`);
 process.exit(failures === 0 ? 0 : 1);
