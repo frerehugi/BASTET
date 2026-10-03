@@ -133,6 +133,10 @@ export async function runExpatConsult(question: string): Promise<string> {
   const system = await buildSystemBlocks(knowledgeAddendum);
   const messages: ChatMessage[] = [{ role: "user", content: question }];
   // cacheMessages=false: Einzelaufruf ohne wachsende Historie, siehe
-  // lib/doc.ts-Begründung für denselben Parameter.
-  return callClaude(system, messages, 4000, false, false);
+  // lib/doc.ts-Begründung für denselben Parameter. maxTokens=16000 wie die
+  // strukturell gleiche GdB/MdE/EMR-Dreiteilung in lib/chat.ts/lib/doc.ts -
+  // 4000 reichte in der Praxis nicht (echter x402-Zahlungstest lief in
+  // max_tokens-Abschneidung + 502, NACHDEM die Zahlung bereits über die
+  // x402-Middleware settled war - siehe Warnung dazu in der Route).
+  return callClaude(system, messages, 16000, false, false);
 }
