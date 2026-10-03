@@ -20,8 +20,10 @@
 
 import { HTTPFacilitatorClient, x402ResourceServer, type RoutesConfig } from "@x402/core/server";
 import type { Network } from "@x402/core/types";
+import type { DynamicPrice, HTTPRequestContext } from "@x402/core/http";
 import { ExactEvmScheme } from "@x402/evm/exact/server";
-import { getAddress } from "viem";
+import { getAddress, isAddress } from "viem";
+import { isReturningWallet, touchReturningWallet } from "./x402Pricing";
 
 const MAINNET_NETWORK: Network = "eip155:42220"; // Celo Mainnet
 const TESTNET_NETWORK: Network = "eip155:11142220"; // Celo Sepolia
@@ -80,36 +82,71 @@ function getPayTo(): `0x${string}` {
 }
 
 /**
- * Regulärer Preis: 4,99 USAT pro Aufruf (4990000 Basiseinheiten bei 6
- * Dezimalstellen) - seit 03.10.2026, siehe build/x402-kosten-nutzen-2026.md
- * Abschnitt 3. Erst auf 3,00 USAT kalkuliert (kaufmännische 4x-Regel auf
- * die realen Cold-Cache-Kosten von ~0,736 $/Aufruf, ~6,8x statt nur 4x),
- * dann bewusst auf den runden Preis 4,99 USAT angehoben - zusätzliche
- * Sicherheitsmarge und ein klarerer, leichter kommunizierbarer Preis fürs
- * Infopaket (buildInfoPacket() unten).
+ * Zweistufige Preisstruktur (seit 03.10.2026, Nutzervorgabe - siehe
+ * build/x402-kosten-nutzen-2026.md Abschnitt 3): voller Preis für eine neue
+ * Wallet, ermäßigter Preis für eine Folgefrage DERSELBEN Wallet innerhalb
+ * von 55 Minuten (jede Folgefrage verlängert das Fenster erneut) -
+ * marketingseitig einfach zu kommunizieren und garantiert zugleich, dass
+ * der ermäßigte Preis nur gilt, wenn der geteilte Wissensbasis-Cache
+ * nachweislich noch warm ist (1h-TTL, 55 Min. Sicherheitsmarge, siehe
+ * lib/x402Pricing.ts).
  *
- * TEMPORÄR AUF 0,1 USAT ABGESENKT (03.10.2026) für mehrere BOTKOV-
- * Testläufe gegen den echten Facilitator - der reguläre Preis bleibt
- * 4,99 USAT, diese Zeile VOR Produktivbetrieb wieder zurücksetzen (bzw.
- * sobald die Testphase mit BOTKOV abgeschlossen ist). Override weiterhin
- * zusätzlich via X402_PRICE_BASE_UNITS-Env-Var möglich, ohne Code-Änderung.
+ * Realer Preis (Begründung Abschnitt 1.3-3 im Kostendokument): neu
+ * 4,99 USAT (~6,8x der realen Cold-Cache-Kosten von ~0,736 $), Folgefrage
+ * 0,99 USAT (deckt die realen Warm-Kosten von ~0,11-0,17 $ komfortabel).
+ *
+ * TEMPORÄR GESENKT (03.10.2026) für mehrere BOTKOV-Testläufe gegen den
+ * echten Facilitator - vor Produktivbetrieb bzw. nach Abschluss der
+ * Testphase zurücksetzen. Je Stufe zusätzlich per Env-Var überschreibbar,
+ * ohne Code-Änderung.
  */
-function getPriceAmount(): string {
-  return process.env.X402_PRICE_BASE_UNITS || String(Math.round(0.1 * 10 ** ASSETS.USAT.decimals));
+function getNewWalletPriceAmount(): string {
+  return process.env.X402_PRICE_NEW_BASE_UNITS || String(Math.round(0.1 * 10 ** ASSETS.USAT.decimals));
+}
+
+function getReturningWalletPriceAmount(): string {
+  return process.env.X402_PRICE_RETURNING_BASE_UNITS || String(Math.round(0.05 * 10 ** ASSETS.USAT.decimals));
+}
+
+function toDisplay(baseUnits: string): string {
+  return String(Number(baseUnits) / 10 ** ASSETS.USAT.decimals);
 }
 
 /**
- * Menschenlesbarer Dezimalpreis (z.B. "4.99", "0.1") für buildInfoPacket()
- * unten - rechnet IMMER von getPriceAmount() zurück, statt den Wert ein
- * zweites Mal hart zu kodieren. Grund: sonst könnte das Infopaket (GET,
- * ohne Zahlung) einen anderen Preis nennen als die tatsächliche 402-
- * Anforderung (POST) - genau das wäre bei der temporären Testpreis-
- * Absenkung sonst passiert (Infopaket hätte weiter "4.99" gezeigt, obwohl
- * die echte Anforderung 0,1 USAT verlangt hätte).
+ * Liest den `?wallet=0x...`-Query-Parameter aus dem rohen Request-Pfad, den
+ * HTTPRequestContext.path liefert. Reiner Identifikator, KEINE vertrauens-
+ * würdige Preisbehauptung - der tatsächliche Preis entscheidet sich allein
+ * über isReturningWallet() (lib/x402Pricing.ts), das nur nach einer echten,
+ * verifizierten Settlement geschrieben wird. Ungültige/fehlende Adresse
+ * -> null, fällt dann auf den vollen Preis zurück (sicherer Default).
  */
-function getPriceDisplay(): string {
-  return String(Number(getPriceAmount()) / 10 ** ASSETS.USAT.decimals);
+function extractWalletHint(context: HTTPRequestContext): string | null {
+  try {
+    const url = new URL(context.path, "http://bastet.internal");
+    const hint = url.searchParams.get("wallet");
+    return hint && isAddress(hint) ? getAddress(hint) : null;
+  } catch {
+    return null;
+  }
 }
+
+/**
+ * DynamicPrice (offizielle @x402/core-API, siehe PaymentOption.price:
+ * Price | DynamicPrice) - wird von der Middleware pro Anfrage neu
+ * aufgerufen, einmal beim Bau der 402-Antwort (Wallet ggf. noch unbekannt,
+ * dann voller Preis) und erneut bei der Verifikation einer eingereichten
+ * Zahlung (derselbe Query-Parameter wie beim 402-Request, konsistent).
+ */
+const computePrice: DynamicPrice = async (context) => {
+  const wallet = extractWalletHint(context);
+  const amount =
+    wallet && (await isReturningWallet(wallet)) ? getReturningWalletPriceAmount() : getNewWalletPriceAmount();
+  return {
+    amount,
+    asset: ASSETS.USAT.address,
+    extra: { name: ASSETS.USAT.name, version: ASSETS.USAT.version },
+  };
+};
 
 export const facilitator = new HTTPFacilitatorClient({
   url: getFacilitatorUrl(),
@@ -122,6 +159,19 @@ export const facilitator = new HTTPFacilitatorClient({
 export const resourceServer = new x402ResourceServer(facilitator);
 resourceServer.register("eip155:*", new ExactEvmScheme());
 
+/**
+ * Schreibt das 55-Minuten-Fenster für die zahlende Wallet NUR nach einer
+ * echten, von der Middleware bereits verifizierten Settlement
+ * (context.result.payer kommt aus der Facilitator-Antwort, nicht aus dem
+ * Query-Parameter-Hint oben) - siehe lib/x402Pricing.ts-Header für die
+ * Begründung, warum das die einzige vertrauenswürdige Quelle ist.
+ */
+resourceServer.onAfterSettle(async (context) => {
+  if (context.result.success && context.result.payer) {
+    await touchReturningWallet(context.result.payer);
+  }
+});
+
 export const CONSULT_PATH = "/api/x402/consult";
 
 /**
@@ -130,7 +180,8 @@ export const CONSULT_PATH = "/api/x402/consult";
  * und `price` liegen bewusst INNERHALB von `accepts`, nicht als separate
  * Parameter (v2-API-Form, siehe Skill-Doku - die ältere v1-Form
  * `paymentMiddleware(payTo, routes, facilitator)` ist dort explizit als
- * Fehler aufgeführt).
+ * Fehler aufgeführt). `price` ist eine DynamicPrice-Funktion statt eines
+ * festen Werts, siehe computePrice() oben.
  */
 export function buildRoutes(): RoutesConfig {
   return {
@@ -140,15 +191,11 @@ export function buildRoutes(): RoutesConfig {
           scheme: "exact",
           network: getNetwork(),
           payTo: getPayTo(),
-          price: {
-            amount: getPriceAmount(),
-            asset: ASSETS.USAT.address,
-            extra: { name: ASSETS.USAT.name, version: ASSETS.USAT.version },
-          },
+          price: computePrice,
         },
       ],
       description:
-        "BASTET expat consult: English-language orientation on Post-COVID/ME-CFS in German social law (GdB/MdE/EMR), grounded in a curated German legal/medical knowledge base. GET this same URL (no payment) for a full service description and pricing.",
+        "BASTET expat consult: English-language orientation on Post-COVID/ME-CFS in German social law (GdB/MdE/EMR), grounded in a curated German legal/medical knowledge base. GET this same URL (no payment) for a full service description and pricing. Append ?wallet=0x... to get the returning-wallet price if eligible.",
     },
   };
 }
@@ -184,10 +231,13 @@ export function buildInfoPacket() {
     description:
       "BASTET explains how Post-COVID/ME-CFS is assessed under German disability law: Degree of Disability (Grad der Behinderung, GdB), Occupational Disability (Minderung der Erwerbsfähigkeit, MdE) under statutory accident insurance, and Disability Pension (Erwerbsminderungsrente, EMR). Every answer is grounded in a curated set of German legal and medical primary sources (official assessment regulations, court decisions, clinical guidelines) and cites them with numbered references.",
     price: {
-      amount: getPriceDisplay(),
+      newWallet: toDisplay(getNewWalletPriceAmount()),
+      returningWallet: toDisplay(getReturningWalletPriceAmount()),
+      returningWindowMinutes: 55,
       asset: "USAT",
       assetFullName: ASSETS.USAT.name,
       network: "Celo Mainnet (eip155:42220)",
+      howToGetTheReturningPrice: `Append ?wallet=0x... (your own paying wallet address) to the request URL (e.g. "${CONSULT_PATH}?wallet=0xYourAddress"). The discount only applies if that exact wallet already paid within the last 55 minutes - it is looked up server-side, not something you can claim; sending the parameter without being eligible simply gets you the new-wallet price.`,
     },
     whatYouGet:
       "One complete, written, English-language answer to one question — structured by GdB/MdE/EMR where relevant, with numbered references back to the specific source for each claim. Not a generic AI guess: the answer is grounded in BASTET's curated knowledge base, not general training knowledge.",
@@ -215,7 +265,7 @@ export function buildInfoPacket() {
       ],
     },
     usageModel:
-      `Single-use, not a subscription or time-limited access: one payment of ${getPriceDisplay()} USAT = one question = one answer. There is no ongoing session or conversation tied to a payment — a follow-up question needs a new request and a new payment. This is the same every time; the price does not buy multiple questions or a time window.`,
+      `Not a subscription or an open time window: every request is still one payment = one question = one answer, there is no ongoing session or conversation. New wallet: ${toDisplay(getNewWalletPriceAmount())} USAT. The SAME wallet asking again within 55 minutes of its last paid request: ${toDisplay(getReturningWalletPriceAmount())} USAT (each paid request resets the 55-minute window again) - see price.howToGetTheReturningPrice below for how to use it.`,
     whatItCanNotDo: [
       "Does not diagnose — it only works with what you describe, no hidden assumptions.",
       "The answer is AI-generated and non-binding: it does not replace a medical examination, a decision by a German authority or court, or advice from a lawyer specializing in German social law (Fachanwalt/-anwältin für Sozialrecht).",
