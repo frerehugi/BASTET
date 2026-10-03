@@ -17,6 +17,18 @@ function hatRelevanteSchmerzangabe(a: Answers): boolean {
 // beiden CCC-Pflichtkriterien (PEM, Dauer) zuerst kommen: wer die schon nicht
 // erfüllt, bekommt trotzdem eine vollständige, aber entsprechend eingeordnete
 // Kurzauswertung, ohne erst durch alle Detailfragen zu müssen.
+//
+// Auf 20 Fragen gekürzt (03.10.2026, Kritik: Tier 1 sei zu lang geworden -
+// war über mehrere Erweiterungen auf 27 angewachsen). Entfernt wurden nur
+// Fragen ohne eigene Scoring-Logik in lib/triage/scoring.ts (pemTriggerart,
+// pemLatenz, die drei FUNCAP-Fragen) bzw. mit der schwächsten/am stärksten
+// redundanten Signalwirkung (schmerzausbreitung, dessen "generalisiert"-Fall
+// sich mit schmerzCount≥3/schmerzschwere="kaum-auszuhalten" überschnitt) -
+// sowie eine Zusammenlegung (medikation+medikationWirkung zu einer Frage).
+// "beruflicherKontext" (Arbeitsbezug + BK-3101-Anerkennungsstatus) und die
+// beiden CCC-Pflichtkriterien pem/dauer blieben unangetastet. Alle
+// entfernten Signale bleiben über das freie Tier-2-Gespräch erhebbar, sie
+// fehlen nur in der deterministischen Tier-1-Vorab-Einschätzung.
 
 export const QUESTIONS: Question[] = [
   {
@@ -31,19 +43,6 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: "pemTriggerart",
-    showIf: (a) => a.pem === "ja",
-    prompt: "Wodurch wird die Verschlechterung bei Ihnen ausgelöst? (Mehrfachauswahl möglich)",
-    type: "multi",
-    options: [
-      { value: "koerperlich", label: "Körperliche Anstrengung" },
-      { value: "geistig", label: "Geistige Anstrengung (z. B. Konzentration, Bildschirmarbeit)" },
-      { value: "emotional", label: "Emotionale Belastung (z. B. Aufregung, Stress)" },
-      { value: "unklar", label: "Lässt sich nicht klar unterscheiden" },
-    ],
-    exclusiveValue: "unklar",
-  },
-  {
     id: "pemAusloeseschwelle",
     showIf: (a) => a.pem === "ja",
     prompt: "Wie stark muss die Belastung sein, damit bei Ihnen eine PEM-Verschlechterung auftritt?",
@@ -52,17 +51,6 @@ export const QUESTIONS: Question[] = [
       { value: "leichteste-alltagsbelastung", label: "Schon kleinste Anstrengung reicht (z. B. wenige Schritte gehen, ein kurzes Gespräch, sich kurz konzentrieren)" },
       { value: "mittelschwere-belastung", label: "Erst bei mittlerer Anstrengung (z. B. kurzer Spaziergang, längeres Gespräch, eine Stunde Bildschirmarbeit)" },
       { value: "nur-starke-belastung", label: "Erst bei stärkerer, länger andauernder Anstrengung" },
-    ],
-  },
-  {
-    id: "pemLatenz",
-    showIf: (a) => a.pem === "ja",
-    prompt: "Wie schnell tritt die Verschlechterung nach der Belastung typischerweise ein?",
-    type: "single",
-    options: [
-      { value: "sofort", label: "Sofort, noch während der Belastung" },
-      { value: "stunden", label: "Nach einigen Stunden" },
-      { value: "1-3-tage", label: "Verzögert, nach 1–3 Tagen" },
     ],
   },
   {
@@ -98,17 +86,6 @@ export const QUESTIONS: Question[] = [
       { value: "hals", label: "Halsschmerzen" },
       { value: "lymphknoten", label: "Druckschmerzhafte Lymphknoten" },
       { value: "keine", label: "Keine davon" },
-    ],
-  },
-  {
-    id: "schmerzausbreitung",
-    showIf: hatRelevanteSchmerzangabe,
-    prompt: "Sind Ihre Schmerzen eher auf einzelne Körperbereiche begrenzt oder über mehrere Körperregionen verteilt spürbar?",
-    type: "single",
-    options: [
-      { value: "begrenzt", label: "Auf einzelne Bereiche begrenzt" },
-      { value: "mehrere-regionen", label: "Über mehrere Körperregionen verteilt" },
-      { value: "generalisiert", label: "Nahezu am ganzen Körper spürbar" },
     ],
   },
   {
@@ -222,24 +199,19 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // Zusammengeführt aus den vormals getrennten Fragen "medikation" +
+    // "medikationWirkung" (Tier-1-Kürzung auf 20 Fragen, 03.10.2026) - eine
+    // einzelne Frage mit vier statt zwei × drei Optionen deckt dieselbe
+    // Information ab, da die zweite Frage ohnehin nur bei "ja" folgte.
     id: "medikation",
     prompt:
-      "Nehmen Sie aktuell aufgrund Ihrer Beschwerden noch regelmäßig ärztlich verordnete Medikamente ein (z. B. gegen Schmerzen, Schlafstörungen, Kreislaufbeschwerden)?",
+      "Nehmen Sie aktuell aufgrund Ihrer Beschwerden noch regelmäßig ärztlich verordnete Medikamente ein (z. B. gegen Schmerzen, Schlafstörungen, Kreislaufbeschwerden) — und falls ja, haben sich Ihre Beschwerden dadurch gebessert?",
     type: "single",
     options: [
-      { value: "ja", label: "Ja" },
       { value: "nein", label: "Nein" },
-    ],
-  },
-  {
-    id: "medikationWirkung",
-    showIf: (a) => a.medikation === "ja",
-    prompt: "Haben sich Ihre Beschwerden durch diese Medikamente gebessert?",
-    type: "single",
-    options: [
-      { value: "deutliche-besserung", label: "Ja, deutlich gebessert" },
-      { value: "teilweise-besserung", label: "Teilweise gebessert" },
-      { value: "keine-besserung", label: "Kaum bis keine Besserung" },
+      { value: "ja-deutliche-besserung", label: "Ja, deutlich gebessert" },
+      { value: "ja-teilweise-besserung", label: "Ja, teilweise gebessert" },
+      { value: "ja-keine-besserung", label: "Ja, kaum bis keine Besserung" },
     ],
   },
   {
@@ -290,44 +262,6 @@ export const QUESTIONS: Question[] = [
       { value: "nein", label: "Nein, noch keine durchgeführt" },
       { value: "unbekannt", label: "Weiß ich nicht" },
     ],
-  },
-  {
-    id: "funcapScore",
-    prompt: "Haben Sie einen aktuellen FUNCAP55 oder FUNCAP27 Score?",
-    hint:
-      "FUNCAP ist ein Fragebogen zur Funktionskapazität bei ME/CFS und eignet sich neben dem Bell-Score als Verlaufsinstrument, z. B. für einen Kostenübernahmeantrag. Falls Sie noch keinen haben, können Sie ihn hier online ausfüllen:",
-    hintLink: { url: "https://sgme.ch/funcap", label: "FUNCAP-Fragebogen online ausfüllen (SGME)" },
-    type: "single",
-    options: [
-      { value: "ja-funcap55", label: "Ja, FUNCAP55" },
-      { value: "ja-funcap27", label: "Ja, FUNCAP27" },
-      { value: "beides", label: "Beides" },
-      { value: "nein", label: "Nein" },
-    ],
-  },
-  {
-    id: "funcap55Value",
-    showIf: (a) => a.funcapScore === "ja-funcap55" || a.funcapScore === "beides",
-    prompt: "Bitte geben Sie den FUNCAP55 Score ein.",
-    hint: "Gesamtscore von 0 (keinerlei Funktionskapazität) bis 6 (keine Einschränkung), Mittelwert über alle Teilbereiche.",
-    type: "number",
-    options: [],
-    min: 0,
-    max: 6,
-    optional: true,
-    skipLabel: "ohne Score weiter",
-  },
-  {
-    id: "funcap27Value",
-    showIf: (a) => a.funcapScore === "ja-funcap27" || a.funcapScore === "beides",
-    prompt: "Bitte geben Sie den FUNCAP27 Score ein.",
-    hint: "Gesamtscore von 0 (keinerlei Funktionskapazität) bis 6 (keine Einschränkung), Mittelwert über alle Teilbereiche.",
-    type: "number",
-    options: [],
-    min: 0,
-    max: 6,
-    optional: true,
-    skipLabel: "ohne Score weiter",
   },
   {
     id: "beruflicherKontext",

@@ -127,11 +127,9 @@ console.log("\n=== Mehrfachdiagnose-Stresstest: mehrere Böden + alle Erhöhungs
 const maximalfall: Answers = {
   ...MILD_BASELINE,
   pem: "ja",
-  pemTriggerart: ["koerperlich", "geistig"],
   pemAusloeseschwelle: "leichteste-alltagsbelastung",
   pemErholung: "ueber-monat",
   schmerz: ["muskel", "gelenk", "kopf-neu"],
-  schmerzausbreitung: "generalisiert",
   schmerzschwere: "kaum-auszuhalten",
   kognitiv: ["konzentration", "gedaechtnis", "wortfindung", "verarbeitung"],
   autonom: ["orthostatisch"],
@@ -170,9 +168,10 @@ console.log("\n=== Medikation/Therapieansprechen wirkt nur dokumentierend, nie a
 // (ccc-fragenkatalog-kalibrierung.md Abschnitt 8) ein Hinweis auf eine
 // höhere Einstufung, wird hier aber bewusst NICHT als eigener numerischer
 // Erhöhungsfaktor verrechnet. Dieser Test hält fest, dass sich die
-// GdB-Spanne durch keine Kombination aus medikation/medikationWirkung
-// ändert - falls das künftig geändert wird, muss dieser Test bewusst
-// angepasst werden, statt unbemerkt durchzurutschen.
+// GdB-Spanne durch keinen Wert von "medikation" ändert - falls das künftig
+// geändert wird, muss dieser Test bewusst angepasst werden, statt unbemerkt
+// durchzurutschen. Frage seit der Tier-1-Kürzung auf 20 Fragen (03.10.2026)
+// ein einzelnes, zusammengeführtes Feld statt medikation+medikationWirkung.
 const milde = computeTriage(MILD_BASELINE);
 checkRange("Milde Baseline ohne Medikationsangabe (Referenzwert)", milde, 30, 40);
 checkRange(
@@ -183,13 +182,13 @@ checkRange(
 );
 checkRange(
   "Milde Baseline + Medikation ohne Besserung",
-  computeTriage({ ...MILD_BASELINE, medikation: "ja", medikationWirkung: "keine-besserung" }),
+  computeTriage({ ...MILD_BASELINE, medikation: "ja-keine-besserung" }),
   30,
   40
 );
 checkRange(
   "Milde Baseline + Medikation mit deutlicher Besserung",
-  computeTriage({ ...MILD_BASELINE, medikation: "ja", medikationWirkung: "deutliche-besserung" }),
+  computeTriage({ ...MILD_BASELINE, medikation: "ja-deutliche-besserung" }),
   30,
   40
 );

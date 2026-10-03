@@ -40,12 +40,10 @@ export function computeTriage(answers: Answers): TriageResult {
   const atembeschwerden = answers.atembeschwerden as string | undefined;
   const diabetesStatus = answers.diabetesStatus as string | undefined;
   const paraesthesien = answers.paraesthesien as string | undefined;
-  const schmerzausbreitung = answers.schmerzausbreitung as string | undefined;
+  // Zusammengeführte Frage (Tier-1-Kürzung auf 20 Fragen, 03.10.2026, siehe
+  // questions.ts): "nein" | "ja-deutliche-besserung" | "ja-teilweise-besserung"
+  // | "ja-keine-besserung" statt vormals zwei getrennter Felder.
   const medikation = answers.medikation as string | undefined;
-  const medikationWirkung = answers.medikationWirkung as string | undefined;
-  // pemTriggerart wird bewusst NICHT destrukturiert - fließt nur über
-  // answersToContextText() (lib/triage/context.ts) als reines Kontext-Signal
-  // in Tier 2 ein, ohne eigene Scoring-Logik in diesem Schritt.
   const bellScoreRaw = answers.bellScore as string | undefined;
   const bellScoreNum = bellScoreRaw && bellScoreRaw.trim() !== "" ? Number(bellScoreRaw) : NaN;
   const bellScoreValid = !Number.isNaN(bellScoreNum) && bellScoreNum >= 0 && bellScoreNum <= 100;
@@ -339,20 +337,18 @@ export function computeTriage(answers: Answers): TriageResult {
   // den hypothetischen unbehandelten Verlauf - das soll für die Detailanalyse
   // und ein späteres Gutachten sichtbar bleiben, statt stillschweigend
   // vorausgesetzt zu werden.
-  if (medikation === "ja") {
-    if (medikationWirkung === "keine-besserung") {
-      gdbBegruendung.push(
-        "Regelmäßige ärztlich verordnete Medikation ohne wesentliche Besserung der Beschwerden — die übrigen Angaben spiegeln den Verlauf bereits unter Therapie wider, nicht einen zusätzlich unbehandelten Zustand."
-      );
-    } else if (medikationWirkung === "teilweise-besserung") {
-      gdbBegruendung.push(
-        "Regelmäßige ärztlich verordnete Medikation mit teilweiser Besserung — die übrigen Angaben beschreiben den bereits teilweise behandelten Zustand."
-      );
-    } else if (medikationWirkung === "deutliche-besserung") {
-      gdbBegruendung.push(
-        "Regelmäßige ärztlich verordnete Medikation mit deutlicher Besserung — die übrigen Angaben beschreiben den bereits durch Therapie gebesserten Zustand; unbehandelt wäre nach eigener Einschätzung von einer stärkeren Ausprägung auszugehen."
-      );
-    }
+  if (medikation === "ja-keine-besserung") {
+    gdbBegruendung.push(
+      "Regelmäßige ärztlich verordnete Medikation ohne wesentliche Besserung der Beschwerden — die übrigen Angaben spiegeln den Verlauf bereits unter Therapie wider, nicht einen zusätzlich unbehandelten Zustand."
+    );
+  } else if (medikation === "ja-teilweise-besserung") {
+    gdbBegruendung.push(
+      "Regelmäßige ärztlich verordnete Medikation mit teilweiser Besserung — die übrigen Angaben beschreiben den bereits teilweise behandelten Zustand."
+    );
+  } else if (medikation === "ja-deutliche-besserung") {
+    gdbBegruendung.push(
+      "Regelmäßige ärztlich verordnete Medikation mit deutlicher Besserung — die übrigen Angaben beschreiben den bereits durch Therapie gebesserten Zustand; unbehandelt wäre nach eigener Einschätzung von einer stärkeren Ausprägung auszugehen."
+    );
   } else if (medikation === "nein") {
     gdbBegruendung.push(
       "Aktuell keine regelmäßige ärztlich verordnete Medikation gegen die Beschwerden — die übrigen Angaben beschreiben den unbehandelten Verlauf."
@@ -374,14 +370,18 @@ export function computeTriage(answers: Answers): TriageResult {
       "Eigenständige, fachärztlich gesicherte psychiatrische Komorbidität — kann als Erhöhungsfaktor in die Gesamt-GdB-Bildung einfließen (keine Addition, VersMedV Teil A Nr. 3)."
     );
   }
-  if (schmerzCount >= 3 || schmerzschwere === "kaum-auszuhalten" || schmerzausbreitung === "generalisiert") {
+  // schmerzausbreitung ("begrenzt"/"mehrere-regionen"/"generalisiert") war
+  // bis zur Tier-1-Kürzung auf 20 Fragen (03.10.2026) eine eigene dritte
+  // Bedingung hier (Fibromyalgie-Analogie bei "generalisiert") - als
+  // eigenständige Frage entfernt (siehe questions.ts), das darüber
+  // erfasste Signal kann die Tier-2-Detailanalyse im freien Gespräch
+  // weiterhin erheben.
+  if (schmerzCount >= 3 || schmerzschwere === "kaum-auszuhalten") {
     erhoehungsfaktoren++;
     gdbBegruendung.push(
-      schmerzausbreitung === "generalisiert"
-        ? "Schmerzen nahezu am ganzen Körper spürbar — entspricht dem für die Fibromyalgie-Analogie verlangten, über mehrere Körperregionen verteilten Schmerzbild (schmerz-neuro-kardio-erweiterung.md), Einordnung über 18.4/3.7."
-        : schmerzCount >= 3
-          ? "Breites Schmerzbild (≥3 Lokalisationen) — je nach Charakter ggf. zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie) zu prüfen."
-          : "Selbst berichtete Schmerzintensität \"kaum auszuhalten\" — spricht auch bei weniger Lokalisationen für eine zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie)."
+      schmerzCount >= 3
+        ? "Breites Schmerzbild (≥3 Lokalisationen) — je nach Charakter ggf. zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie) zu prüfen."
+        : "Selbst berichtete Schmerzintensität \"kaum auszuhalten\" — spricht auch bei weniger Lokalisationen für eine zusätzliche Einordnung über VersMedV 3.11 (Polyneuropathie-Analogie)."
     );
   }
   if (pemAusloeseschwelle === "leichteste-alltagsbelastung") {
