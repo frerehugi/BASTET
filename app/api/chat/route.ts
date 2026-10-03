@@ -58,6 +58,17 @@ export async function POST(request: Request) {
     (m) => m.role === "assistant" && typeof m.content === "string" && m.content.includes(REFERENZEN_MARKER)
   );
 
+  // Weiche Deadline deutlich VOR `maxDuration` (oben, 150s) - gleiches Muster
+  // und gleiche Begründung wie in app/api/doc/route.ts: ohne dieses Signal
+  // würde die Vercel-Function bei Überschreiten von maxDuration irgendwann
+  // hart beendet, OHNE jede Chance auf eigenen Code (kein catch, kein
+  // finally) - der beim Client bereits angekommene Teiltext bliebe dann
+  // unkommentiert mitten im Satz stehen, ohne STREAM_ERROR_MARKER. 15s
+  // Puffer für den Rest von start() (Fehler-Marker schreiben, Stream
+  // schließen, Vercel-Overhead).
+  const deadline = new AbortController();
+  const deadlineTimer = setTimeout(() => deadline.abort(), 135_000);
+
   const generator = runInterviewStream(
     body.messages,
     !!body.diagnosisConfirmed,
@@ -65,7 +76,8 @@ export async function POST(request: Request) {
     typeof body.triageContext === "string" ? body.triageContext : null,
     typeof body.triageAnchor === "string" ? body.triageAnchor : null,
     !!body.beruflicherKontextNein,
-    typeof body.extraTurnCount === "number" ? body.extraTurnCount : null
+    typeof body.extraTurnCount === "number" ? body.extraTurnCount : null,
+    deadline.signal
   );
 
   // Erstes Chunk manuell abrufen, BEVOR die Response erstellt wird: ein
@@ -77,6 +89,7 @@ export async function POST(request: Request) {
   try {
     first = await generator.next();
   } catch (error) {
+    clearTimeout(deadlineTimer);
     const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
@@ -106,6 +119,7 @@ export async function POST(request: Request) {
         const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
         controller.enqueue(encoder.encode(STREAM_ERROR_MARKER + message));
       } finally {
+        clearTimeout(deadlineTimer);
         controller.close();
       }
       // Erst NACH controller.close() zählen (siehe lib/userCount.ts) - eine
