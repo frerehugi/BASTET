@@ -149,6 +149,26 @@ function languageSwitchedMessage(lang: Lang): string {
     : "Sprache auf Deutsch gestellt. Jederzeit wechselbar mit /language (oder /language en für Englisch).";
 }
 
+// Reale Beobachtung (03.10.2026): eine Person schrieb schlicht "English
+// please" statt den /language-Befehl zu kennen/zu nutzen - landete dadurch
+// in einer Endlosschleife derselben deutschen GATE_PROMPT-Wiederholung
+// (die "else"-Branche im Diagnose-Gate unten erkennt den Text nicht als
+// ja/nein und zeigt denselben, weiterhin deutschen Prompt erneut). Für genau
+// diesen Fall zusätzlich zum expliziten /language-Befehl eine schlanke,
+// bewusst enge Heuristik: NUR kurze Nachrichten (≤6 Wörter), die "english"/
+// "englisch" bzw. "german"/"deutsch" enthalten - verhindert Fehlalarm bei
+// längeren inhaltlichen Antworten, die diese Wörter nur beiläufig erwähnen
+// (in einer Symptom-Schilderung kommen sie praktisch nie vor). Bewusst KEIN
+// LLM-Call dafür - das wäre sowohl unnötig teuer als auch zu langsam für
+// einen reinen Spracherkennungs-Trigger.
+function detectNaturalLanguageSwitch(text: string): Lang | null {
+  const trimmed = text.trim();
+  if (trimmed.split(/\s+/).length > 6) return null;
+  if (/\b(english|englisch)\b/i.test(trimmed)) return "en";
+  if (/\b(german|deutsch)\b/i.test(trimmed)) return "de";
+  return null;
+}
+
 // Flooding-Limit- und äußerste Fehlermeldung können VOR jedem Session-Read
 // auftreten (siehe POST() unten) - zu diesem Zeitpunkt ist die bevorzugte
 // Sprache noch nicht bekannt, ein zusätzlicher Redis-Read nur dafür wäre
@@ -231,6 +251,28 @@ export async function POST(request: Request): Promise<Response> {
     await saveSession(chatId, session);
     await notifyBestEffort(chatId, languageSwitchedMessage(newLang));
     return ok();
+  }
+
+  // Natürlichsprachlicher Sprachwunsch ("English please" statt /language en)
+  // - siehe detectNaturalLanguageSwitch() oben für die Begründung. Nur
+  // auslösen, wenn er tatsächlich etwas ändert (newLang !== session.lang) -
+  // sonst z.B. im Diagnose-Gate eine überflüssige Doppel-Antwort auf eine
+  // schon richtig gestellte Frage.
+  const naturalLang = detectNaturalLanguageSwitch(text);
+  if (naturalLang) {
+    const session = await getSession(chatId);
+    if (naturalLang !== session.lang) {
+      session.lang = naturalLang;
+      await saveSession(chatId, session);
+      await notifyBestEffort(chatId, languageSwitchedMessage(naturalLang));
+      // Steckt die Person noch im Diagnose-Gate, direkt die (jetzt richtige)
+      // Gate-Frage hinterherschicken, statt sie zu einer erneuten,
+      // inhaltsgleichen Eingabe zu zwingen.
+      if (session.diagnosisConfirmed === null) {
+        await sendTelegramMessage(chatId, gatePrompt(naturalLang));
+      }
+      return ok();
+    }
   }
 
   // /about funktioniert jederzeit, unabhängig von der Interview-Phase — das
