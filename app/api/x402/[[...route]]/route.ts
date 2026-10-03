@@ -36,8 +36,8 @@ app.post(CONSULT_PATH, async (c) => {
     // verifiziert UND settled, bevor dieser Handler läuft (siehe Skill-Doku,
     // "What happens at runtime", Schritt 3-4) - ein Fehlschlag hier (z.B.
     // Anthropic-API down) bedeutet also: bereits bezahlt, aber keine
-    // Antwort geliefert. Bei 0,1 USAT/Aufruf ein bewusst in Kauf
-    // genommenes, geringes Restrisiko (Standardverhalten der offiziellen
+    // Antwort geliefert. Bei 3,0 USAT/Aufruf (siehe lib/x402.ts) ein bewusst
+    // in Kauf genommenes, geringes Restrisiko (Standardverhalten der offiziellen
     // x402-Middleware, siehe dortige Warnung gegen eigenes Verify/Settle-
     // Handling) - kein eigener Workaround hier, um nicht wieder von der
     // Middleware abzuweichen.

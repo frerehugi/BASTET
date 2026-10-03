@@ -80,13 +80,20 @@ function getPayTo(): `0x${string}` {
 }
 
 /**
- * 0,1 USAT pro Aufruf (100000 Basiseinheiten bei 6 Dezimalstellen) -
- * kalkuliert gegen die tatsächlichen Sonnet-5-Kosten des Consult-Aufrufs
- * (~0,014 $ bei vollem Wissensbasis-Kontext + Prompt-Caching), ca. 86 % Marge.
+ * 3,0 USAT pro Aufruf (3000000 Basiseinheiten bei 6 Dezimalstellen) - seit
+ * 03.10.2026, siehe build/x402-kosten-nutzen-2026.md Abschnitt 3. Der
+ * ursprüngliche Preis (0,1 USAT, ~86% Marge gegen ~0,014 $ Kosten) war
+ * gegen eine seither um Faktor ~3,7 gewachsene Wissensbasis und ein
+ * verviervachtes maxTokens-Limit kalkuliert und damit überholt: reale
+ * Kosten liegen bei ~0,05 $/Aufruf (Cache warm) bis ~0,74 $/Aufruf
+ * (Cache kalt - kein anderer Arm war in der letzten Stunde aktiv). Preis
+ * bewusst gegen den Cold-Fall kalkuliert (selbsttragend auch ohne warmen
+ * Cache), kaufmännische Faustregel Preis = 4x Kosten zur Deckung von
+ * Steuern/Infrastruktur-Overhead: 0,736 $ x 4 ≈ 2,94 $ -> 3,00 USAT.
  * Override via Env-Var für Preis-Tuning ohne Code-Änderung.
  */
 function getPriceAmount(): string {
-  return process.env.X402_PRICE_BASE_UNITS || String(Math.round(0.1 * 10 ** ASSETS.USAT.decimals));
+  return process.env.X402_PRICE_BASE_UNITS || String(Math.round(3.0 * 10 ** ASSETS.USAT.decimals));
 }
 
 export const facilitator = new HTTPFacilitatorClient({

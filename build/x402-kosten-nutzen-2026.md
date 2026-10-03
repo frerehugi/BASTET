@@ -92,12 +92,18 @@ was die 0,1-USAT-BOTKOV-Zahlung an echtem Anthropic-Spend ausgelöst hat.
 Fragetext selbst (~50–300 Tokens, ungecacht, $2/MTok) ist in beiden Fällen
 vernachlässigbar (< $0,001).
 
-### 1.4 Einnahmen und Marge
+### 1.4 Einnahmen und Marge (Stand zum Zeitpunkt dieser Analyse, 0,1 USAT)
 
-Preis: **0,1 USAT pro Aufruf** (`lib/x402.ts`), USAT 1:1-USD-gekoppelter
-Stablecoin (Tether America USD) → **$0,10 Erlös pro settletem Aufruf**.
+**Hinweis: Der Preis wurde aufgrund genau dieser Zahlen am 03.10.2026 auf
+3,0 USAT angehoben — siehe Abschnitt 3. Die folgende Tabelle zeigt bewusst
+den ursprünglichen, inzwischen überholten Preis, als Beleg für die
+Preisentscheidung.**
 
-| Szenario | Kosten | Erlös | **Marge** |
+Preis (damals): **0,1 USAT pro Aufruf** (`lib/x402.ts`), USAT
+1:1-USD-gekoppelter Stablecoin (Tether America USD) → **$0,10 Erlös pro
+settletem Aufruf**.
+
+| Szenario | Kosten | Erlös (damals, 0,1 USAT) | **Marge (damals)** |
 |---|---:|---:|---:|
 | Warm, geteilt | $0,051–0,055 | $0,10 | **≈ 45–49 %** |
 | Cold (isolierter oder erster Aufruf) | $0,74 | $0,10 | **≈ −640 % (−$0,64 Verlust)** |
@@ -219,6 +225,54 @@ würdigen Gegenparteien suchen. Ob/wie der x402-Endpunkt in den ERC-8004-
 Metadaten dieser Identität verlinkt ist, wurde hier nicht geprüft — falls
 nicht, wäre das ein kurzer, lohnender nächster Schritt (reine Metadaten-
 Ergänzung, kein neuer Code-Pfad).
+
+---
+
+## 3. Preisanpassung: 0,1 → 3,0 USAT (03.10.2026)
+
+**Anforderung**: BASTET muss sich selbst tragen, nicht nur im Idealfall
+profitabel sein. Kaufmännische Faustregel (nutzerseitig vorgegeben): der
+Rechnungsbetrag sollte etwa das Vierfache der eingesetzten Kosten betragen,
+um Steuern, Infrastruktur und Investitionskosten mit abzudecken.
+
+**Kalkulationsgrundlage: der Cold-Fall, nicht der Warm-Fall.** "Selbst-
+tragend" bedeutet, die Zahlung muss die Kosten auch dann decken, wenn gerade
+kein anderer Arm den Wissensbasis-Cache warmhält — genau der Fall, der beim
+echten BOTKOV-Verifikationstest eingetreten ist (erster Aufruf überhaupt,
+zwangsläufig kalt). Der Warm-Fall (Abschnitt 1.3/1.4) ist der Bonus bei
+ausreichend Traffic, nicht die Grundlage für die Preisfindung — sonst wäre
+der Endpunkt bei seltenen/unregelmäßigen Aufrufen strukturell defizitär
+(siehe Break-even-Rechnung in 1.4: ~14 Aufrufe/Stunde nötig, aktuell ohne
+Nutzungsdaten nicht verifizierbar, siehe "Offene Punkte").
+
+**Rechnung:**
+
+| | |
+|---|---:|
+| Cold-Kosten pro Aufruf (Abschnitt 1.3) | $0,736 |
+| × kaufmännischer Faktor 4 | $2,944 |
+| Gerundet | **3,00 USAT** |
+
+**Neue Marge:**
+
+| Szenario | Kosten | Erlös (neu) | **Marge (neu)** |
+|---|---:|---:|---:|
+| Cold (Worst Case, selbsttragend) | $0,74 | $3,00 | **≈ +306 % ($2,26 Gewinn)** |
+| Warm, geteilt (Best Case) | $0,05–0,055 | $3,00 | **≈ +98 % ($2,95 Gewinn)** |
+
+**Umgesetzt**: `lib/x402.ts` (`getPriceAmount()`-Default), README,
+`build/phase10-english-expat-bastet.md`. Historische Fakten (der tatsächlich
+am 03.10. zum damaligen Preis von 0,1 USAT gezahlte, on-chain verifizierte
+BOTKOV-Test) bleiben unverändert dokumentiert — nur die künftig geltende
+Preiskonfiguration wurde angehoben.
+
+**Einordnung der Unsicherheit**: Die 179.000-Token-KB-Schätzung (Abschnitt
+1.1) ist zeichenbasiert, nicht per `count_tokens` verifiziert, und die
+wortbasierte Gegenprobe liegt niedriger (~115.000–125.000). Ein niedrigerer
+realer Tokenwert würde die tatsächlichen Kosten UNTER die hier gerechneten
+$0,736 drücken — die Marge wäre dann noch komfortabler, nie knapper. Der
+Preis wurde also bewusst gegen die konservativere (höhere) Kostenschätzung
+gesetzt, nicht gegen die günstigste Annahme.
 
 ---
 
