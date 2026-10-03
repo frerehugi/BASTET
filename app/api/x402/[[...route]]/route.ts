@@ -4,7 +4,15 @@ import { runExpatConsult } from "@/lib/expatConsult";
 import { resourceServer, buildRoutes, buildInfoPacket, CONSULT_PATH } from "@/lib/x402";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// 150s wie alle anderen Arme (chat/doc/bg-help/telegram, siehe deren
+// route.ts) - war hier bislang nur 60s, obwohl dieser Pfad VOR dem
+// eigentlichen Claude-Call zusätzlich noch zwei Facilitator-Round-Trips
+// (verify+settle) hat, also eher mehr statt weniger Zeit braucht. Bug real
+// beobachtet: ein Testlauf wurde von Vercel nach 60s mit
+// FUNCTION_INVOCATION_TIMEOUT (504) gekillt - die x402-Middleware settelt
+// die Zahlung VOR dem Handler, das war also sehr wahrscheinlich eine
+// bezahlte, aber unbeantwortete Anfrage.
+export const maxDuration = 150;
 
 // Next.js-Catch-all (app/api/x402/[[...route]]/route.ts) leitet die volle
 // Request/Response (Fetch-API) an Hono weiter - app.fetch() hat exakt die
