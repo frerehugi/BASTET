@@ -1,5 +1,6 @@
 import { callClaude, streamClaude, type ChatMessage, type SystemTextBlock } from "./anthropic";
 import { getStaticKnowledgeBase, getKnowledgeAddendum } from "./knowledgeBase";
+import { SESSION_CHAR_SOFT_LIMIT, SESSION_CHAR_HARD_LIMIT, totalMessageChars } from "./sessionBudget";
 
 // Cache-Architektur (siehe build/effizienz-plan.md Abschnitt 1, korrigiert
 // nach einem Kosteneffizienz-Review): der System-Prompt wird als drei Blöcke
@@ -303,10 +304,18 @@ in der Quellen-Übersicht) — fehlende Angaben (Verlag, Jahr, Seite, Auflage) N
 erfinden, sondern weglassen.`;
 }
 
-function budgetHintFor(turnCount: number): string {
-  return turnCount >= 5
-    ? "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist."
-    : `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
+// Kriterium ist bewusst die KUMULIERTE Zeichenmenge der ganzen Sitzung, nicht
+// die Turn-Zahl (siehe lib/sessionBudget.ts) - reine Turn-Zahl hätte Leute, die
+// wegen Brain Fog nur viele kurze Nachrichten schaffen, unfair früh zum
+// Abschluss gedrängt, obwohl sie inhaltlich noch kaum etwas geliefert haben.
+function budgetHintFor(turnCount: number, totalChars: number): string {
+  if (totalChars >= SESSION_CHAR_HARD_LIMIT) {
+    return "Das Budget ist erreicht — leite JETZT zur Auswertung über, auch wenn nicht alles erfragt ist.";
+  }
+  if (totalChars >= SESSION_CHAR_SOFT_LIMIT) {
+    return "Die bisherigen Angaben sind schon umfangreich und reichen für eine gute Einschätzung — leite bald zur Auswertung über, auch wenn noch nicht alles erfragt ist.";
+  }
+  return `Bisher ${turnCount} von ca. 6-8 möglichen Austauschen genutzt.`;
 }
 
 /**
@@ -438,7 +447,7 @@ export async function runInterview(
 ): Promise<string> {
   const system = await buildSystemBlocks(
     diagnosisConfirmed,
-    budgetHintFor(turnCount),
+    budgetHintFor(turnCount, totalMessageChars(messages)),
     triageContext,
     triageAnchor,
     beruflicherKontextNein,
@@ -478,7 +487,7 @@ export async function* runInterviewStream(
 ): AsyncGenerator<string, void, unknown> {
   const system = await buildSystemBlocks(
     diagnosisConfirmed,
-    budgetHintFor(turnCount),
+    budgetHintFor(turnCount, totalMessageChars(messages)),
     triageContext,
     triageAnchor,
     beruflicherKontextNein,

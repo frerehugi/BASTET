@@ -29,7 +29,8 @@ lib/
 ├── content.ts              # Titel/Untertitel/Über-BASTET/Krisenhinweis — von Web und Telegram geteilt
 ├── format.ts               # REFERENZEN-Block-Parsing, STATS-Trailer-Stripping — von Web und Telegram geteilt
 ├── telegram.ts             # Telegram sendMessage-Helper (chunkt Nachrichten >3800 Zeichen)
-├── telegramSession.ts      # Upstash-Redis-Session pro chat_id, TTL 60 Min. Inaktivität
+├── telegramSession.ts      # Upstash-Redis-Session pro chat_id, TTL 60 Min. Inaktivität + Flooding-Rate-Limit
+├── sessionBudget.ts        # Kumuliertes Zeichen-Budget für offene Interviews (Web-Chat + Telegram), siehe unten
 ├── adminCommands.ts        # Telegram-Freigabe-Workflow (/pending, freigeben/ablehnen), nur TELEGRAM_ADMIN_CHAT_ID
 ├── updateSources.ts        # Quellen-Definitionen + Change-Detection (RSS für BSG, Hash-Fallback sonst)
 ├── updateSummary.ts        # LLM-Zusammenfassung eines erkannten Funds
@@ -61,6 +62,8 @@ curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://ww
 **Sicherheitshinweis (behoben)**: `/api/telegram` prüfte bislang die Herkunft eingehender Requests nicht — `handleAdminCommand` (`lib/adminCommands.ts`) vertraute allein der `chat.id` im Request-Body, sodass ein gefälschter Direkt-Request an den Endpoint (unter Umgehung von Telegram) mit bekannter/erratener Admin-chat_id den Freigabe-Workflow der Wissensbasis erreichen konnte. Jetzt per `X-Telegram-Bot-Api-Secret-Token`-Header (`TELEGRAM_WEBHOOK_SECRET`, oben) abgesichert — **bestehende Deployments müssen den Webhook mit `secret_token` neu setzen (Befehl oben), sonst bleibt der Bot nach dem Deploy stumm.**
 
 Datenschutz-Hinweis: Der Telegram-Arm ist kein reines No-Storage mehr wie der Web-Arm — der Gesprächsverlauf wird pro `chat_id` in Upstash Redis zwischengespeichert, mit TTL 60 Minuten Inaktivität. Der Bot weist beim Start explizit darauf hin (siehe `GATE_PROMPT` in `app/api/telegram/route.ts`).
+
+**Schutz gegen sehr große Datenmengen (03.10.2026)**: BASTETs Zielgruppe ist stark heterogen — manche schaffen wegen Brain Fog nur viele kurze Nachrichten-Schübe, andere bereiten bewusst einen langen Text vor und fügen ihn in einer Nachricht ein. Beide Stile sind legitim, deshalb greift die Begrenzung **nicht** über Turn-Zahl oder Länge einer einzelnen Nachricht, sondern über die **kumulierte Zeichenmenge der ganzen Sitzung** (`lib/sessionBudget.ts`, `SESSION_CHAR_SOFT_LIMIT`/`SESSION_CHAR_HARD_LIMIT`): ab dem weichen Limit bittet der Prompt das Modell, bald zur Auswertung überzuleiten (`lib/chat.ts`, `budgetHintFor()` — wirkt für Web-Chat und Telegram gleich, da beide dieselbe Funktion nutzen); ab dem harten Limit lehnt `app/api/telegram/route.ts` weitere Eingaben aktiv ab (unabhängig davon, ob das Modell dem weichen Hinweis gefolgt ist) und verweist auf `/neu`. Zusätzlich, unabhängig von der Datenmenge: ein großzügiges Flooding-Limit pro `chat_id` (`withinRateLimit()` in `lib/telegramSession.ts`, max. 20 Nachrichten/Minute) gegen Skript-/Bot-Fluten, bewusst hoch genug, um schnelle Schübe kurzer Nachrichten nicht zu blockieren.
 
 **Befehle für alle (nicht nur Admin):** `/about` (Rechtliches, wie der Web-Toggle), `/whoami` (eigene chat_id, z.B. für `TELEGRAM_ADMIN_CHAT_ID`), `/neu` bzw. `/reset` (Gespräch sofort neu starten, statt die 60-Minuten-TTL abzuwarten — Web-Pendant ist ein Seiten-Reload).
 

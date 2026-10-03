@@ -10,8 +10,9 @@ import {
 } from "@/lib/content";
 import { REFERENZEN_MARKER, splitReferences, stripStatsBlock } from "@/lib/format";
 import { sendTelegramMessage, startTypingIndicator } from "@/lib/telegram";
-import { getSession, saveSession, type TelegramSession } from "@/lib/telegramSession";
+import { getSession, saveSession, withinRateLimit, type TelegramSession } from "@/lib/telegramSession";
 import { incrementCompleted, incrementStarted } from "@/lib/userCount";
+import { SESSION_CHAR_HARD_LIMIT, totalMessageChars } from "@/lib/sessionBudget";
 
 export const runtime = "nodejs";
 export const maxDuration = 150;
@@ -97,6 +98,17 @@ export async function POST(request: Request): Promise<Response> {
     return ok();
   }
 
+  // Flooding-Limit (Frequenz) ganz am Anfang, vor jedem Befehl/Interview-
+  // Pfad - ein Redis-Ausfall lässt die Anfrage durch (siehe withinRateLimit),
+  // blockiert also nie versehentlich den ganzen Bot.
+  if (!(await withinRateLimit(chatId))) {
+    await notifyBestEffort(
+      chatId,
+      "Das waren in kurzer Zeit sehr viele Nachrichten - bitte einen Moment Pause, dann geht es weiter."
+    );
+    return ok();
+  }
+
   // /about funktioniert jederzeit, unabhängig von der Interview-Phase — das
   // Web-Pendant ist der immer sichtbare "Über BASTET / Rechtliches"-Toggle.
   if (/^\/about\b/i.test(text)) {
@@ -166,6 +178,23 @@ export async function POST(request: Request): Promise<Response> {
     const alreadyCompleted = session.messages.some(
       (m) => m.role === "assistant" && typeof m.content === "string" && m.content.includes(REFERENZEN_MARKER)
     );
+
+    // Harte Rückfalllinie hinter dem weichen Hinweis in lib/chat.ts
+    // (budgetHintFor/SESSION_CHAR_HARD_LIMIT, siehe lib/sessionBudget.ts):
+    // War die Sitzung VOR dieser Nachricht schon über dem Hard-Limit, hatte
+    // das Modell im letzten Zug bereits die Anweisung "leite JETZT über" -
+    // noch mehr Material anzuhängen, bevor das greift, würde die Sitzung
+    // unbegrenzt weiter wachsen lassen. Nur relevant, solange noch keine
+    // fertige Auswertung vorliegt; danach ist das Risiko ein anderes
+    // (Rückfragen zu einem bereits gelieferten Ergebnis), bewusst nicht
+    // hier mitgedeckelt.
+    if (!alreadyCompleted && totalMessageChars(session.messages) >= SESSION_CHAR_HARD_LIMIT) {
+      await notifyBestEffort(
+        chatId,
+        "Wir haben inzwischen sehr viele Angaben gesammelt - das reicht für eine gute Einschätzung. Bitte warten Sie kurz auf den Abschluss der laufenden Auswertung, oder beginnen Sie mit /neu eine neue, kürzere Sitzung."
+      );
+      return ok();
+    }
 
     // Normale Interview-Runde.
     session.messages.push({ role: "user", content: text });
