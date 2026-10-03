@@ -38,7 +38,13 @@ Frage markiert:
    Grundinfrastruktur (9b) für beide bereitliegt. Dafür ein eigener,
    unabhängiger Ein-/Ausschalter pro Arm statt eines gemeinsamen
    (`lib/selfFeatureFlag.ts`, `SelfArm`) — "doc an" darf Tier 2 nicht
-   mitschalten.
+   mitschalten. **Update (03.10.2026, Florian)**: der Web-Arm-Schalter
+   (`self web an`) ist inzwischen ebenfalls scharf — Self läuft live auf
+   `bastet-covid.org` sowohl vor Tier 2 (Web-Arm) als auch vor dem Doc-Arm.
+   Da beide Schalter rein über Redis laufen (kein Deploy nötig), kann sich
+   dieser Zustand jederzeit ohne Code-/Doku-Änderung wieder verschieben —
+   im Zweifel `/stats`/Admin-Kanal für den aktuellen Live-Stand prüfen,
+   statt dieses Dokument fortzuschreiben.
 2. **Universal-Link-/Deeplink-Flow statt erzwungenem QR-Code**
    (`getUniversalLink()` + `deeplinkCallback` aus `@selfxyz/core`) — löst
    konkret den Fall "Nutzer:in hat nur ein Handy und keine Möglichkeit, einen
@@ -250,8 +256,9 @@ angegangen werden — siehe Reihenfolge im Phasenplan unten.
   Seitenaufruf — Formulartext übersteht den Self-Redirect-Roundtrip über
   sessionStorage, Anhänge bewusst NICHT (Größenrisiko, kein stiller
   erneuter Versand ohne sie). Eigener Schalter `self doc an/aus`
-  (Telegram-Admin), unabhängig vom (weiterhin ausgeschalteten) Web-Arm-
-  Schalter `self web an/aus`. **9c (Redis-Cooldown/Nullifier-Rate-Limit)
+  (Telegram-Admin), unabhängig vom Web-Arm-Schalter `self web an/aus` —
+  seit 03.10.2026 ebenfalls auf "an" (siehe Update in Punkt 1 oben).
+  **9c (Redis-Cooldown/Nullifier-Rate-Limit)
   ist damit noch nicht enthalten** — der Doc-Arm hat aktuell nur die reine
   Verifizierung, noch keine Abkling-/Wiederholungssperre; nachzuholen,
   falls sich das als nötig erweist.
