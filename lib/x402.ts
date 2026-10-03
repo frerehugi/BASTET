@@ -80,18 +80,35 @@ function getPayTo(): `0x${string}` {
 }
 
 /**
- * 4,99 USAT pro Aufruf (4990000 Basiseinheiten bei 6 Dezimalstellen) - seit
- * 03.10.2026, siehe build/x402-kosten-nutzen-2026.md Abschnitt 3. Erst auf
- * 3,00 USAT kalkuliert (kaufmännische 4x-Regel auf die realen Cold-Cache-
- * Kosten von ~0,736 $/Aufruf, ~6,8x statt nur 4x), dann bewusst auf den
- * runden Preis 4,99 USAT angehoben - zusätzliche Sicherheitsmarge (der
- * Endpunkt muss sich auch ohne warmen Prompt-Cache selbst tragen, siehe
- * dortige Begründung) und ein klarerer, leichter kommunizierbarer Preis
- * fürs Infopaket (buildInfoPacket() unten). Override via Env-Var für
- * Preis-Tuning ohne Code-Änderung.
+ * Regulärer Preis: 4,99 USAT pro Aufruf (4990000 Basiseinheiten bei 6
+ * Dezimalstellen) - seit 03.10.2026, siehe build/x402-kosten-nutzen-2026.md
+ * Abschnitt 3. Erst auf 3,00 USAT kalkuliert (kaufmännische 4x-Regel auf
+ * die realen Cold-Cache-Kosten von ~0,736 $/Aufruf, ~6,8x statt nur 4x),
+ * dann bewusst auf den runden Preis 4,99 USAT angehoben - zusätzliche
+ * Sicherheitsmarge und ein klarerer, leichter kommunizierbarer Preis fürs
+ * Infopaket (buildInfoPacket() unten).
+ *
+ * TEMPORÄR AUF 0,1 USAT ABGESENKT (03.10.2026) für mehrere BOTKOV-
+ * Testläufe gegen den echten Facilitator - der reguläre Preis bleibt
+ * 4,99 USAT, diese Zeile VOR Produktivbetrieb wieder zurücksetzen (bzw.
+ * sobald die Testphase mit BOTKOV abgeschlossen ist). Override weiterhin
+ * zusätzlich via X402_PRICE_BASE_UNITS-Env-Var möglich, ohne Code-Änderung.
  */
 function getPriceAmount(): string {
-  return process.env.X402_PRICE_BASE_UNITS || String(Math.round(4.99 * 10 ** ASSETS.USAT.decimals));
+  return process.env.X402_PRICE_BASE_UNITS || String(Math.round(0.1 * 10 ** ASSETS.USAT.decimals));
+}
+
+/**
+ * Menschenlesbarer Dezimalpreis (z.B. "4.99", "0.1") für buildInfoPacket()
+ * unten - rechnet IMMER von getPriceAmount() zurück, statt den Wert ein
+ * zweites Mal hart zu kodieren. Grund: sonst könnte das Infopaket (GET,
+ * ohne Zahlung) einen anderen Preis nennen als die tatsächliche 402-
+ * Anforderung (POST) - genau das wäre bei der temporären Testpreis-
+ * Absenkung sonst passiert (Infopaket hätte weiter "4.99" gezeigt, obwohl
+ * die echte Anforderung 0,1 USAT verlangt hätte).
+ */
+function getPriceDisplay(): string {
+  return String(Number(getPriceAmount()) / 10 ** ASSETS.USAT.decimals);
 }
 
 export const facilitator = new HTTPFacilitatorClient({
@@ -167,7 +184,7 @@ export function buildInfoPacket() {
     description:
       "BASTET explains how Post-COVID/ME-CFS is assessed under German disability law: Degree of Disability (Grad der Behinderung, GdB), Occupational Disability (Minderung der Erwerbsfähigkeit, MdE) under statutory accident insurance, and Disability Pension (Erwerbsminderungsrente, EMR). Every answer is grounded in a curated set of German legal and medical primary sources (official assessment regulations, court decisions, clinical guidelines) and cites them with numbered references.",
     price: {
-      amount: "4.99",
+      amount: getPriceDisplay(),
       asset: "USAT",
       assetFullName: ASSETS.USAT.name,
       network: "Celo Mainnet (eip155:42220)",
@@ -198,7 +215,7 @@ export function buildInfoPacket() {
       ],
     },
     usageModel:
-      "Single-use, not a subscription or time-limited access: one payment of 4.99 USAT = one question = one answer. There is no ongoing session or conversation tied to a payment — a follow-up question needs a new request and a new payment. This is the same every time; the price does not buy multiple questions or a time window.",
+      `Single-use, not a subscription or time-limited access: one payment of ${getPriceDisplay()} USAT = one question = one answer. There is no ongoing session or conversation tied to a payment — a follow-up question needs a new request and a new payment. This is the same every time; the price does not buy multiple questions or a time window.`,
     whatItCanNotDo: [
       "Does not diagnose — it only works with what you describe, no hidden assumptions.",
       "The answer is AI-generated and non-binding: it does not replace a medical examination, a decision by a German authority or court, or advice from a lawyer specializing in German social law (Fachanwalt/-anwältin für Sozialrecht).",
