@@ -1,0 +1,50 @@
+import { Hono } from "hono";
+import { paymentMiddleware } from "@x402/hono";
+import { runExpatConsult } from "@/lib/expatConsult";
+import { resourceServer, buildRoutes, CONSULT_PATH } from "@/lib/x402";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+// Next.js-Catch-all (app/api/x402/[[...route]]/route.ts) leitet die volle
+// Request/Response (Fetch-API) an Hono weiter - app.fetch() hat exakt die
+// Next.js-Routen-Handler-Signatur, daher kein zusätzlicher Vercel-Adapter
+// nötig (hono/vercel ist ohnehin deprecated zugunsten von @hono/vercel).
+const app = new Hono();
+
+app.use(paymentMiddleware(buildRoutes(), resourceServer));
+
+app.post(CONSULT_PATH, async (c) => {
+  let body: { question?: unknown };
+  try {
+    body = await c.req.json();
+  } catch {
+    return c.json({ error: "Invalid JSON." }, 400);
+  }
+  if (typeof body.question !== "string" || !body.question.trim()) {
+    return c.json({ error: "`question` is required." }, 400);
+  }
+  if (body.question.length > 4000) {
+    return c.json({ error: "`question` is too long (max 4000 characters)." }, 400);
+  }
+
+  try {
+    const answer = await runExpatConsult(body.question);
+    return c.json({ answer });
+  } catch (error) {
+    // Zahlung ist an dieser Stelle laut x402-Middleware-Ablauf bereits
+    // verifiziert UND settled, bevor dieser Handler läuft (siehe Skill-Doku,
+    // "What happens at runtime", Schritt 3-4) - ein Fehlschlag hier (z.B.
+    // Anthropic-API down) bedeutet also: bereits bezahlt, aber keine
+    // Antwort geliefert. Bei 0,1 USAT/Aufruf ein bewusst in Kauf
+    // genommenes, geringes Restrisiko (Standardverhalten der offiziellen
+    // x402-Middleware, siehe dortige Warnung gegen eigenes Verify/Settle-
+    // Handling) - kein eigener Workaround hier, um nicht wieder von der
+    // Middleware abzuweichen.
+    const message = error instanceof Error ? error.message : "Unknown error.";
+    return c.json({ error: message }, 502);
+  }
+});
+
+export const GET = (request: Request) => app.fetch(request);
+export const POST = (request: Request) => app.fetch(request);

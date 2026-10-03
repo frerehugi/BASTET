@@ -1,190 +1,132 @@
 /**
- * x402-Facilitator-Client für den Celo-gehosteten Facilitator
- * (https://x402.celo.org) — schützt app/api/x402/consult/route.ts.
+ * x402-Facilitator-Setup für den Celo-gehosteten Facilitator
+ * (https://x402.celo.org) — schützt app/api/x402/[[...route]]/route.ts.
  *
- * WICHTIGER VORBEHALT, VOR DEM ERSTEN ECHTEN AUFRUF ZU PRÜFEN: Dieses Modul
- * implementiert direkt gegen die öffentlich dokumentierte x402-Protokollebene
- * (HTTP-402-Response mit `accepts`-Array, `X-PAYMENT`-Header, Facilitator-
- * Endpunkte `/verify` und `/settle` — die geteilte REST-Schicht, die x402
- * über Ketten/Implementierungen hinweg einheitlich macht), NICHT gegen ein
- * bestätigtes Celo-eigenes SDK-Paket. Bei der Recherche in dieser Session
- * gab es widersprüchliche Angaben zum tatsächlichen npm-Paket (teils
- * `@x402/*`, teils `thirdweb/x402`) und `x402.celo.org`/`docs.celo.org`
- * selbst waren über das Sandbox-Netzwerk nicht erreichbar (EGRESS_BLOCKED,
- * bestätigt über den Proxy-Status).
+ * Gebaut direkt gegen die offizielle, vom Nutzer bereitgestellte Skill-
+ * Dokumentation (x402-celo-facilitator, MIT, Celo Core Co.) - nicht mehr
+ * gegen eigene Vermutungen über die REST-Ebene (frühere Fassung dieser
+ * Datei rief /verify und /settle direkt auf; die Skill-Doku nennt das
+ * explizit einen Fehler: "Calling the facilitator's /verify or /settle
+ * directly and hand-building the payment body... Use the middleware").
+ * Pakete real installiert und gegen die tatsächlichen .d.ts-Dateien
+ * geprüft (@x402/core 2.28.0, @x402/hono 2.28.0, @x402/evm 2.28.0,
+ * registry.npmjs.org ist - anders als x402.celo.org/docs.celo.org - aus
+ * dieser Sandbox erreichbar).
  *
- * Netzwerk ist bewusst auf Celo MAINNET konfiguriert (nicht Testnet) - der
- * Hackathon ("Agents on Open Rails", Track 2b) verlangt reale USAT-Zahlungen
- * für die Leaderboard-Zählung, ein Testnet-Zahlungskanal würde dort nicht
- * zählen. Das heißt aber: ein unentdeckter Fehler im Facilitator-Vertrag
- * hier betrifft echtes Geld, nicht Testtokens — vor dem ersten produktiven
- * Aufruf (nicht erst vor einem späteren "Umstieg auf Mainnet") zwingend
- * `https://x402.celo.org/SKILL.md` mit echtem Netzwerkzugriff live abrufen
- * und mindestens die Facilitator-Pfade (`/verify`, `/settle`), das genaue
- * `accepts`-Objektschema und die USAT-Contract-Adresse (`X402_ASSET_ADDRESS`)
- * gegenprüfen, bevor echte Zahlungen fließen.
+ * Bewusst Celo MAINNET (eip155:42220), nicht Testnet - der Hackathon
+ * ("Agents on Open Rails", Track 2b) zählt nur reale USAT-Zahlungen fürs
+ * Leaderboard.
  */
 
-const DEFAULT_NETWORK = "celo";
+import { HTTPFacilitatorClient, x402ResourceServer, type RoutesConfig } from "@x402/core/server";
+import type { Network } from "@x402/core/types";
+import { ExactEvmScheme } from "@x402/evm/exact/server";
+import { getAddress } from "viem";
 
-function getNetwork(): string {
-  return process.env.X402_NETWORK || DEFAULT_NETWORK;
+const MAINNET_NETWORK: Network = "eip155:42220"; // Celo Mainnet
+const TESTNET_NETWORK: Network = "eip155:11142220"; // Celo Sepolia
+
+/**
+ * USAT (Tether America USD) auf Celo Mainnet - Adresse, Dezimalstellen und
+ * EIP-712-Domain (`extra.name`/`extra.version`) exakt aus der vom Nutzer
+ * bereitgestellten Skill-Tabelle übernommen (`extra.name` ist NICHT das
+ * Symbol - USAT signiert als "Tether America USD", siehe dortiger Hinweis).
+ * USDC/USDT zum Vergleich ebenfalls hinterlegt, falls der Preis je nach
+ * Celo-Builders-Vorgabe auf ein anderes Asset umgestellt werden muss.
+ */
+export const ASSETS = {
+  USAT: {
+    address: getAddress("0xD2ab3C9A02DBBAB236BfEC45D1d755DF4267F771"),
+    decimals: 6,
+    name: "Tether America USD",
+    version: "1",
+  },
+  USDC: {
+    address: getAddress("0xcebA9300f2b948710d2653dD7B07f33A8B32118C"),
+    decimals: 6,
+    name: "USDC",
+    version: "2",
+  },
+  USDT: {
+    address: getAddress("0x48065fbBE25f71C9282ddf5e1cD6D6A887483D5e"),
+    decimals: 6,
+    name: "Tether USD",
+    version: "1",
+  },
+} as const;
+
+function getNetwork(): Network {
+  // X402_NETWORK=testnet schaltet auf Celo Sepolia um - Default bleibt
+  // Mainnet (explizite Entscheidung, siehe Datei-Header).
+  return process.env.X402_NETWORK === "testnet" ? TESTNET_NETWORK : MAINNET_NETWORK;
 }
 
-function getFacilitatorBaseUrl(): string {
-  // Zwei vom Celo-Dashboard getrennte Facilitator-Hosts (Mainnet/Testnet) -
-  // siehe x402.celo.org-Dashboard-Dokumentation (api.x402.celo.org vs.
-  // api.x402.sepolia.celo.org). Override via Env-Var für den Fall, dass sich
-  // die Hosts ändern, bevor der Code hier aktualisiert wird.
-  if (process.env.X402_FACILITATOR_URL) return process.env.X402_FACILITATOR_URL;
-  return getNetwork() === "celo" ? "https://api.x402.celo.org" : "https://api.x402.sepolia.celo.org";
+function getFacilitatorUrl(): string {
+  return process.env.X402_NETWORK === "testnet" ? "https://api.x402.sepolia.celo.org" : "https://api.x402.celo.org";
 }
 
 function getApiKey(): string {
   const key = process.env.X402_API_KEY;
   if (!key) {
-    throw new Error("X402_API_KEY ist nicht gesetzt (Vercel Environment Variables, x402.celo.org-Dashboard).");
+    throw new Error("X402_API_KEY ist nicht gesetzt (x402.celo.org-Dashboard, Vercel Environment Variables).");
   }
   return key;
 }
 
-/** USAT: 6 Dezimalstellen (bestätigt über Blockexplorer-Daten, siehe build/phase10-english-expat-bastet.md-Recherche). */
-const USAT_DECIMALS = 6;
-
-export interface PaymentRequirement {
-  scheme: "exact";
-  network: string;
-  maxAmountRequired: string;
-  resource: string;
-  description: string;
-  mimeType: string;
-  payTo: string;
-  maxTimeoutSeconds: number;
-  asset: string;
-  extra?: Record<string, unknown>;
+function getPayTo(): `0x${string}` {
+  // Default: die bereits unter ERC-8004 (Agent-IDs 9817/9818) registrierte
+  // BASTET-Wallet (siehe lib/content.ts, BASTET_WALLET_ADDRESS).
+  return getAddress(process.env.SELLER_PAY_TO || "0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608");
 }
 
 /**
- * Preis in USAT-Basiseinheiten (0,1 USAT = 100000 bei 6 Dezimalstellen) -
+ * 0,1 USAT pro Aufruf (100000 Basiseinheiten bei 6 Dezimalstellen) -
  * kalkuliert gegen die tatsächlichen Sonnet-5-Kosten des Consult-Aufrufs
  * (~0,014 $ bei vollem Wissensbasis-Kontext + Prompt-Caching), ca. 86 % Marge.
- * Override via Env-Var für einfaches Preis-Tuning ohne Code-Änderung.
+ * Override via Env-Var für Preis-Tuning ohne Code-Änderung.
  */
-export function getPriceBaseUnits(): string {
-  if (process.env.X402_PRICE_BASE_UNITS) return process.env.X402_PRICE_BASE_UNITS;
-  const usat = 0.1;
-  return String(Math.round(usat * 10 ** USAT_DECIMALS));
+function getPriceAmount(): string {
+  return process.env.X402_PRICE_BASE_UNITS || String(Math.round(0.1 * 10 ** ASSETS.USAT.decimals));
 }
 
-function getAssetAddress(): string {
-  // BEWUSST kein hartkodierter Default: eine recherchierte USAT-Celo-Adresse
-  // aus dieser Session war nicht gegen die x402-Facilitator-eigene
-  // unterstützte-Token-Liste verifizierbar (x402.celo.org war blockiert).
-  // Lieber ein klarer Fehler beim Fehlen der Env-Var als eine stillschweigend
-  // falsche Adresse, an die echtes Geld gehen könnte.
-  const asset = process.env.X402_ASSET_ADDRESS;
-  if (!asset) {
-    throw new Error(
-      "X402_ASSET_ADDRESS ist nicht gesetzt - USAT-Contract-Adresse auf Celo vor dem " +
-        "ersten Aufruf gegen https://x402.celo.org/SKILL.md verifizieren, dann als " +
-        "Vercel Environment Variable hinterlegen."
-    );
-  }
-  return asset;
-}
+export const facilitator = new HTTPFacilitatorClient({
+  url: getFacilitatorUrl(),
+  createAuthHeaders: async () => {
+    const h = { "X-API-Key": getApiKey() };
+    return { verify: h, settle: h, supported: h };
+  },
+});
 
-function getPayToAddress(): string {
-  // Default: die bereits unter ERC-8004 (Agent-IDs 9817/9818) registrierte
-  // BASTET-Wallet (siehe lib/content.ts, BASTET_WALLET_ADDRESS) - dieselbe
-  // Identität, kein zweites Wallet nötig.
-  return process.env.X402_PAYTO_ADDRESS || "0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608";
-}
+export const resourceServer = new x402ResourceServer(facilitator);
+resourceServer.register("eip155:*", new ExactEvmScheme());
 
-export function buildPaymentRequirements(resourceUrl: string, description: string): PaymentRequirement {
-  return {
-    scheme: "exact",
-    network: getNetwork(),
-    maxAmountRequired: getPriceBaseUnits(),
-    resource: resourceUrl,
-    description,
-    mimeType: "application/json",
-    payTo: getPayToAddress(),
-    maxTimeoutSeconds: 60,
-    asset: getAssetAddress(),
-  };
-}
-
-/** Antwortform bei fehlendem/ungültigem X-PAYMENT-Header, per x402-Spezifikation. */
-export function buildPaymentRequiredBody(requirement: PaymentRequirement, error: string) {
-  return {
-    x402Version: 1,
-    error,
-    accepts: [requirement],
-  };
-}
-
-interface FacilitatorVerifyResult {
-  isValid: boolean;
-  invalidReason?: string;
-}
-
-interface FacilitatorSettleResult {
-  success: boolean;
-  error?: string;
-  txHash?: string;
-  networkId?: string;
-}
-
-async function callFacilitator<T>(path: string, paymentPayload: unknown, requirement: PaymentRequirement): Promise<T> {
-  const response = await fetch(`${getFacilitatorBaseUrl()}${path}`, {
-    method: "POST",
-    headers: {
-      "content-type": "application/json",
-      authorization: `Bearer ${getApiKey()}`,
-    },
-    body: JSON.stringify({
-      x402Version: 1,
-      paymentPayload,
-      paymentRequirements: requirement,
-    }),
-  });
-  if (!response.ok) {
-    let detail = `HTTP ${response.status}`;
-    try {
-      const data = await response.json();
-      detail = data?.error || data?.message || detail;
-    } catch {
-      // Antwort war kein JSON - bei der HTTP-Statuscode-Meldung bleiben.
-    }
-    throw new Error(`Facilitator-Fehler (${path}): ${detail}`);
-  }
-  return (await response.json()) as T;
-}
+export const CONSULT_PATH = "/api/x402/consult";
 
 /**
- * Parst den `X-PAYMENT`-Header (base64-kodiertes JSON-Payment-Payload, siehe
- * x402-Spezifikation) - wirft bei ungültigem/fehlendem Header, der Aufrufer
- * (app/api/x402/consult/route.ts) fängt das ab und antwortet mit 402.
+ * Route-Konfiguration für paymentMiddleware() - genau EIN geschützter
+ * Pfad (der englische Expat-Consult, siehe lib/expatConsult.ts). `payTo`
+ * und `price` liegen bewusst INNERHALB von `accepts`, nicht als separate
+ * Parameter (v2-API-Form, siehe Skill-Doku - die ältere v1-Form
+ * `paymentMiddleware(payTo, routes, facilitator)` ist dort explizit als
+ * Fehler aufgeführt).
  */
-export function parsePaymentHeader(header: string | null): unknown {
-  if (!header) throw new Error("X-PAYMENT-Header fehlt.");
-  try {
-    return JSON.parse(Buffer.from(header, "base64").toString("utf-8"));
-  } catch {
-    throw new Error("X-PAYMENT-Header ist kein gültiges base64-kodiertes JSON.");
-  }
-}
-
-export async function verifyPayment(
-  paymentPayload: unknown,
-  requirement: PaymentRequirement
-): Promise<FacilitatorVerifyResult> {
-  return callFacilitator<FacilitatorVerifyResult>("/verify", paymentPayload, requirement);
-}
-
-export async function settlePayment(
-  paymentPayload: unknown,
-  requirement: PaymentRequirement
-): Promise<FacilitatorSettleResult> {
-  return callFacilitator<FacilitatorSettleResult>("/settle", paymentPayload, requirement);
+export function buildRoutes(): RoutesConfig {
+  return {
+    [`POST ${CONSULT_PATH}`]: {
+      accepts: [
+        {
+          scheme: "exact",
+          network: getNetwork(),
+          payTo: getPayTo(),
+          price: {
+            amount: getPriceAmount(),
+            asset: ASSETS.USAT.address,
+            extra: { name: ASSETS.USAT.name, version: ASSETS.USAT.version },
+          },
+        },
+      ],
+      description:
+        "BASTET expat consult: English-language orientation on Post-COVID/ME-CFS in German social law (GdB/MdE/EMR), grounded in a curated German legal/medical knowledge base.",
+    },
+  };
 }
