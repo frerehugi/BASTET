@@ -147,6 +147,17 @@ export function buildRoutes(): RoutesConfig {
  * Menschen weiterreichen lassen. Ergänzt (nicht ersetzt) die rein
  * protokollseitigen PaymentRequirements aus dem 402-Response.
  * Preis/Nutzungsmodell siehe build/x402-kosten-nutzen-2026.md Abschnitt 3.
+ *
+ * `howToAskAGoodQuestion` ist bewusst aus dem echten Tier-1-Fragenkatalog
+ * (lib/triage/questions.ts) destilliert, nicht neu erfunden - derselbe
+ * Kategorien-Satz (PEM, Dauer, Schmerz, Kognition, Autonomie, Schlaf,
+ * Komorbiditäten, Medikation, Funktionskapazität, Alltag, Arbeitsfähigkeit,
+ * objektive Tests, beruflicher Kontext), den auch computeTriage()
+ * (lib/triage/scoring.ts) tatsächlich auswertet - nur als englischer
+ * Freitext-Leitfaden statt als strukturiertes Frage-für-Frage-Formular,
+ * weil der x402-Endpunkt (anders als der Web-Chat-Arm) nur ein einzelnes
+ * `question`-Freitextfeld entgegennimmt und es - anders als dort - KEINE
+ * Folgefrage gibt (siehe lib/expatConsult.ts: Single-Shot ohne Turn).
  */
 export function buildInfoPacket() {
   return {
@@ -163,6 +174,29 @@ export function buildInfoPacket() {
     },
     whatYouGet:
       "One complete, written, English-language answer to one question — structured by GdB/MdE/EMR where relevant, with numbered references back to the specific source for each claim. Not a generic AI guess: the answer is grounded in BASTET's curated knowledge base, not general training knowledge.",
+    howToAskAGoodQuestion: {
+      why: "This is a single-shot consult with no follow-up turn — the quality of your answer depends entirely on how much detail is in your one question. Include as much of the following as applies to you; plain, everyday descriptions are fine, you don't need medical terminology. If you genuinely don't know something, say so rather than guessing.",
+      coreCriteria: [
+        "Post-exertional malaise (PEM): do you get a delayed worsening after physical, mental, or emotional exertion? If yes — what triggers it, how little exertion is enough to cause it, how soon it hits (immediately / after hours / 1–3 days later), and how long you typically need to recover (hours / days / over a week / over a month).",
+        "Duration: have your symptoms been continuously present for more than 6 months?",
+      ],
+      symptoms: [
+        "Pain: type (muscle, joint, new headaches, sore throat, tender lymph nodes), how widespread (localized / several body regions / nearly all over), and how much it limits you day to day.",
+        "Cognitive/neurological symptoms: concentration problems, short-term memory issues, word-finding difficulty, slowed thinking, sensitivity to light or noise, coordination problems or noticeable muscle weakness.",
+        "Autonomic symptoms: dizziness or racing heart on standing (and whether a heart-rate test like a Schellong or tilt-table test was ever done, and the result), temperature regulation problems, IBS-like gut symptoms, new infections or intolerances.",
+        "Sleep: unrefreshing sleep despite enough time in bed, trouble falling or staying asleep, a disrupted day-night rhythm.",
+        "Other: numbness/tingling/burning sensations (and whether combined with muscle weakness), breathing difficulty on exertion.",
+      ],
+      context: [
+        "Comorbidities: a diagnosed diabetes (and how it's treated), or a separately, formally diagnosed psychiatric condition — distinct from understandable emotional distress reacting to the physical illness itself.",
+        "Medication: what you currently take regularly for these symptoms, and whether it actually helps.",
+        "Functional capacity: a Bell Score (0–100 scale) if you know it, or a FUNCAP27/FUNCAP55 score.",
+        "Daily living: can you manage independently, do you need help with specific tasks, or are you largely housebound/bedbound?",
+        "Work capacity: roughly how many hours a day of ANY light work on the general labor market feels realistic right now, independent of your previous job — this feeds the disability-pension (EMR) assessment specifically, not the GdB.",
+        "Objective tests already done, if any: 6-minute walk test, grip-strength measurement, neuropsychological testing — and the result.",
+        "Occupational context (for the MdE assessment only): has your condition been recognized, reported, or is it suspected as work-related by the German statutory accident insurance (Berufsgenossenschaft) — e.g. infection during healthcare, lab, or care work (BK-Nr. 3101)?",
+      ],
+    },
     usageModel:
       "Single-use, not a subscription or time-limited access: one payment of 4.99 USAT = one question = one answer. There is no ongoing session or conversation tied to a payment — a follow-up question needs a new request and a new payment. This is the same every time; the price does not buy multiple questions or a time window.",
     whatItCanNotDo: [
