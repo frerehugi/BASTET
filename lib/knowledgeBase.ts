@@ -42,6 +42,7 @@ const FILES = [
   "mde-expertengruppe-gliedmassenverlust-2019.md",
   "mde-kommission-muskuloskelettal-2025.md",
   "schmerz-neuro-kardio-erweiterung.md",
+  "geschlechtsspezifische-schmerzmechanismen-2026.md",
   "schlaf-schwindel-kognitiv-faelle.md",
   "gutachten-stilvorlage-neuropsychiatrisch.md",
   "unfallversicherung-mde.md",
