@@ -326,14 +326,137 @@ $0,736 drücken — die Marge wäre dann noch komfortabler, nie knapper. Der
 Preis wurde also bewusst gegen die konservativere (höhere) Kostenschätzung
 gesetzt, nicht gegen die günstigste Annahme.
 
+### 3.1.1 Reale Messung (03.10.2026, Vercel-Logs) — korrigiert die Schätzung nach oben
+
+Vier echte BOTKOV-Testaufrufe kurz hintereinander zeigten in den Vercel-Logs
+(`[anthropic:usage] callClaude ...`) durchgehend **`cache_write=0`,
+`cache_read=365.735`** (identisch bei allen vier Aufrufen — erwartet, da der
+gecachte Inhalt sich zwischen Aufrufen nicht ändert) sowie Output-Längen von
+3.207–9.984 Tokens (deutlich über dem angenommenen Arbeitswert von ~1.500).
+
+**Die reale Zahl liegt fast beim Doppelten der 179.000-Token-Schätzung** —
+die zeichenbasierte 4-Zeichen/Token-Heuristik hat die Wissensbasis
+unterschätzt, nicht überschätzt wie in der Unsicherheits-Einordnung oben
+noch für möglich gehalten. Neu gerechnet:
+
+| | Geschätzt (Abschnitt 1.3) | **Real gemessen** |
+|---|---:|---:|
+| Gecachter Anteil (KB + Rules) | 179.000–180.150 Tok | **365.735 Tok** |
+| Warm-Kosten (Cache-Read, $0,20/MTok) | ~$0,0358 | **~$0,073** |
+| Cold-Kosten (Cache-Write, $4/MTok) | ~$0,716 | **~$1,463** |
+| Output (angenommen vs. real beobachtet 3.207–9.984 Tok) | ~1.500 Tok, ~$0,015 | **$0,032–$0,0998** |
+| **Gesamt warm** | $0,051–0,055 | **~$0,11–0,17** |
+| **Gesamt cold** | ~$0,736 | **~$1,50–1,56** |
+
+**Konsequenz für den 4,99-USAT-Preis**: Bei den realen Cold-Kosten (~$1,53)
+ergibt 4,99 USAT nur noch **~3,3x Marge statt der geforderten 4x** (~69 %
+statt ~575 % Marge) — der Preis unterschreitet die eigene 4x-Vorgabe im
+Worst Case knapp. Diese Erkenntnis war der unmittelbare Auslöser für das in
+Abschnitt 4 beschriebene zweistufige Preismodell (Entscheidung des Nutzers:
+Rabattstufe statt pauschaler Preiserhöhung, aus Marketing-Gründen).
+
+Gute Nachricht unabhängig davon: `cache_write=0` bei allen vier Aufrufen
+bestätigt, dass der geteilte Cache aus PR #84 in der Praxis tatsächlich
+funktioniert — die Frage ist nur, wie oft der Cold-Fall real eintritt
+(weiterhin ungemessen, siehe "Offene Punkte").
+
+---
+
+## 4. Zweistufiges Preismodell: Neu- vs. Wiederkehrend-Wallet (03.10.2026)
+
+**Nutzervorgabe**: Statt eines pauschal höheren Preises (der auch gute,
+günstig zu bedienende Nachfragen unnötig verteuert) soll der Cache-Vorteil
+an den Nutzer weitergegeben werden — einfach verständlich, fair für eine
+kleine, heterogene Zielgruppe: **4,99 USAT** für eine neue Wallet,
+**0,99 USAT** für eine Folgefrage derselben Wallet innerhalb von
+**55 Minuten** seit ihrer letzten Zahlung, wobei jede Zahlung das
+55-Minuten-Fenster erneut verlängert.
+
+### 4.1 Warum 55 statt 60 Minuten, und warum pro Wallet statt global
+
+Die Anthropic-Prompt-Cache-TTL ist ein **Sliding Window**: jeder Cache-Read
+verlängert sie erneut (bestätigt über den Anthropic-API-Skill,
+`shared/prompt-caching.md`: "Traffic is continuous (requests <= TTL apart)
+→ every subsequent request hits [the cache]"). Der Cache kühlt nur ab, wenn
+eine Lücke **über 1 Stunde** entsteht.
+
+Ursprünglich als global geteilter Systemzustand durchdacht (ein einziger
+"zuletzt warm"-Zeitstempel für alle Arme) — das wurde verworfen, weil es
+eine neue Wallet bevorzugen könnte (falls zufällig gerade ein anderer Arm
+aktiv war) und eine wiederkehrende Wallet benachteiligen könnte (falls seit
+Stunden niemand sonst aktiv war). Das **pro-Wallet-Modell** ist dagegen
+selbsttragend korrekt: Zahlt Wallet X zum Zeitpunkt T, hat X damit
+garantiert selbst den geteilten KB-Cache aufgefrischt; zahlt X erneut vor
+T+55min, ist dieser Cache nachweislich noch warm (55 < 60 Minuten TTL) -
+unabhängig vom Verhalten aller anderen Nutzer:innen. 55 statt 60 Minuten
+ist die Sicherheitsmarge gegen Latenz/Uhrenabweichung.
+
+### 4.2 Protokoll-Hürde: der Server kennt die zahlende Wallet beim 402 noch nicht
+
+`HTTPRequestContext` (die SDK-Struktur, die eine `DynamicPrice`-Funktion
+bekommt, siehe 4.3) hat **keine generischen Header** - nur `path`, `method`,
+`paymentHeader`. Beim allerersten, unbezahlten Request ist noch keine
+Zahlung eingereicht, der Server kennt die anfragende Wallet also nicht.
+
+**Lösung**: Der Client hängt seine eigene Wallet-Adresse als
+`?wallet=0x...`-Query-Parameter an. Das ist **kein Vertrauensbeweis**,
+sondern reiner Identifikator - der Server entscheidet den Preis
+ausschließlich aus seinem eigenen Redis-Stand
+(`lib/x402Pricing.ts`), der nur nach einer bereits von der Middleware
+**verifizierten** Settlement geschrieben wird (`resourceServer.onAfterSettle()`
+in `lib/x402.ts`, liest `context.result.payer` - die echte, kryptographisch
+bestätigte Zahleradresse, nicht die Behauptung aus der URL). Eine Wallet
+kann sich also nicht in die günstige Stufe hineinlügen: wer fälschlich
+`?wallet=<fremde Adresse>` angibt, müsste trotzdem mit der echten Signatur
+dieser fremden Wallet bezahlen können, um die Zahlung abzuschließen - ohne
+deren privaten Schlüssel scheitert das einfach an der normalen
+Signaturprüfung, kein Sonderfall nötig.
+
+### 4.3 Umsetzung
+
+- **`lib/x402Pricing.ts`** (neu): `isReturningWallet(address)` /
+  `touchReturningWallet(address)` - Upstash Redis, Key `bastet:x402:wallet:
+  {adresse}`, TTL 55 Min. (automatisches Ablaufen übernimmt die
+  Fenster-Logik, kein manueller Zeitstempel-Vergleich nötig). Fail-safe:
+  ein Redis-Ausfall liefert `false` (-> voller Preis), nie `true`.
+- **`lib/x402.ts`**: `price` in `buildRoutes()` ist jetzt eine
+  `DynamicPrice`-Funktion (offizieller SDK-Typ aus `@x402/core/http`,
+  `(context) => Price | Promise<Price>`) statt eines festen Werts - die
+  Middleware ruft sie pro Anfrage neu auf, einmal beim 402-Response-Bau und
+  erneut bei der Zahlungsverifikation. `extractWalletHint()` liest den
+  `?wallet=`-Parameter sicher (ungültige/fehlende Adresse -> `null` ->
+  voller Preis). `resourceServer.onAfterSettle()` schreibt das Fenster nach
+  echtem Settlement.
+- **`lib/x402.ts`, `buildInfoPacket()`**: `price` zeigt jetzt beide Stufen
+  (`newWallet`, `returningWallet`, `returningWindowMinutes`) plus eine
+  Anleitung (`howToGetTheReturningPrice`), wie der Rabatt zu bekommen ist.
+- **Test-Referenzskript** (`x402-payment-test.mjs`, an den Nutzer verteilt):
+  hängt `?wallet=<eigene Adresse>` automatisch an, damit wiederholte
+  Testläufe die Rabattstufe mittesten (`NO_WALLET_HINT=1` zum gezielten
+  Testen des vollen Preises).
+- Lokal verifiziert (Dev-Server, ohne Upstash-Zugang in dieser Sandbox):
+  Infopaket zeigt beide Preisstufen korrekt; Request ohne `?wallet=` →
+  voller Preis; Request mit `?wallet=` aber nicht erreichbarem Redis →
+  sicherer Fallback auf vollen Preis, kein Absturz. Das eigentliche
+  Rabatt-Szenario (zwei Zahlungen derselben Wallet < 55 Min. auseinander)
+  ist erst gegen die echte Produktions-Redis-Instanz vollständig testbar.
+- **Temporär weiterhin abgesenkte Testpreise** für die laufende
+  BOTKOV-Testphase (`X402_PRICE_NEW_BASE_UNITS`/`_RETURNING_BASE_UNITS`
+  überschreibbar, Default-Werte in `lib/x402.ts` als TEMP markiert) - vor
+  Produktivbetrieb auf 4,99/0,99 USAT zurücksetzen.
+
 ---
 
 ## Offene Punkte
 
 - Exakte Token-Zahl der Wissensbasis per `count_tokens` verifizieren (hier
-  nur zeichenbasiert geschätzt, 179.000 als konservativer Arbeitswert).
-- `usage.cache_read_input_tokens`/`cache_creation_input_tokens` tatsächlich
-  loggen, um die Warm/Cold-Verteilung real zu messen statt anzunehmen.
+  nur zeichenbasiert geschätzt, mittlerweile durch die reale Messung in
+  3.1.1 — 365.735 Tokens gecacht — weitgehend überholt; `count_tokens`
+  würde nur noch den exakten KB-Anteil separat von den Rules-Block-Tokens
+  trennen).
+- **Zweistufiges Preismodell gegen die echte Produktions-Redis-Instanz
+  verifizieren**: zwei Zahlungen derselben Wallet <55 Min. auseinander
+  sollten `0,99`/Testpreis zeigen, nicht den vollen Preis.
 - Celo-Builders-Registrierung + `attributionTag`-Einbau (Abschnitt 1.5) —
   höchste Priorität vor dem Submission-Fenster (06.10.).
 - Bazaar-Registrierung (Abschnitt 2.1) — abhängig von Rückmeldung, ob
