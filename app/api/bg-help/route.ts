@@ -30,15 +30,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "messages fehlt oder ist ungültig." }, { status: 400 });
   }
 
+  // Weiche Deadline deutlich VOR `maxDuration` (oben, 150s) - gleiches Muster
+  // wie app/api/chat/route.ts/app/api/doc/route.ts (siehe dortige Kommentare
+  // für die Begründung).
+  const deadline = new AbortController();
+  const deadlineTimer = setTimeout(() => deadline.abort(), 135_000);
+
   const generator = runBgHelpStream(
     body.messages,
-    typeof body.evaluationContext === "string" ? body.evaluationContext : null
+    typeof body.evaluationContext === "string" ? body.evaluationContext : null,
+    deadline.signal
   );
 
   let first: IteratorResult<string, void>;
   try {
     first = await generator.next();
   } catch (error) {
+    clearTimeout(deadlineTimer);
     const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
     return NextResponse.json({ error: message }, { status: 502 });
   }
@@ -57,6 +65,7 @@ export async function POST(request: Request) {
         const message = error instanceof Error ? error.message : "Unbekannter Fehler.";
         controller.enqueue(encoder.encode(STREAM_ERROR_MARKER + message));
       } finally {
+        clearTimeout(deadlineTimer);
         controller.close();
       }
     },

@@ -470,7 +470,11 @@ export async function* runInterviewStream(
   triageContext: string | null = null,
   triageAnchor: string | null = null,
   beruflicherKontextNein: boolean = false,
-  extraTurnCount: number | null = null
+  extraTurnCount: number | null = null,
+  // Soft-Deadline-Signal (siehe app/api/chat/route.ts und lib/anthropic.ts,
+  // streamClaude) - gleiche Begründung/gleiches Muster wie bei
+  // runDocAssessmentStream() in lib/doc.ts.
+  signal?: AbortSignal
 ): AsyncGenerator<string, void, unknown> {
   const system = await buildSystemBlocks(
     diagnosisConfirmed,
@@ -480,7 +484,7 @@ export async function* runInterviewStream(
     beruflicherKontextNein,
     extraTurnCount
   );
-  yield* streamClaude(system, messages, 16000, !!triageContext, true);
+  yield* streamClaude(system, messages, 16000, !!triageContext, true, signal);
 }
 
 // ---------------------------------------------------------------------------
@@ -598,7 +602,9 @@ async function buildBgHelpSystemBlocks(evaluationContext: string | null): Promis
  */
 export async function* runBgHelpStream(
   messages: ChatMessage[],
-  evaluationContext: string | null
+  evaluationContext: string | null,
+  // Soft-Deadline-Signal, siehe runInterviewStream() oben.
+  signal?: AbortSignal
 ): AsyncGenerator<string, void, unknown> {
   const system = await buildBgHelpSystemBlocks(evaluationContext);
   // enableWebSearch bewusst false (Kosteneffizienz-Review, 26.09.2026): war
@@ -612,5 +618,5 @@ export async function* runBgHelpStream(
   // Suchtreffer. Jede tatsächlich ausgelöste Suche wäre reine Zusatzkosten
   // ohne dafür vorgesehenen Nutzen, bei einem Feature, das laut eigenem
   // Prompt "knapp und konkret" bleiben soll.
-  yield* streamClaude(system, messages, 16000, false, true);
+  yield* streamClaude(system, messages, 16000, false, true, signal);
 }
