@@ -17,11 +17,18 @@ const MD_FILENAME_PATTERN = /[a-z0-9][a-z0-9-]*\.md\b/gi;
 export function stripKnowledgeFilenames(text: string): string {
   return text
     .replace(/\s*\[[^[\]]*\.md[^[\]]*\]/gi, "") // "[Referenz X.md, dort dokumentierter Fall]" - ganze eckige Klammer, z.B. ein Inline-Verweis mitten im Fließtext
-    .replace(/\s*\([^()]*\.md\)/gi, "") // "(siehe X.md)", "(vgl. X.md)" - ganze Klammer
+    .replace(/\s*\([^()]*\.md\)/gi, "") // "(siehe X.md)", "(vgl. X.md)", "(see X.md)" - ganze Klammer, sprachunabhängig
     // Verbindungswort/Gedankenstrich + Dateiname + optionales Komma, z.B.
-    // " – X.md", " i.V.m. X.md,", " vgl. X.md" - als ganzer Ausdruck entfernen,
-    // statt nur den Dateinamen und ein grammatisch verwaistes Anhängsel übrigzulassen.
-    .replace(/\s*(?:[-–—]\s*|i\.\s?V\.\s?m\.\s*|vgl\.\s*|siehe\s*|s\.\s*)?[a-z0-9][a-z0-9-]*\.md\b,?/gi, "")
+    // " – X.md", " i.V.m. X.md,", " vgl. X.md", " see X.md,", " according to
+    // X.md" - als ganzer Ausdruck entfernen, statt nur den Dateinamen und ein
+    // grammatisch verwaistes Anhängsel übrigzulassen. Englische Varianten
+    // (03.10.2026) wegen des zweisprachigen Telegram-Arms (lib/chat.ts,
+    // buildRulesBlockEn) - die Bracket-/Klammer-Pässe oben waren ohnehin
+    // schon sprachunabhängig, nur dieser Inline-ohne-Klammer-Fall nicht.
+    .replace(
+      /\s*(?:[-–—]\s*|i\.\s?V\.\s?m\.\s*|vgl\.\s*|siehe\s*|s\.\s*|see\s*|cf\.\s*|according to\s*|per\s*)?[a-z0-9][a-z0-9-]*\.md\b,?/gi,
+      ""
+    )
     .replace(MD_FILENAME_PATTERN, "") // letzter Auffangpass für alles übrig Gebliebene
     .replace(/[ \t]{2,}/g, " ")
     .replace(/\s+([.,;:])/g, "$1")
@@ -45,13 +52,42 @@ export function stripKnowledgeFilenames(text: string): string {
 // Exportiert, damit app/api/chat/route.ts und app/api/doc/route.ts (siehe
 // lib/userCount.ts) serverseitig erkennen können, ob eine gestreamte Antwort
 // eine vollständige Auswertung mit REFERENZEN-Block enthielt, ohne den
-// Marker-String ein zweites Mal zu duplizieren.
+// Marker-String ein zweites Mal zu duplizieren. Beide Arme sind Deutsch-only,
+// daher reicht ihnen dieser eine Marker.
 export const REFERENZEN_MARKER = "REFERENZEN:";
 
+// Englisches Pendant (03.10.2026, zweisprachiger Telegram-Arm - siehe
+// lib/chat.ts buildRulesBlockEn(), AUSWERTUNGS-FORMAT dort endet mit
+// "REFERENCES:" statt "REFERENZEN:"). NICHT in REFERENZEN_MARKER-Nutzern
+// außerhalb von Telegram einsetzen - Web-/Doc-Arm bleiben Deutsch-only und
+// kennen nur den deutschen Marker.
+export const REFERENCES_MARKER_EN = "REFERENCES:";
+
+function findReferencesMarker(content: string): { marker: string; idx: number } | null {
+  const deIdx = content.indexOf(REFERENZEN_MARKER);
+  const enIdx = content.indexOf(REFERENCES_MARKER_EN);
+  if (deIdx === -1 && enIdx === -1) return null;
+  if (deIdx === -1) return { marker: REFERENCES_MARKER_EN, idx: enIdx };
+  if (enIdx === -1) return { marker: REFERENZEN_MARKER, idx: deIdx };
+  return deIdx <= enIdx ? { marker: REFERENZEN_MARKER, idx: deIdx } : { marker: REFERENCES_MARKER_EN, idx: enIdx };
+}
+
+/**
+ * true, wenn content entweder den deutschen ("REFERENZEN:") oder den
+ * englischen ("REFERENCES:") Marker enthält - für den zweisprachigen
+ * Telegram-Arm (app/api/telegram/route.ts), der beide Sprachen gegen
+ * denselben "vollständige Auswertung erkannt"-Check prüfen muss. Web-/
+ * Doc-Arm bleiben beim einfachen `.includes(REFERENZEN_MARKER)`, da sie
+ * Deutsch-only sind.
+ */
+export function hasReferencesBlock(content: string): boolean {
+  return findReferencesMarker(content) !== null;
+}
+
 export function splitReferences(content: string): ParsedAssessment {
-  const marker = REFERENZEN_MARKER;
-  const idx = content.indexOf(marker);
-  if (idx === -1) return { body: stripKnowledgeFilenames(content), refs: null };
+  const found = findReferencesMarker(content);
+  if (!found) return { body: stripKnowledgeFilenames(content), refs: null };
+  const { marker, idx } = found;
   const body = stripKnowledgeFilenames(content.slice(0, idx).trim());
   const refsBlock = content.slice(idx + marker.length).trim();
   const refs = refsBlock

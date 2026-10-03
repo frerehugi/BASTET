@@ -1,5 +1,6 @@
 import { Redis } from "@upstash/redis";
 import type { ChatMessage } from "./anthropic";
+import type { Lang } from "./lang";
 
 // Redis.fromEnv() erwartet UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN,
 // aber die Vercel-Marketplace-Integration mit Custom-Prefix "UPSTASH_REDIS"
@@ -42,6 +43,11 @@ export interface TelegramSession {
   messages: ChatMessage[];
   diagnosisConfirmed: boolean | null;
   turnCount: number;
+  // Interview-Sprache (03.10.2026, siehe app/api/telegram/route.ts,
+  // /language-Befehl). Default "de" - siehe getSession() für den
+  // Kompatibilitäts-Fallback bei Sitzungen, die vor diesem Feld in Redis
+  // angelegt wurden.
+  lang: Lang;
 }
 
 function sessionKey(chatId: number): string {
@@ -74,12 +80,17 @@ export async function withinRateLimit(chatId: number): Promise<boolean> {
 }
 
 function emptySession(): TelegramSession {
-  return { messages: [], diagnosisConfirmed: null, turnCount: 0 };
+  return { messages: [], diagnosisConfirmed: null, turnCount: 0, lang: "de" };
 }
 
 export async function getSession(chatId: number): Promise<TelegramSession> {
   const existing = await getRedis().get<TelegramSession>(sessionKey(chatId));
-  return existing ?? emptySession();
+  if (!existing) return emptySession();
+  // Fallback für Sitzungen, die vor dem lang-Feld (03.10.2026) in Redis
+  // angelegt wurden - dort fehlt der Key schlicht, Laufzeitwert ist
+  // `undefined`, auch wenn TelegramSession ihn als Pflichtfeld deklariert
+  // (Redis erzwingt das TS-Interface nicht).
+  return { ...existing, lang: existing.lang ?? "de" };
 }
 
 export async function saveSession(chatId: number, session: TelegramSession): Promise<void> {
