@@ -102,16 +102,22 @@ invent a missing detail (publisher, year, page, edition).`;
 }
 
 async function buildSystemBlocks(knowledgeAddendum: string): Promise<SystemTextBlock[]> {
-  // Volle Wissensbasis (full=true) - derselbe Cache-Breakpoint/dieselbe
-  // Byte-Identität wie lib/chat.ts/lib/doc.ts, teilt sich die Cache-Zeile
-  // statt eine eigene, teure Kopie zu schreiben (siehe knowledgeBase.ts-
-  // Header-Kommentar).
+  // Volle Wissensbasis (full=true) - MUSS byte-identisch mit dem Block in
+  // lib/chat.ts/lib/doc.ts sein (exakt derselbe Label-Text, nicht nur
+  // derselbe staticKnowledgeBase-Inhalt), sonst ist es laut Prompt-Caching-
+  // Doku (Präfix-Match) eine eigene, isolierte Cache-Zeile statt der hier
+  // beabsichtigten gemeinsamen - genau das war hier der Fall (eigener
+  // englischer Label-Text "KNOWLEDGE BASE (full, ...)" statt "WISSENSBASIS
+  // (vollständig, ...)"), per build/x402-kosten-nutzen-2026.md gefunden und
+  // behoben. Das Label selbst darf Deutsch bleiben - es ist nur eine
+  // Blocküberschrift fürs Modell, keine Sprachvorgabe (die kommt aus
+  // buildRulesBlock() unten).
   const staticKnowledgeBase = getStaticKnowledgeBase(true);
 
   return [
     {
       type: "text",
-      text: `KNOWLEDGE BASE (full, German-language primary sources — read them, answer in English):\n${staticKnowledgeBase}`,
+      text: `WISSENSBASIS (vollständig, aus dem de-begutachtung-Skill):\n${staticKnowledgeBase}`,
       cache_control: { type: "ephemeral", ttl: "1h" },
     },
     {
