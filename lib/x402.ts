@@ -2,23 +2,30 @@
  * x402-Facilitator-Client für den Celo-gehosteten Facilitator
  * (https://x402.celo.org) — schützt app/api/x402/consult/route.ts.
  *
- * WICHTIGER VORBEHALT, VOR PRODUKTIVEM MAINNET-EINSATZ ZU PRÜFEN: Dieses
- * Modul implementiert direkt gegen die öffentlich dokumentierte x402-
- * Protokollebene (HTTP-402-Response mit `accepts`-Array, `X-PAYMENT`-Header,
- * Facilitator-Endpunkte `/verify` und `/settle` — die geteilte REST-Schicht,
- * die x402 über Ketten/Implementierungen hinweg einheitlich macht), NICHT
- * gegen ein bestätigtes Celo-eigenes SDK-Paket. Bei der Recherche in dieser
- * Session gab es widersprüchliche Angaben zum tatsächlichen npm-Paket
- * (teils `@x402/*`, teils `thirdweb/x402`) und `x402.celo.org`/`docs.celo.org`
- * selbst waren über das Sandbox-Netzwerk nicht erreichbar (EGRESS_BLOCKED).
- * Vor dem ersten echten Mainnet-Aufruf: `https://x402.celo.org/SKILL.md`
- * live abrufen und mindestens die Facilitator-Pfade (`/verify`, `/settle`)
- * sowie das genaue `accepts`-Objektschema gegenprüfen. Deshalb standardmäßig
- * auf Celo Sepolia (Testnet) konfiguriert — `X402_NETWORK=celo` erst nach
- * dieser Prüfung setzen.
+ * WICHTIGER VORBEHALT, VOR DEM ERSTEN ECHTEN AUFRUF ZU PRÜFEN: Dieses Modul
+ * implementiert direkt gegen die öffentlich dokumentierte x402-Protokollebene
+ * (HTTP-402-Response mit `accepts`-Array, `X-PAYMENT`-Header, Facilitator-
+ * Endpunkte `/verify` und `/settle` — die geteilte REST-Schicht, die x402
+ * über Ketten/Implementierungen hinweg einheitlich macht), NICHT gegen ein
+ * bestätigtes Celo-eigenes SDK-Paket. Bei der Recherche in dieser Session
+ * gab es widersprüchliche Angaben zum tatsächlichen npm-Paket (teils
+ * `@x402/*`, teils `thirdweb/x402`) und `x402.celo.org`/`docs.celo.org`
+ * selbst waren über das Sandbox-Netzwerk nicht erreichbar (EGRESS_BLOCKED,
+ * bestätigt über den Proxy-Status).
+ *
+ * Netzwerk ist bewusst auf Celo MAINNET konfiguriert (nicht Testnet) - der
+ * Hackathon ("Agents on Open Rails", Track 2b) verlangt reale USAT-Zahlungen
+ * für die Leaderboard-Zählung, ein Testnet-Zahlungskanal würde dort nicht
+ * zählen. Das heißt aber: ein unentdeckter Fehler im Facilitator-Vertrag
+ * hier betrifft echtes Geld, nicht Testtokens — vor dem ersten produktiven
+ * Aufruf (nicht erst vor einem späteren "Umstieg auf Mainnet") zwingend
+ * `https://x402.celo.org/SKILL.md` mit echtem Netzwerkzugriff live abrufen
+ * und mindestens die Facilitator-Pfade (`/verify`, `/settle`), das genaue
+ * `accepts`-Objektschema und die USAT-Contract-Adresse (`X402_ASSET_ADDRESS`)
+ * gegenprüfen, bevor echte Zahlungen fließen.
  */
 
-const DEFAULT_NETWORK = "celo-sepolia";
+const DEFAULT_NETWORK = "celo";
 
 function getNetwork(): string {
   return process.env.X402_NETWORK || DEFAULT_NETWORK;
