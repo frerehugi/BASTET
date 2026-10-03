@@ -2,7 +2,7 @@
 
 KI-gestütztes Orientierungswerkzeug für Post-COVID-/ME-CFS-Betroffene im deutschen Sozialrecht. Zwei Arme (Betroffene und Ärzt:innen), eine gemeinsame Wissensbasis. © Schmitz & Hugenberg, Osnabrück — siehe [`NOTICE.md`](./NOTICE.md) für den vollständigen rechtlichen Rahmen (Haftungsausschluss, Urheberrecht, Open-Source-Einordnung).
 
-**Live:** [bastet-covid.org](https://bastet-covid.org) (Betroffenen-Arm) · [doc.bastet-covid.org](https://doc.bastet-covid.org) bzw. `/doc` (Ärzte-Arm) · Telegram-Bot [@Bastetcovidbot](https://t.me/Bastetcovidbot) (Betroffenen-Arm)
+**Live:** [bastet-covid.org](https://bastet-covid.org) (Betroffenen-Arm) · [doc.bastet-covid.org](https://doc.bastet-covid.org) bzw. `/doc` (Ärzte-Arm) · Telegram-Bot [@Bastetcovidbot](https://t.me/Bastetcovidbot) (Betroffenen-Arm) · `POST doc.bastet-covid.org/api/x402/consult` (x402-bezahlter Expat-Consult, Celo Mainnet, live-verifiziert — siehe Abschnitt unten)
 
 ## Die App
 
@@ -19,10 +19,13 @@ app/
     ├── chat/route.ts      # POST — Betroffenen-Arm-Logik (Web)
     ├── doc/route.ts       # POST — Ärzte-Arm-Logik
     ├── telegram/route.ts  # POST — Telegram-Webhook, ruft dieselbe runInterview()-Logik wie chat/route.ts auf
-    └── cron/check-updates/route.ts  # GET, per CRON_SECRET geschützt — wöchentlicher Quellen-Check (Phase 4)
+    ├── cron/check-updates/route.ts  # GET, per CRON_SECRET geschützt — wöchentlicher Quellen-Check (Phase 4)
+    └── x402/[[...route]]/route.ts   # POST — x402-bezahlter Expat-Consult (Celo Mainnet), siehe eigener Abschnitt unten
 lib/
 ├── anthropic.ts           # Claude-API-Client (serverseitig)
 ├── chat.ts / doc.ts       # System-Prompts + Interviewlogik je Arm
+├── x402.ts                # Facilitator-/Route-Konfiguration für den x402-Endpoint (offizielles @x402/*-SDK)
+├── expatConsult.ts        # Englischer Single-Shot-Consult für den x402-Endpoint (eigene Wissensbasis-Nutzung, kein Multi-Turn)
 ├── content.ts              # Titel/Untertitel/Über-BASTET/Krisenhinweis — von Web und Telegram geteilt
 ├── format.ts               # REFERENZEN-Block-Parsing, STATS-Trailer-Stripping — von Web und Telegram geteilt
 ├── telegram.ts             # Telegram sendMessage-Helper (chunkt Nachrichten >3800 Zeichen)
@@ -80,9 +83,21 @@ Ein wöchentlicher Vercel Cron (`vercel.json`, Montag 06:00 UTC) prüft fünf Qu
 
 **Bekannte Einschränkung**: Die Quellen-URLs für DGUV und AWMF wurden nur auf Erreichbarkeit (HTTP 200) geprüft, nicht auf die exakt richtige Unterseite — ihre RSS-Verfügbarkeit bzw. Datumsfeld-Struktur ließ sich nicht automatisiert verifizieren (SPA-Rendering bzw. keine robots-freundliche Struktur). Ein Hash-Treffer erkennt zuverlässig *irgendeine* Änderung der Seite, auch rein kosmetische — das ist die in der Planung benannte Einschränkung dieses Fallback-Verfahrens. Nach dem ersten echten Fund prüfen, ob die URLs noch die richtigen sind.
 
-Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phase 4/6, sowie `build/phase7-mcp-zugang.md` und `build/phase8-selbstverbesserung.md`): x402-Premium-Endpoint, Celo-Builders-Submission, MCP-Zugang (Phase 7) und die erweiterte Selbstverbesserungs-Pipeline (Phase 8) — beide reines Konzept. Die ERC-8004-Registrierung (Phase 3) ist erledigt — zwei Agent-Identitäten auf Celo (Nr. 9817, 9818, siehe `lib/content.ts`). Die *bestehende* Update-Pipeline (5 fest beobachtete Quellen, Review-Queue, Telegram-Freigabe — siehe `lib/updateSources.ts`, `lib/reviewQueue.ts`) läuft bereits produktiv und wird von Phase 8 nur erweitert, nicht neu gebaut.
+Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phase 6, sowie `build/phase7-mcp-zugang.md` und `build/phase8-selbstverbesserung.md`): Celo-Builders-Submission, MCP-Zugang (Phase 7) und die erweiterte Selbstverbesserungs-Pipeline (Phase 8) — beide reines Konzept. Die ERC-8004-Registrierung (Phase 3) ist erledigt — zwei Agent-Identitäten auf Celo (Nr. 9817, 9818, siehe `lib/content.ts`). Der x402-Premium-Endpoint (Phase 4) ist umgesetzt und live-verifiziert, siehe nächster Abschnitt. Die *bestehende* Update-Pipeline (5 fest beobachtete Quellen, Review-Queue, Telegram-Freigabe — siehe `lib/updateSources.ts`, `lib/reviewQueue.ts`) läuft bereits produktiv und wird von Phase 8 nur erweitert, nicht neu gebaut.
 
-`lib/reference/` (neu, 21.09.2026) hält externe Implementierungen, die für ein späteres Feature geprüft, aber noch nicht verdrahtet sind — analog zu `src/reference/` im Schwesterprojekt OSIRIS. Aktuell ein Kandidat für den x402-Premium-Endpoint aus Phase 4 (`paymentRequestQr.ts`, EIP-681-QR-Zahlungsanforderung) — als spekulativ markiert, siehe `lib/reference/README.md` für die offene Frage, die vor einer Aktivierung erst zu klären ist.
+### x402-Zahlungsendpoint (Phase 4) — live auf Celo Mainnet
+
+`POST /api/x402/consult` — englischsprachiger Single-Shot-Consult für Expats in Deutschland zu Post-COVID/ME-CFS im deutschen Sozialrecht (GdB/MdE/EMR), pay-per-call per [x402](https://x402.org)-Protokoll. Baut auf dem offiziellen Celo-gehosteten Facilitator (`x402.celo.org`) und den offiziellen `@x402/*`-SDK-Paketen (`@x402/core`, `@x402/evm`, `@x402/hono`) — kein eigenes Hand-Bauen der Payment-Payload, siehe Kommentare in `lib/x402.ts`.
+
+- **Netzwerk:** Celo Mainnet (`eip155:42220`), bewusst nicht Testnet — zählt für das Celo-"Agents at Work"-Hackathon-Leaderboard (Track 2b), das nur reale On-Chain-Settlements wertet.
+- **Preis:** 0,1 USAT (Tether America USD) pro Aufruf, Asset `0xD2ab3C9A02DBBAB236BfEC45D1d755DF4267F771`.
+- **payTo:** die bestehende, unter ERC-8004 registrierte BASTET-Wallet `0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608`.
+- **Ablauf:** Request ohne `X-PAYMENT`-Header → `402` mit den Payment-Requirements; signierter EIP-3009-Payload (kein Gas für den Zahlenden nötig, der Facilitator sponsert) → `200` mit Antwort. Verify + Settle laufen in der Middleware **vor** dem eigentlichen Handler.
+- **Live-verifiziert am 03.10.2026:** echter End-to-End-Zahlungstest (separate Wallet, 0,1 USAT), Settlement bestätigt mit `success: true` und echtem Transaction Hash [`0x8295a0226c1f1d537757c968efaddf45e23e3c58eb02688c744ee12292ea5ae8`](https://celoscan.io/tx/0x8295a0226c1f1d537757c968efaddf45e23e3c58eb02688c744ee12292ea5ae8), gefolgt von einer vollständigen, referenzierten Antwort.
+- **Relevante Dateien:** `lib/x402.ts` (Facilitator-/Routen-Konfiguration), `lib/expatConsult.ts` (System-Prompt + Single-Shot-Call), `app/api/x402/[[...route]]/route.ts` (Hono-Catch-all, `app.fetch()` passt direkt auf die Next.js-Routen-Handler-Signatur).
+- **Zusätzliche Environment Variable:** `X402_API_KEY` (x402.celo.org-Dashboard). Optional überschreibbar: `X402_NETWORK=testnet` (Celo Sepolia statt Mainnet), `SELLER_PAY_TO`, `X402_PRICE_BASE_UNITS`.
+
+`lib/reference/` (neu, 21.09.2026) hält externe Implementierungen, die für ein späteres Feature geprüft, aber noch nicht verdrahtet sind — analog zu `src/reference/` im Schwesterprojekt OSIRIS. `paymentRequestQr.ts` (EIP-681-QR-Zahlungsanforderung) war ursprünglich als Kandidat für den x402-Endpoint vorgesehen, wurde aber nicht verwendet — der tatsächlich gebaute Endpoint (oben) nutzt stattdessen direkt die offizielle x402-Middleware ohne QR-Zwischenschritt. Bleibt als spekulative Referenz erhalten, siehe `lib/reference/README.md`.
 
 ## Ordnerübersicht
 
@@ -101,7 +116,7 @@ Noch nicht umgesetzt (siehe `build/claude-code-buildplan.md`, Phase 4/6, sowie `
 - **`vorbegutachtung-interview-design.md`** — Interaktionsdesign des Betroffenen-Interviews im Detail
 
 ### `build/`
-- **`claude-code-buildplan.md`** — der zentrale Umsetzungsplan, so an Claude Code übergebbar: Repo-Struktur, Phasen 1–6 (Worker-Fundament, Web-Frontends, ERC-8004, x402, Telegram, Celo-Builders-Submission), Markenbild-Integration (Favicon, PWA-Manifest)
+- **`claude-code-buildplan.md`** — der zentrale Umsetzungsplan, so an Claude Code übergebbar: Repo-Struktur, Phasen 1–6 (Worker-Fundament, Web-Frontends, ERC-8004, x402, Telegram, Celo-Builders-Submission), Markenbild-Integration (Favicon, PWA-Manifest). Phase 4 (x402) ist inzwischen umgesetzt und live-verifiziert, siehe Abschnitt "x402-Zahlungsendpoint" oben — der Plan selbst spiegelt noch die ursprüngliche, inzwischen überholte Architektur (hand-gebauter Facilitator-Client statt offiziellem SDK).
 - **`hackathon-listing-plan.md`** — Detailplan zur Celo-"Agents at Work"-Hackathon-Teilnahme
 - **`phase7-mcp-zugang.md`** — Konzeptdokument (keine Umsetzung) für einen MCP-Server, über den fremde KI-Agenten BASTET direkt aufrufen können; kommt nach Phase 3 (ERC-8004, erledigt) und vermutlich nach Phase 4 (x402)
 - **`phase8-selbstverbesserung.md`** — Konzeptdokument (keine Umsetzung) für eine erweiterte Selbstverbesserungs-Pipeline: Live-Lückenerkennung aus Nutzeranfragen (anonymisiert) und regelmäßige aktive Websuche nach harten wissenschaftlichen Kriterien, beide als neue Signalquellen für die bestehende Update-Review-Queue, plus ein zweites Speicher-Level (Graduierung vom Redis-Addendum in die git-versionierte Wissensbasis)
