@@ -27,6 +27,14 @@ Planungsstand nach ausführlicher Diskussion (Oktober 2026) — reine Architektu
   - Track 3 "Build with buy" (1.000 $) — Celos eigener x402-Marktplatz, auf dem Agenten autonom für Compute/Daten/Browserzugriff zahlen. Möglicher Zusatz-Track, falls BASTETs x402-Endpunkt dort als Ressource gelistet wird ("demand it creates for buy") — **noch nicht recherchiert, offener Punkt**.
 - Architektur: eigener, von Produkt 2 komplett unabhängiger HTTP-402-geschützter Endpunkt. Kein Telegram-, kein WhatsApp-Bezug.
 
+**Status: umgesetzt und live-verifiziert (03.10.2026).** `POST doc.bastet-covid.org/api/x402/consult`, offizielles `@x402/*`-SDK gegen den Celo-gehosteten Facilitator (siehe `lib/x402.ts`, `lib/expatConsult.ts`, `app/api/x402/[[...route]]/route.ts` — Details im Haupt-README unter "x402-Zahlungsendpoint"). Der End-to-End-Test lief exakt im Zielbild dieses Dokuments ab: ein **eigener zahlender Agent mit eigener Wallet**, nicht BASTET selbst:
+
+- **Zahlender Agent**: BOTKOV, ein separater, lokal laufender Claude-Code-Agent — eigene Wallet `0x576e6A7F35b1696CaB664FFB2dD8594D8930Ac69` auf Celo Mainnet, unabhängig von BASTETs eigener ERC-8004-Wallet.
+- **Empfänger**: BASTETs bestehende, unter ERC-8004 registrierte Wallet `0x593BA829D84F9bC3AeF2a507C5cf6Cc4dC2c3608`.
+- **Settlement-Beweis**: Transaction Hash [`0x8295a0226c1f1d537757c968efaddf45e23e3c58eb02688c744ee12292ea5ae8`](https://celoscan.io/tx/0x8295a0226c1f1d537757c968efaddf45e23e3c58eb02688c744ee12292ea5ae8), 0,1 USAT, `success: true`.
+
+Damit ist der Kernmechanismus von Track 2b ("Agents on Open Rails" — ein Agent zahlt einen anderen Agenten/Dienst in echtem USAT) nicht nur implementiert, sondern tatsächlich einmal Agent-zu-Agent durchgespielt.
+
 ## 3. Produkt 2: Telegram-Kanal (Kern) + mittelfristig WhatsApp, Website
 
 ### 3.1 Warum nicht der bestehende deutsche Telegram-Kanal
