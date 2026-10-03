@@ -286,6 +286,19 @@ Kerninhalte (`lib/x402.ts`, `buildInfoPacket()`):
 - **Begrüßung + Beschreibung**: was BASTET ist (GdB/MdE/EMR-Orientierung
   für Post-COVID/ME-CFS, englischsprachig, quellenbelegt).
 - **`whatYouGet`**: eine vollständige, referenzierte Antwort auf eine Frage.
+- **`howToAskAGoodQuestion`** (ergänzt 03.10.2026): aus dem echten Tier-1-
+  Fragenkatalog (`lib/triage/questions.ts`) destillierter Leitfaden -
+  dieselben Kategorien, die `computeTriage()` (`lib/triage/scoring.ts`)
+  tatsächlich auswertet (PEM inkl. Trigger/Schwelle/Latenz/Erholung, Dauer,
+  Schmerz, Kognition, Autonomie inkl. objektiver Tests, Schlaf, sonstige
+  Symptome, Komorbiditäten, Medikation, Funktionskapazität, Alltag,
+  Arbeitsfähigkeit, beruflicher Kontext/BK-3101) - als englischer
+  Freitext-Leitfaden statt strukturiertes Formular, weil der x402-Endpunkt
+  nur ein einzelnes `question`-Feld entgegennimmt und es anders als im
+  Web-Chat-Arm **keine Folgefrage gibt**. Grund: Bei Single-Shot ohne
+  Rückfragemöglichkeit entscheidet die Vollständigkeit der einen Frage
+  direkt über die Qualität der Antwort - unvollständige Angaben lassen sich
+  nicht nachträglich ergänzen, anders als im mehrstufigen Web-Interview.
 - **`usageModel`**: explizit klargestellt, dass eine Zahlung **kein Abo und
   keine zeitlich befristete Nutzung** ist — ein Payment = eine Frage = eine
   Antwort, keine laufende Konversation. Das war wichtig zu klären: die
