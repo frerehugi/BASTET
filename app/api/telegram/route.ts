@@ -13,6 +13,7 @@ import { sendTelegramMessage, startTypingIndicator } from "@/lib/telegram";
 import { getSession, saveSession, withinRateLimit, type TelegramSession } from "@/lib/telegramSession";
 import { incrementCompleted, incrementStarted } from "@/lib/userCount";
 import { SESSION_CHAR_HARD_LIMIT, totalMessageChars } from "@/lib/sessionBudget";
+import { hasMiniPayAccess } from "@/lib/minipayTelegramToken";
 
 export const runtime = "nodejs";
 export const maxDuration = 150;
@@ -46,6 +47,16 @@ const DIAGNOSIS_WARNING = `${WEB_DIAGNOSIS_WARNING} Die folgende Einschätzung i
 
 const OPENING_QUESTION =
   "Danke. Erzählen Sie mir in eigenen Worten, was seit wann bei Ihnen los ist — Stichworte reichen völlig, Sie müssen keine ganzen Sätze schreiben.";
+
+// Zahlungspflichtig seit 03.10.2026 (siehe lib/minipayTelegramToken.ts): die
+// ausführliche KI-Auswertung (Tier 2, echter Anthropic-API-Call) kostet hier
+// echtes Geld pro Anfrage. Der MiniPay-Zahlungslink (bastet.osirisapp.xyz)
+// fehlt hier bewusst noch - die Seite ist gebaut, aber noch nicht deployed/
+// domain-verbunden (siehe OSIRIS-Repo, apis/bastet-pay). NACHTRAGEN, sobald
+// die Domain live ist, sonst zeigt die Nachricht einen toten Link.
+const PAYWALL_MESSAGE = `Die ausführliche KI-Auswertung ist hier im Telegram-Chat ein kostenpflichtiges Angebot: 6 Stunden voller Zugang für 4,99 USDT, bezahlbar per MiniPay (Zahlungsseite folgt in Kürze, aktuell noch im Aufbau).
+
+Kostenlos nutzbar ist BASTET in der Zwischenzeit über die Website: https://www.bastet-covid.org`;
 
 function ok(): Response {
   // Telegram erwartet 200 auf jedes Webhook-Update, sonst wird zugestellt/erneut versucht.
@@ -166,15 +177,10 @@ export async function POST(request: Request): Promise<Response> {
       return ok();
     }
 
-    // "Sitzung gestartet" = erste echte Interview-Runde (nur die
-    // OPENING_QUESTION steht bislang in session.messages) - siehe
-    // lib/userCount.ts. Vor dem Push prüfen, sonst zählt jede Runde als Start.
-    // AWAIT statt void, siehe Begründung bei incrementCompleted weiter unten.
-    if (session.messages.length === 1) await incrementStarted("telegram");
     // War in einer vorherigen Runde schon eine vollständige Auswertung mit
     // REFERENZEN-Block dabei? Nur dann NICHT noch einmal als "completed"
     // zählen, wenn diese Runde erneut einen liefert (gleiches Prinzip wie
-    // app/api/chat/route.ts).
+    // app/api/chat/route.ts). Vor dem Push berechnet, ändert sich durch ihn nicht.
     const alreadyCompleted = session.messages.some(
       (m) => m.role === "assistant" && typeof m.content === "string" && m.content.includes(REFERENZEN_MARKER)
     );
@@ -184,10 +190,12 @@ export async function POST(request: Request): Promise<Response> {
     // War die Sitzung VOR dieser Nachricht schon über dem Hard-Limit, hatte
     // das Modell im letzten Zug bereits die Anweisung "leite JETZT über" -
     // noch mehr Material anzuhängen, bevor das greift, würde die Sitzung
-    // unbegrenzt weiter wachsen lassen. Nur relevant, solange noch keine
-    // fertige Auswertung vorliegt; danach ist das Risiko ein anderes
-    // (Rückfragen zu einem bereits gelieferten Ergebnis), bewusst nicht
-    // hier mitgedeckelt.
+    // unbegrenzt weiter wachsen lassen. Bewusst VOR dem MiniPay-Gate geprüft,
+    // sonst wäre dieser Schutz für unbezahlte Versuche wirkungslos (die
+    // würden sonst ungebremst Text anhäufen dürfen, nur ohne LLM-Call). Nur
+    // relevant, solange noch keine fertige Auswertung vorliegt; danach ist
+    // das Risiko ein anderes (Rückfragen zu einem bereits gelieferten
+    // Ergebnis), bewusst nicht hier mitgedeckelt.
     if (!alreadyCompleted && totalMessageChars(session.messages) >= SESSION_CHAR_HARD_LIMIT) {
       await notifyBestEffort(
         chatId,
@@ -196,9 +204,31 @@ export async function POST(request: Request): Promise<Response> {
       return ok();
     }
 
-    // Normale Interview-Runde.
+    // Nutzer:innen-Text sichern (gleiches Prinzip wie im catch weiter unten -
+    // "nichts geht verloren"), BEVOR das MiniPay-Gate greift. Wer unbezahlt
+    // schreibt, bekommt zwar jetzt keine Auswertung, aber der bereits
+    // getippte Text ist nicht weg, sobald der 6h-Zugang später freigeschaltet
+    // wird - die nächste erlaubte Runde sieht ihn dann im Verlauf.
     session.messages.push({ role: "user", content: text });
     session.turnCount += 1;
+    await saveSession(chatId, session);
+
+    // MiniPay-Gate: jede echte Interview-Runde ab hier löst einen echten
+    // Anthropic-API-Call aus (lib/minipayTelegramToken.ts, hasMiniPayAccess).
+    // Bewusst VOR incrementStarted geprüft, damit unbezahlte Versuche nicht
+    // die Tier-2-Nutzungszähler verfälschen (die sollen echte Tier-2-Nutzung
+    // messen, nicht bloßes Interesse). Diagnose-Gate und OPENING_QUESTION
+    // oben bleiben für alle frei (kein API-Call, keine Kosten).
+    if (!(await hasMiniPayAccess(chatId))) {
+      await sendTelegramMessage(chatId, PAYWALL_MESSAGE);
+      return ok();
+    }
+
+    // "Sitzung gestartet" = erste echte Interview-Runde (nur die
+    // OPENING_QUESTION stand vor diesem Push in session.messages) - siehe
+    // lib/userCount.ts. AWAIT statt void, siehe Begründung bei
+    // incrementCompleted weiter unten.
+    if (session.messages.length === 2) await incrementStarted("telegram");
 
     // Telegram kann - anders als der Web-Chat-Arm (siehe lib/anthropic.ts,
     // streamClaude) - nicht streamen; "tippt…" ist der pragmatische Ersatz,
