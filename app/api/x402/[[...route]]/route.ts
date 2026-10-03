@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { paymentMiddleware } from "@x402/hono";
 import { runExpatConsult } from "@/lib/expatConsult";
-import { resourceServer, buildRoutes, CONSULT_PATH } from "@/lib/x402";
+import { resourceServer, buildRoutes, buildInfoPacket, CONSULT_PATH } from "@/lib/x402";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -13,6 +13,12 @@ export const maxDuration = 60;
 const app = new Hono();
 
 app.use(paymentMiddleware(buildRoutes(), resourceServer));
+
+// Frei zugänglich (buildRoutes() schützt nur POST {CONSULT_PATH}, nicht
+// GET) - agent-lesbares Infopaket (Preis, Leistungsumfang, Grenzen), damit
+// ein aufrufender Agent das vor einer Kaufentscheidung an den
+// Wallet-Besitzer weitergeben kann, siehe lib/x402.ts buildInfoPacket().
+app.get(CONSULT_PATH, (c) => c.json(buildInfoPacket()));
 
 app.post(CONSULT_PATH, async (c) => {
   let body: { question?: unknown };
@@ -36,7 +42,7 @@ app.post(CONSULT_PATH, async (c) => {
     // verifiziert UND settled, bevor dieser Handler läuft (siehe Skill-Doku,
     // "What happens at runtime", Schritt 3-4) - ein Fehlschlag hier (z.B.
     // Anthropic-API down) bedeutet also: bereits bezahlt, aber keine
-    // Antwort geliefert. Bei 3,0 USAT/Aufruf (siehe lib/x402.ts) ein bewusst
+    // Antwort geliefert. Bei 4,99 USAT/Aufruf (siehe lib/x402.ts) ein bewusst
     // in Kauf genommenes, geringes Restrisiko (Standardverhalten der offiziellen
     // x402-Middleware, siehe dortige Warnung gegen eigenes Verify/Settle-
     // Handling) - kein eigener Workaround hier, um nicht wieder von der

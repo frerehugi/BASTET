@@ -228,7 +228,7 @@ Ergänzung, kein neuer Code-Pfad).
 
 ---
 
-## 3. Preisanpassung: 0,1 → 3,0 USAT (03.10.2026)
+## 3. Preisanpassung: 0,1 → 4,99 USAT (03.10.2026)
 
 **Anforderung**: BASTET muss sich selbst tragen, nicht nur im Idealfall
 profitabel sein. Kaufmännische Faustregel (nutzerseitig vorgegeben): der
@@ -251,20 +251,59 @@ Nutzungsdaten nicht verifizierbar, siehe "Offene Punkte").
 |---|---:|
 | Cold-Kosten pro Aufruf (Abschnitt 1.3) | $0,736 |
 | × kaufmännischer Faktor 4 | $2,944 |
-| Gerundet | **3,00 USAT** |
+| Erste Rundung | 3,00 USAT |
+| Finale Entscheidung: runder, leichter kommunizierbarer Betrag | **4,99 USAT** |
+
+4,99 USAT entspricht dem ~6,8-fachen der Cold-Kosten (statt nur dem
+4-fachen) — mehr Sicherheitsmarge als die Faustregel verlangt, bewusst so
+gewählt, weil der Preis auch im Infopaket (Abschnitt 3.1) kommuniziert wird
+und "4,99" als Preispunkt klarer kommunizierbar ist als "3,00" plus
+Rundungsdiskussion.
 
 **Neue Marge:**
 
 | Szenario | Kosten | Erlös (neu) | **Marge (neu)** |
 |---|---:|---:|---:|
-| Cold (Worst Case, selbsttragend) | $0,74 | $3,00 | **≈ +306 % ($2,26 Gewinn)** |
-| Warm, geteilt (Best Case) | $0,05–0,055 | $3,00 | **≈ +98 % ($2,95 Gewinn)** |
+| Cold (Worst Case, selbsttragend) | $0,74 | $4,99 | **≈ +575 % ($4,25 Gewinn)** |
+| Warm, geteilt (Best Case) | $0,05–0,055 | $4,99 | **≈ +99 % ($4,94 Gewinn)** |
 
 **Umgesetzt**: `lib/x402.ts` (`getPriceAmount()`-Default), README,
 `build/phase10-english-expat-bastet.md`. Historische Fakten (der tatsächlich
 am 03.10. zum damaligen Preis von 0,1 USAT gezahlte, on-chain verifizierte
 BOTKOV-Test) bleiben unverändert dokumentiert — nur die künftig geltende
 Preiskonfiguration wurde angehoben.
+
+### 3.1 Infopaket für Kaufentscheidungen (`GET {CONSULT_PATH}`, ohne Zahlung)
+
+Setzt Empfehlung 2.2 aus diesem Dokument um. Der aufrufende Agent trifft die
+Kaufentscheidung laut Nutzervorgabe typischerweise **nicht allein**, sondern
+bespricht sie mit dem Wallet-Besitzer — das Infopaket ist deshalb bewusst
+als Fließtext-taugliche Felder aufgebaut (Begrüßung, Beschreibung, Preis,
+Nutzungsmodell, Grenzen), nicht nur als technische Metadaten, damit ein
+Agent es direkt an einen Menschen weiterreichen kann.
+
+Kerninhalte (`lib/x402.ts`, `buildInfoPacket()`):
+- **Begrüßung + Beschreibung**: was BASTET ist (GdB/MdE/EMR-Orientierung
+  für Post-COVID/ME-CFS, englischsprachig, quellenbelegt).
+- **`whatYouGet`**: eine vollständige, referenzierte Antwort auf eine Frage.
+- **`usageModel`**: explizit klargestellt, dass eine Zahlung **kein Abo und
+  keine zeitlich befristete Nutzung** ist — ein Payment = eine Frage = eine
+  Antwort, keine laufende Konversation. Das war wichtig zu klären: die
+  bestehende Architektur (`lib/expatConsult.ts`) ist Single-Shot ohne
+  Session-Zustand, "wie lange man BASTET nutzen kann" ist also korrekt
+  beantwortet mit "für eine Antwort", nicht mit einer Zeitdauer.
+- **`whatItCanNotDo`**: keine Diagnose, nicht bindend, kein Ersatz für
+  ärztliche/anwaltliche Beratung, nur Post-COVID/ME-CFS-Themenbereich, keine
+  Datenspeicherung über die eine Anfrage hinaus.
+- **`forCallingAgents`**: expliziter Hinweis an den aufrufenden Agenten,
+  das Infopaket vor der Zahlung an den Wallet-Besitzer weiterzugeben.
+
+Technisch: `app.get(CONSULT_PATH, ...)` in der Hono-App, **vor**
+`paymentMiddleware()` nicht nötig zu platzieren, da `buildRoutes()` nur
+`"POST {CONSULT_PATH}"` als geschützte Route deklariert — ein `GET` auf
+denselben Pfad matcht die Middleware nicht und läuft frei durch. Lokal
+gegen den Dev-Server verifiziert: `GET` liefert `200` mit dem vollständigen
+Infopaket, `POST` ohne Zahlung weiterhin `402`.
 
 **Einordnung der Unsicherheit**: Die 179.000-Token-KB-Schätzung (Abschnitt
 1.1) ist zeichenbasiert, nicht per `count_tokens` verifiziert, und die

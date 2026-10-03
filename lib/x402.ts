@@ -80,20 +80,18 @@ function getPayTo(): `0x${string}` {
 }
 
 /**
- * 3,0 USAT pro Aufruf (3000000 Basiseinheiten bei 6 Dezimalstellen) - seit
- * 03.10.2026, siehe build/x402-kosten-nutzen-2026.md Abschnitt 3. Der
- * ursprüngliche Preis (0,1 USAT, ~86% Marge gegen ~0,014 $ Kosten) war
- * gegen eine seither um Faktor ~3,7 gewachsene Wissensbasis und ein
- * verviervachtes maxTokens-Limit kalkuliert und damit überholt: reale
- * Kosten liegen bei ~0,05 $/Aufruf (Cache warm) bis ~0,74 $/Aufruf
- * (Cache kalt - kein anderer Arm war in der letzten Stunde aktiv). Preis
- * bewusst gegen den Cold-Fall kalkuliert (selbsttragend auch ohne warmen
- * Cache), kaufmännische Faustregel Preis = 4x Kosten zur Deckung von
- * Steuern/Infrastruktur-Overhead: 0,736 $ x 4 ≈ 2,94 $ -> 3,00 USAT.
- * Override via Env-Var für Preis-Tuning ohne Code-Änderung.
+ * 4,99 USAT pro Aufruf (4990000 Basiseinheiten bei 6 Dezimalstellen) - seit
+ * 03.10.2026, siehe build/x402-kosten-nutzen-2026.md Abschnitt 3. Erst auf
+ * 3,00 USAT kalkuliert (kaufmännische 4x-Regel auf die realen Cold-Cache-
+ * Kosten von ~0,736 $/Aufruf, ~6,8x statt nur 4x), dann bewusst auf den
+ * runden Preis 4,99 USAT angehoben - zusätzliche Sicherheitsmarge (der
+ * Endpunkt muss sich auch ohne warmen Prompt-Cache selbst tragen, siehe
+ * dortige Begründung) und ein klarerer, leichter kommunizierbarer Preis
+ * fürs Infopaket (buildInfoPacket() unten). Override via Env-Var für
+ * Preis-Tuning ohne Code-Änderung.
  */
 function getPriceAmount(): string {
-  return process.env.X402_PRICE_BASE_UNITS || String(Math.round(3.0 * 10 ** ASSETS.USAT.decimals));
+  return process.env.X402_PRICE_BASE_UNITS || String(Math.round(4.99 * 10 ** ASSETS.USAT.decimals));
 }
 
 export const facilitator = new HTTPFacilitatorClient({
@@ -133,7 +131,48 @@ export function buildRoutes(): RoutesConfig {
         },
       ],
       description:
-        "BASTET expat consult: English-language orientation on Post-COVID/ME-CFS in German social law (GdB/MdE/EMR), grounded in a curated German legal/medical knowledge base.",
+        "BASTET expat consult: English-language orientation on Post-COVID/ME-CFS in German social law (GdB/MdE/EMR), grounded in a curated German legal/medical knowledge base. GET this same URL (no payment) for a full service description and pricing.",
     },
+  };
+}
+
+/**
+ * Agent-lesbares Infopaket, über GET auf demselben Pfad OHNE Zahlung
+ * erreichbar (buildRoutes() oben schützt nur "POST {CONSULT_PATH}" - ein
+ * GET auf denselben Pfad matcht die Middleware nicht). Zweck: der
+ * aufrufende Agent trifft die Kaufentscheidung laut Nutzervorgabe
+ * typischerweise NICHT allein, sondern bespricht sie mit dem
+ * Wallet-Besitzer - deshalb bewusst als Fließtext-taugliche Felder
+ * aufgebaut (nicht nur technische Metadaten), die sich direkt an einen
+ * Menschen weiterreichen lassen. Ergänzt (nicht ersetzt) die rein
+ * protokollseitigen PaymentRequirements aus dem 402-Response.
+ * Preis/Nutzungsmodell siehe build/x402-kosten-nutzen-2026.md Abschnitt 3.
+ */
+export function buildInfoPacket() {
+  return {
+    service: "BASTET",
+    greeting:
+      "Hi — I'm BASTET, an AI orientation service for English-speaking expats in Germany dealing with Post-COVID or ME/CFS (chronic fatigue syndrome) in German disability law.",
+    description:
+      "BASTET explains how Post-COVID/ME-CFS is assessed under German disability law: Degree of Disability (Grad der Behinderung, GdB), Occupational Disability (Minderung der Erwerbsfähigkeit, MdE) under statutory accident insurance, and Disability Pension (Erwerbsminderungsrente, EMR). Every answer is grounded in a curated set of German legal and medical primary sources (official assessment regulations, court decisions, clinical guidelines) and cites them with numbered references.",
+    price: {
+      amount: "4.99",
+      asset: "USAT",
+      assetFullName: ASSETS.USAT.name,
+      network: "Celo Mainnet (eip155:42220)",
+    },
+    whatYouGet:
+      "One complete, written, English-language answer to one question — structured by GdB/MdE/EMR where relevant, with numbered references back to the specific source for each claim. Not a generic AI guess: the answer is grounded in BASTET's curated knowledge base, not general training knowledge.",
+    usageModel:
+      "Single-use, not a subscription or time-limited access: one payment of 4.99 USAT = one question = one answer. There is no ongoing session or conversation tied to a payment — a follow-up question needs a new request and a new payment. This is the same every time; the price does not buy multiple questions or a time window.",
+    whatItCanNotDo: [
+      "Does not diagnose — it only works with what you describe, no hidden assumptions.",
+      "The answer is AI-generated and non-binding: it does not replace a medical examination, a decision by a German authority or court, or advice from a lawyer specializing in German social law (Fachanwalt/-anwältin für Sozialrecht).",
+      "Only covers Post-COVID/ME-CFS and German disability law — not visas, residency registration, taxes, or other expat bureaucracy topics.",
+      "Does not store the question or answer beyond processing that one request (no account, no history).",
+    ],
+    forCallingAgents:
+      "If you are an AI agent spending on behalf of a human wallet owner: please relay this information to them before paying, so they understand this is a one-time, non-binding orientation — not legal or medical advice — before you spend their USAT.",
+    howToPay: `POST to this same URL (${CONSULT_PATH}) with a JSON body {"question": "..."} and no payment header to receive the HTTP 402 challenge with the exact on-chain payment requirements (scheme, network, asset, payTo, amount).`,
   };
 }
