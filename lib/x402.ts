@@ -95,17 +95,17 @@ function getPayTo(): `0x${string}` {
  * 4,99 USAT (~6,8x der realen Cold-Cache-Kosten von ~0,736 $), Folgefrage
  * 0,99 USAT (deckt die realen Warm-Kosten von ~0,11-0,17 $ komfortabel).
  *
- * TEMPORÄR GESENKT (03.10.2026) für mehrere BOTKOV-Testläufe gegen den
- * echten Facilitator - vor Produktivbetrieb bzw. nach Abschluss der
- * Testphase zurücksetzen. Je Stufe zusätzlich per Env-Var überschreibbar,
- * ohne Code-Änderung.
+ * Testphase mit BOTKOV (temporär auf 0,1/0,05 USAT gesenkt) am 03.10.2026
+ * abgeschlossen - beide Stufen auf die echten Preise zurückgesetzt, inkl.
+ * des end-to-end verifizierten Wallet-Erkennungs-Bugfixes (PR #91). Je
+ * Stufe weiterhin per Env-Var überschreibbar, ohne Code-Änderung.
  */
 function getNewWalletPriceAmount(): string {
-  return process.env.X402_PRICE_NEW_BASE_UNITS || String(Math.round(0.1 * 10 ** ASSETS.USAT.decimals));
+  return process.env.X402_PRICE_NEW_BASE_UNITS || String(Math.round(4.99 * 10 ** ASSETS.USAT.decimals));
 }
 
 function getReturningWalletPriceAmount(): string {
-  return process.env.X402_PRICE_RETURNING_BASE_UNITS || String(Math.round(0.05 * 10 ** ASSETS.USAT.decimals));
+  return process.env.X402_PRICE_RETURNING_BASE_UNITS || String(Math.round(0.99 * 10 ** ASSETS.USAT.decimals));
 }
 
 function toDisplay(baseUnits: string): string {
