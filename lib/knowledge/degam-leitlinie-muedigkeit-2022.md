@@ -1,0 +1,61 @@
+# DEGAM S3-Leitlinie "Müdigkeit" (2022) — ME/CFS-Abschnitt und Sondervotum
+
+**Quelle**: Deutsche Gesellschaft für Allgemeinmedizin und Familienmedizin (DEGAM), S3-Leitlinie "Müdigkeit", AWMF-Register-Nr. 053-002, Stand 2022, © DEGAM 2022. Volltext vom Nutzer bereitgestellt. **S3-Niveau** (höchste AWMF-Stufe: strukturierte Konsensfindung + systematische Evidenzrecherche) — die maßgebliche deutsche hausärztliche Leitlinie zum Symptom Müdigkeit, mit eigenem Unterkapitel 5.7 zu ME/CFS.
+
+## Warum das in dieser Wissensbasis steht
+
+Erste deutsche S3-Leitlinie, die ME/CFS als eigenständiges Unterkapitel innerhalb der hausärztlichen Müdigkeitsabklärung behandelt — mit **zwei gegenläufigen, beide zitierfähigen Positionen**:
+
+1. **Mehrheitsposition der Leitliniengruppe** (Konsens 12-14 Ja-Stimmen, Empfehlungsgrad A/B): explizite Empfehlung, bei ME/CFS **keine** Aktivierung auf Basis des Dekonditionierungskonzepts anzubieten (Empfehlung 6.5 C) — eine offizielle, hochrangige deutsche Leitlinienquelle, die PEM-Vermeidung/Pacing stützt, nicht GET.
+2. **Sondervotum** von vier Fachgesellschaften (DKPM, DGPM, DGIM, DGPPN, Kapitel 5.7.5): widerspricht explizit der ME/CFS-Terminologie und der Zurückhaltung bei Aktivierungstherapie/KVT — die Gegenposition, die in einem gegnerischen Gutachten oder einer MDK-/Rentenversicherungs-Stellungnahme auftauchen kann. BASTET sollte diese Position kennen, um sie gezielt (mit den dort zitierten Studien) entkräften zu können, nicht nur pauschal zurückweisen. Ergänzt `kritik-cfs-psychologisierung-vt-manual.md` um die "offizielle" fachgesellschaftliche Version derselben Kontroverse.
+
+IOM/CCC-Kriterien selbst sind bereits in `postcovid-mecfs.md` dokumentiert — hier nicht dupliziert, nur auf DEGAM-spezifische Ergänzungen (ICD-Kodierung, Empfehlungsgrade, Versorgungssituation) fokussiert.
+
+## 1. Kodierung und Klassifikation
+
+- **ICD-10**: G93.3 = Chronisches Müdigkeitssyndrom/Chronisches Fatigue-Syndrom (inkl. CFS bei Immundysfunktion, Myalgische Enzephalomyelitis/-pathie, postvirales Müdigkeitssyndrom) — **neurologisch** klassifiziert, schließt die Neurasthenie-Kodierung (F48.0) explizit aus. R53 = reines Symptom Müdigkeit (ohne Diagnosesicherung). **Post-COVID-ME/CFS**: G93.3 **plus** Zusatzcode U09.9! (Post-COVID-19-Zustand); U10.9 existiert zusätzlich für das multisystemische Entzündungssyndrom bei COVID-19.
+- **ICD-11**: 8E49, dort unter "Postvirales Fatigue-Syndrom" geführt, synonym mit ME.
+- **ICPC-2** (hausärztliche Primärversorgungs-Klassifikation): Rubrik A04 (allgemein/unspezifisch) — Schwäche, allgemeine Müdigkeit, Chronisches Fatigue-Syndrom, Erschöpfung, postvirale Müdigkeit.
+- Wichtiger Praxishinweis der Leitlinie: Für eine über eine Woche hinausgehende Arbeitsunfähigkeitsbescheinigung darf **keine reine Symptombeschreibung** (also nicht nur R53) verwendet werden — begünstigt sonst Pseudodiagnosen.
+
+## 2. Zentrale DEGAM-Empfehlungen mit Bezug zu ME/CFS
+
+- **Empfehlung 5.1.5 (neu 2022, Empfehlungsgrad B, starker Konsens 13/0/0)**: Bei mindestens seit 3 Monaten anhaltender, bisher ungeklärter Müdigkeit **sollten** die ME/CFS-Kriterien nach IOM geprüft werden, um eine **Verdachtsdiagnose** zu stellen — Reevaluation nach 6 Monaten vorgesehen. Direkt relevant für den zeitlichen Ablauf einer BASTET-Begutachtung: die Verdachtsdiagnose ist nach IOM-Kriterien bereits ab 3 Monaten formal vorgesehen, nicht erst nach 6.
+- **Basis-Labor bei ungeklärter Müdigkeit (Empfehlung 5.3.1, Grad A)**: Blutglukose, großes Blutbild, BSG/CRP, Transaminasen oder γ-GT, TSH — Ausschlussdiagnostik, bevor eine ME/CFS-Verdachtsdiagnose gestellt wird. Weiterführende Labor-/Apparate-Diagnostik nur bei konkreten Auffälligkeiten (Empfehlung 5.3.2, GCP) — ausdrücklich **gegen** ungezielte Zusatzdiagnostik ("low value testing").
+- **Empfehlung 6.5 (zentral für BASTET)**:
+  - **A**: Bei vielen zugrunde liegenden Störungen verbessern Verhaltenstherapie/aktivierende Maßnahmen Müdigkeit — **ausdrücklich NICHT für ME/CFS** (auch nicht bei Verdachtsdiagnose).
+  - **B**: Bei ungeklärter Müdigkeit (noch kein ME/CFS) können Verhaltenstherapie/Aktivierung angeboten werden — Reaktion individuell beobachten, bei Verschlechterung anpassen/abbrechen.
+  - **C (zentrales Zitat)**: *"Bei ME/CFS soll keine körperlichen Aktivierungen auf Basis des Dekonditionierungskonzeptes angeboten werden. Zu beachten ist die Belastungsintoleranz mit unterschiedlicher Latenz. Eine Verhaltenstherapie kann angeboten werden, insbesondere zur Therapie von Begleitsymptomen."* — Konsensverfahren 14 Ja/0 Nein/2 Enthaltungen, starker Konsens. Eine der direktesten, am höchsten autorisierten deutschen Quellen gegen GET/Dekonditionierungs-basierte Aktivierungstherapie bei ME/CFS.
+- Die Leitlinie verweist bei vertiefenden ME/CFS-Fragen explizit auf **NICE NG206**, **EUROMENE** und **CDC/IOM** — verzichtet bewusst auf eine eigenständige vollständige DEGAM-ME/CFS-Leitlinie wegen "relativer Seltenheit" und "dynamischer Forschungsentwicklung".
+
+## 3. Epidemiologie und Versorgungssituation (DEGAM-Angaben)
+
+- EUROMENE-Schätzung: Prävalenz 0,1–0,7 %, Inzidenz 0,015/1.000 Patientenjahre. Neuere US-Schätzung: 0,42 % Prävalenz.
+- Frauen doppelt so häufig betroffen wie Männer; Alleinlebende und Menschen mit niedrigerem Einkommen überproportional betroffen.
+- In Hausarztpraxen erfüllen **unter 2 %** der Personen mit primär ungeklärter Müdigkeit die ME/CFS-Kriterien — seltene, aber keineswegs vernachlässigbare Einzeldiagnose.
+- **84–91 % der Betroffenen international nicht diagnostiziert oder fehldiagnostiziert** (wichtige Zahl für die Darstellung der strukturellen Unterversorgung).
+- Nach COVID-19 wird mit deutlich mehr ME/CFS-Diagnosen in Hausarztpraxen gerechnet.
+- **Nur zwei spezialisierte Hochschulambulanzen in Deutschland**: Charité Fatigue Centrum (CFC, Berlin/Brandenburg, Erwachsene) und MRI Chronische Fatigue Centrum (MCFC, TU München, bis 25 Jahre, Bayern-Schwerpunkt) — kapazitätsbedingt regional begrenzt, Hausärzt:innen laut Leitlinie "mit den meist schwer kranken Patient:innen allein gelassen". Nur ein Viertel der Betroffenen ist bei spezialisierten Ärzt:innen in Behandlung.
+- Schweregrade nach NICE (von der DEGAM übernommen): mild/moderat/schwer/sehr schwer — moderat meist arbeitsunfähig, sehr schwer bettlägerig/pflegebedürftig, teils nicht mehr sprechfähig, teils künstliche Ernährung nötig. Etwa ein Viertel der Betroffenen ist hausgebunden oder bettlägerig.
+- Erhöhtes Suizidrisiko und ggf. verkürzte Lebenserwartung dokumentiert (mit Verweis auf Quelle [328], dieselbe Referenzlinie wie bei anderen KB-Quellen zur Krankheitslast).
+- Pathogenese laut DEGAM: Multisystemerkrankung mit Dysregulation von Immunsystem, Nervensystem, zellulärem Energiestoffwechsel; bei infektionsgetriggertem ME/CFS (~70 % der Fälle) Hinweise auf Autoantikörper gegen G-Protein-gekoppelte Rezeptoren und vaskuläre Dysfunktion mit belastungsabhängiger Hypoperfusion von Muskulatur/Gehirn — **kein diagnostischer Test verfügbar**, Diagnose bleibt klinisch.
+
+## 4. POTS/orthostatische Intoleranz
+
+Schellong-Test oder NASA-Lean-Test zur Verifizierung empfohlen (Kriterium: Pulsanstieg im Stehen >30/min gegenüber Ruhe-Herzfrequenz oder Frequenz >120 im Stehen) — deckt sich mit der bereits in der Wissensbasis dokumentierten POTS-Diagnostik, hier mit der zusätzlichen Testbezeichnung "NASA-Lean-Test" als Alternative zum Schellong-Test.
+
+## 5. Sondervotum DKPM/DGPM/DGIM/DGPPN (Kapitel 5.7.5) — die Gegenposition
+
+Formales Sondervotum von vier Fachgesellschaften (Deutsche Kollegium für Psychosomatische Medizin, Deutsche Gesellschaft für Psychosomatische Medizin, Deutsche Gesellschaft für Innere Medizin, Deutsche Gesellschaft für Psychiatrie und Psychotherapie, Psychosomatik und Nervenheilkunde), im Leitlinientext selbst dokumentiert samt eigener Literaturliste. Kernargumente:
+
+- **Terminologie-Kritik**: "ME" (Myalgische Enzephalomyelitis) impliziere eine organische ZNS-Entzündung, die nicht gesichert sei; Verweis auf historische Unschärfe des Begriffs (McEvedy/Beard 1970) und Nocebo-Risiko durch die Diagnose-Etikettierung selbst (Colloca/Barsky 2020).
+- **PEM als unspezifisch eingestuft**: wird laut Sondervotum auch bei Fibromyalgie, krebsassoziierter Fatigue und anderen Erschöpfungssyndromen berichtet (zitiert Barhorst et al. 2022, Twomey et al. 2020) — die Betonung von PEM als spezifisches ME/CFS-Warnzeichen sei daher irreführend.
+- **Kritik an der Zurückhaltung bei Aktivierungstherapie/KVT**: fordert gestufte Aktivierung und Psychotherapie "nach sorgfältiger Indikationsstellung", warnt vor iatrogener Passivierung/Chronifizierung durch strikte Aktivitätsvermeidung. Zitiert Ingman et al. 2022 und White/Etherington 2021: Patient:innen, die an randomisierten KVT- bzw. GET-Studien teilnahmen, stuften sich selbst zu 43–44 % als verbessert ein, nur zu 11–14 % als verschlechtert.
+- **Kritik an NICE NG206 selbst**: wirft der NICE-Leitlinie vor, durch eine neue ME/CFS-Definition die meiste vorhandene Evidenz "downgegradet", Trial-Outcomes nicht zu allen Zeitpunkten einbezogen, Nebenwirkungen/Schäden unzureichend (überwiegend niedrige Studienqualität) bewertet und GET fehlerhaft als starre, nicht-individualisierte Intervention charakterisiert zu haben (zitiert Flottorp et al. 2022, *Lancet*, die zudem von Rücktritten aus dem NICE-Leitlinienkomitee und ignorierten Fachgesellschafts-Einwänden berichten).
+- **Gegenstandpunkt der Patientenvertretungen dokumentiert**: Der Leitlinientext selbst vermerkt direkt im Anschluss an das Sondervotum, dass die ME/CFS-Patientenvertretungen und EUROMENE-Vertreter:innen dieses Sondervotum "wissenschaftlich kritisch" einschätzen und "Schaden für Betroffene" befürchten — die Kontroverse ist also auch innerhalb des Leitlinientexts selbst als ungelöst dokumentiert, nicht nur außenstehend kritisiert.
+
+**Einordnung für BASTET**: Dieses Sondervotum ist die aktuellste, am höchsten autorisierte deutschsprachige Quelle der Gegenposition zur PEM-zentrierten ME/CFS-Sicht — wird möglicherweise von gegnerischer Seite (Rentenversicherung, MDK, gegnerisches Gutachten) zitiert. Eine sachlich fundierte Entgegnung sollte die konkret zitierten Studien (Ingman 2022, White/Etherington 2021) nicht ignorieren, sondern einordnen: beide beziehen sich auf **Selbsteinschätzung in RCTs ohne verpflichtendes PEM-Kriterium** (vgl. `kritik-cfs-psychologisierung-vt-manual.md`, Punkt zur PACE-Studie und zu heterogenen Kollektiven ohne systematische PEM-Erfassung) — derselbe Methodenkritikpunkt, der bereits an anderer Stelle in dieser Wissensbasis gegen GET-Wirksamkeitsbehauptungen dokumentiert ist, greift auch hier.
+
+## 6. Allgemeiner Teil (Differentialdiagnose Müdigkeit) — nur als Kontext
+
+Die Leitlinie behandelt in Kapitel 4 die vollständige Differentialdiagnostik des Symptoms "Müdigkeit" in der Hausarztpraxis (Depression/Angst als häufigste Ursache, Anämie, endokrine Ursachen, Infektionen, Medikamentennebenwirkungen, Schlafstörungen/Schlafapnoe, Umwelteinflüsse, Malignome u. v. m.) sowie in Kapitel 5.6 eine Tabelle seltener somatischer Differentialdiagnosen (Addison, Conn-Syndrom, Cushing, Hyperkalzämie, Tuberkulose, Toxoplasmose, Brucellose, Malaria, Borreliose, Lupus, Endokarditis, Hirntumor u. a.) sowie in Kapitel 6 eine ausführliche, nicht ME/CFS-spezifische Übersicht zur Müdigkeitstherapie bei bekannten Grunderkrankungen (COPD, Herzinsuffizienz, rheumatoide Arthritis, Schlaganfall, Parkinson, ALS, Multiple Sklerose, Tumorerkrankungen). Dieser allgemeine Teil liegt außerhalb des BASTET-Kernfokus (Post-COVID/ME-CFS-spezifische GdB/MdE-Begutachtung) und wird hier nicht im Detail reproduziert — bei Bedarf (z. B. Abgrenzung zu einer nicht-ME/CFS-Differentialdiagnose) im vom Nutzer bereitgestellten Volltext nachschlagen.

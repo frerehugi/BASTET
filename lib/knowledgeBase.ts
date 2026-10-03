@@ -29,6 +29,7 @@ const FILES = [
   "scheibenbogen-aerztliche-begutachtung.md",
   "scheibenbogen-cme-differentialdiagnostik-therapie-2021.md",
   "euromene-expert-konsensus-diagnostik-versorgung.md",
+  "degam-leitlinie-muedigkeit-2022.md",
   "cdc-track-pcc-verschlimmerung-vorerkrankungen.md",
   "postcovid-symptomliste.md",
   "symptomliste-gdb-mde-abgleich.md",

@@ -55,6 +55,9 @@
 - König RS, et al. (2024): "Identifying the mental health burden in ME/CFS patients in Switzerland", Heliyon 10(5) — Suizidgedanken-Risiko durch Stigmatisierung/Fehlbehandlung: https://doi.org/10.1016/j.heliyon.2024.e27031
 - Weitere Primärquellen zur somatischen Genese (endotheliale Dysfunktion, Neuroinflammation, gestörter Energiestoffwechsel, Muskelpathologie nach Belastung) mit vollständigen Angaben: siehe Quellenliste in `kritik-cfs-psychologisierung-vt-manual.md`.
 
+## Deutsche hausärztliche Leitlinie zu Müdigkeit/ME-CFS
+- DEGAM (2022): S3-Leitlinie "Müdigkeit", AWMF-Register-Nr. 053-002 — mit eigenem ME/CFS-Unterkapitel (5.7) und Sondervotum von DKPM/DGPM/DGIM/DGPPN (5.7.5). Volltext verarbeitet in `degam-leitlinie-muedigkeit-2022.md`. https://register.awmf.org/de/leitlinien/detail/053-002
+
 ## Geschlechtsspezifische Schmerzmechanismen (verwandte Komorbiditäten: Fibromyalgie, viszerale Schmerzen)
 - Venkataraman A, Midavaine É, Ingraham HA (2026): "Sex-specific mechanisms of chronic pain", Science 394(6819):69–74, DOI 10.1126/science.aeh4468 — Peer-reviewte Übersichtsarbeit, Teil der Science-Sonderausgabe zu Frauengesundheit. Volltext verarbeitet in `geschlechtsspezifische-schmerzmechanismen-2026.md`.
 
