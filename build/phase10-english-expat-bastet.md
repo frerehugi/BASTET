@@ -13,14 +13,14 @@ Planungsstand nach ausführlicher Diskussion (Oktober 2026) — reine Architektu
 | | Produkt 1: x402-Bot | Produkt 2: Telegram-Kanal (+ mittelfristig WhatsApp, Website) |
 |---|---|---|
 | Käufer | KI-Agenten mit eigener Wallet | Menschen, nicht-technisch |
-| Zahlung | x402, 0,1 USAT pro Call | Kreditkarte/PayPal/Apple Pay/Google Pay über normalen Zahlungsdienstleister |
+| Zahlung | x402, 3,0 USAT pro Call (seit 03.10.2026, s.u.) | Kreditkarte/PayPal/Apple Pay/Google Pay über normalen Zahlungsdienstleister |
 | On-Chain/Hackathon-attributierbar | Ja | Nein — bewusst reine Reichweite, kein On-Chain-Anspruch |
 | Wo Zahlung passiert | Direkt am Endpunkt (HTTP 402) | Eigene Checkout-Seite außerhalb Telegram |
 | Wo Nutzung passiert | Agent ruft Endpunkt selbst auf | Telegram-Bot (mittelfristig auch WhatsApp/Website) nach Code-Einlösung |
 
 ## 2. Produkt 1: x402-Bot-Rail
 
-- Preis: 0,1 USAT pro Call — kalkuliert gegen ca. 0,014 $ tatsächliche Kosten (Sonnet-5-Pricing, Prompt-Caching), ca. 86 % Marge.
+- Preis: **3,0 USAT pro Call** (seit 03.10.2026). Ursprünglich 0,1 USAT, kalkuliert gegen ca. 0,014 $ geschätzte Kosten (ca. 86 % Marge) — diese Grundlage war überholt (Wissensbasis seither um Faktor ~3,7 gewachsen, `maxTokens` vervierfacht). Neu kalkuliert in `build/x402-kosten-nutzen-2026.md` Abschnitt 3: reale Kosten ~0,05 $ (warmer Cache) bis ~0,74 $ (kalter Cache) pro Aufruf, Preis bewusst gegen den Cold-Fall mit kaufmännischer 4x-Regel gesetzt, damit der Endpunkt sich selbst trägt statt nur im Optimalfall.
 - Celo ist das erste Netzwerk mit nativem x402-Support für USAT (USD-gedeckter Stablecoin, Anchorage/Tether).
 - **Hackathon-Fit**: "Agents on Open Rails" (Celo), Submission-Fenster 2026-10-06 bis 2026-11-09, Kickoff-Call 06.10. 8 Uhr ET.
   - Track 2b "Stable Agents: Open Corridors" (1.000 $, USAT) — direkter Fit, "settle real USAT payments".
