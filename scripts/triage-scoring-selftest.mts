@@ -123,6 +123,20 @@ checkRange(
   40
 );
 
+console.log("\n=== Neu: Geruch-/Geschmacksverlust-Boden (symptomliste-gdb-mde-abgleich.md, 03.10.2026) ===");
+checkRange(
+  "Milde Baseline 30-40 + vollständiger Riech-/Geschmacksverlust (GdB 10-15) - kein Effekt erwartet",
+  computeTriage({ ...MILD_BASELINE, geruchGeschmack: "vollstaendig" }),
+  30,
+  40
+);
+checkRange(
+  "Milde Baseline + nur teilweise verändert (keine Kalibrierungsgrundlage) - kein Effekt erwartet",
+  computeTriage({ ...MILD_BASELINE, geruchGeschmack: "teilweise" }),
+  30,
+  40
+);
+
 console.log("\n=== Mehrfachdiagnose-Stresstest: mehrere Böden + alle Erhöhungsfaktoren gleichzeitig ===");
 const maximalfall: Answers = {
   ...MILD_BASELINE,
@@ -135,6 +149,7 @@ const maximalfall: Answers = {
   autonom: ["orthostatisch"],
   autonomHfDokumentiert: "ja",
   paraesthesien: "deutlich-mit-schwaeche",
+  geruchGeschmack: "vollstaendig",
   psychKomorbid: "ja-gesichert",
   alltagsverrichtungen: "bettlaegerig-nah",
   arbeitsfaehigkeit: "unter-3",

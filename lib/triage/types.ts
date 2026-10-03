@@ -15,6 +15,7 @@ export type QuestionId =
   | "autonomHfDokumentiert"
   | "schlaf"
   | "paraesthesien"
+  | "geruchGeschmack"
   | "atembeschwerden"
   | "diabetesStatus"
   | "psychKomorbid"

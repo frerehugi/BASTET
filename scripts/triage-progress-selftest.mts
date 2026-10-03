@@ -8,7 +8,8 @@
 // springen, sobald ein bedingter Zweig (z.B. PEM = "Ja") weitere Fragen
 // freischaltete (16 -> 20) - von Florian als für neurodivergente
 // Nutzer:innen irritierend gemeldet. Jetzt fest auf die Gesamtzahl aller
-// Fragen (QUESTIONS.length, 20 seit der Tier-1-Kürzung vom 03.10.2026), die
+// Fragen (QUESTIONS.length, 21 seit der Tier-1-Kürzung auf 20 plus der neuen
+// Geruch-/Geschmacksfrage, beides vom 03.10.2026), die
 // Anzeige zählt stattdessen rückwärts und darf dabei nur nach unten springen
 // (weniger übrig), nie nach oben. Dieses Skript hält das dauerhaft fest.
 //
@@ -59,7 +60,7 @@ check(
 
 console.log("\n=== Vollständiger Durchlauf: remaining fällt monoton, endet bei 0 ===");
 // Ein Pfad, der JEDEN bedingten Zweig nimmt (PEM=ja, Schmerz vorhanden,
-// Autonom mit Orthostase), damit alle 20 Fragen durchlaufen werden -
+// Autonom mit Orthostase), damit alle 21 Fragen durchlaufen werden -
 // strengster Test für Monotonie.
 const vollerPfad: Array<[keyof Answers, string | string[]]> = [
   ["pem", "ja"],
@@ -73,6 +74,7 @@ const vollerPfad: Array<[keyof Answers, string | string[]]> = [
   ["autonomHfDokumentiert", "nicht-getestet"],
   ["schlaf", ["unauffaellig"]],
   ["paraesthesien", "keine"],
+  ["geruchGeschmack", "keine"],
   ["atembeschwerden", "keine"],
   ["diabetesStatus", "nein"],
   ["psychKomorbid", "nein"],
@@ -98,7 +100,7 @@ for (const [id, value] of vollerPfad) {
   );
   vorherigesRemaining = remaining;
 }
-check("Nach vollständigem Durchlauf (alle 20 Fragen beantwortet): remaining = 0", vorherigesRemaining === 0, `${vorherigesRemaining}`);
+check("Nach vollständigem Durchlauf (alle 21 Fragen beantwortet): remaining = 0", vorherigesRemaining === 0, `${vorherigesRemaining}`);
 
 console.log(`\n${failures === 0 ? "Alle Checks bestanden." : `${failures} Check(s) fehlgeschlagen.`}`);
 process.exit(failures === 0 ? 0 : 1);

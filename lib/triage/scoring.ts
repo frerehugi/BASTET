@@ -40,6 +40,7 @@ export function computeTriage(answers: Answers): TriageResult {
   const atembeschwerden = answers.atembeschwerden as string | undefined;
   const diabetesStatus = answers.diabetesStatus as string | undefined;
   const paraesthesien = answers.paraesthesien as string | undefined;
+  const geruchGeschmack = answers.geruchGeschmack as string | undefined;
   // Zusammengeführte Frage (Tier-1-Kürzung auf 20 Fragen, 03.10.2026, siehe
   // questions.ts): "nein" | "ja-deutliche-besserung" | "ja-teilweise-besserung"
   // | "ja-keine-besserung" statt vormals zwei getrennter Felder.
@@ -322,6 +323,36 @@ export function computeTriage(answers: Answers): TriageResult {
     } else {
       gdbBegruendung.push(
         `Periphere Dys-/Parästhesien, ${paraLabel} — nach VersMedV 3.11 eigenständig mit GdB ${paraVon}–${paraBis} zu bewerten, liegt hier unterhalb der ohnehin bereits höheren Gesamteinschätzung.`
+      );
+    }
+  }
+
+  // Riech-/Geschmacksstörung (Anosmie/Parosmie) - neu kalibriert in
+  // symptomliste-gdb-mde-abgleich.md Abschnitt 2 (03.10.2026), eines der
+  // charakteristischsten Post-COVID-Symptome, bis dahin weder als Tier-1-
+  // Frage noch als eigener Boden erfasst. Gleiches Prinzip wie Atembeschwerden/
+  // Diabetes/Parästhesien oben: eigenständiger Boden, keine Addition, keine
+  // Änderung von globalfunktionSchweregrad. Kein eigener VersMedV-Einzelpunkt
+  // für isolierten Riechverlust, aber ein Praxisreferenzwert (vollständige
+  // Anosmie isoliert: GdB ca. 10) und ein realer Fall im Kombinationskontext
+  // (LSG Baden-Württemberg, Urt. v. 15.09.2022, Az. L 6 SB 3312/20: komplette
+  // Anosmie bei erhaltener Geschmacksfunktion der Zunge, Einzel-GdB 15 im
+  // Rahmen der Gesamtbewertung nach 3.1). Nur bei VOLLSTÄNDIGEM Verlust als
+  // Boden gewertet - für eine bloß teilweise veränderte Wahrnehmung (z. B.
+  // Parosmie) fehlt eine belastbare Kalibrierungsgrundlage; bleibt trotzdem
+  // als Rohangabe im Tier-2-Kontext erhalten (answersToContextText()).
+  if (geruchGeschmack === "vollstaendig") {
+    const geruchVon = 10;
+    const geruchBis = 15;
+    if (geruchVon > gdbVon || geruchBis > gdbBis) {
+      gdbVon = Math.max(gdbVon, geruchVon);
+      gdbBis = Math.max(gdbBis, geruchBis);
+      gdbBegruendung.push(
+        `Vollständiger Verlust des Riech-/Geschmacksvermögens — nach Praxisreferenzwert bzw. LSG Baden-Württemberg (Az. L 6 SB 3312/20) eigenständig mit GdB ${geruchVon}–${geruchBis} zu bewerten, hebt die Gesamtspanne entsprechend an (Gesamt-GdB-Prinzip, keine Addition).`
+      );
+    } else {
+      gdbBegruendung.push(
+        `Vollständiger Verlust des Riech-/Geschmacksvermögens — mit GdB ${geruchVon}–${geruchBis} eigenständig zu bewerten, liegt hier unterhalb der ohnehin bereits höheren Gesamteinschätzung und ändert die Spanne nicht zusätzlich.`
       );
     }
   }

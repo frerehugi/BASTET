@@ -163,6 +163,22 @@ export const QUESTIONS: Question[] = [
     ],
   },
   {
+    // Neu (03.10.2026), aus lib/knowledge/symptomliste-gdb-mde-abgleich.md
+    // Abschnitt 2: bislang unkalibrierte, aber bei Post-COVID charakteristische
+    // Symptomgruppe (Anosmie/Parosmie), siehe eigenständiger GdB-Boden in
+    // scoring.ts. 21. Frage - bewusste Ausnahme von der 20-Fragen-Kürzung
+    // vom selben Tag, weil sie eine echte inhaltliche Lücke schließt.
+    id: "geruchGeschmack",
+    prompt:
+      "Haben Sie eine neu aufgetretene Riech- oder Geschmacksstörung (z. B. vermindertes/verändertes Riechen, Anosmie, Ageusie)?",
+    type: "single",
+    options: [
+      { value: "keine", label: "Keine" },
+      { value: "teilweise", label: "Teilweise vermindert oder verändert (z. B. Parosmie)" },
+      { value: "vollstaendig", label: "Vollständiger Verlust des Riech- und/oder Geschmacksvermögens" },
+    ],
+  },
+  {
     id: "atembeschwerden",
     prompt:
       "Haben Sie durch Atembeschwerden bedingte Einschränkungen (z. B. Atemnot bei Belastung, ärztlich festgestellte Lungenfunktionseinschränkung)?",
